@@ -153,7 +153,8 @@ export function createRenderer(canvas, options) {
   function trackStage(state, dt) {
     const pl = state.player;
     const st = pl ? clamp(pl.stageIndex | 0, 0, 11) : 0;
-    if (lastStage < 0) { lastStage = st; shownStage = st; fade.from = fade.to = st; fade.t = 1; }
+    // First frame, or a backwards jump (a restarted run): snap instead of morphing.
+    if (lastStage < 0 || st < lastStage) { lastStage = st; shownStage = st; fade.from = fade.to = st; fade.t = 1; fade.delay = 0; morph = null; }
     else if (st !== lastStage) {
       const delay = evolveInhaleLeft(state);
       fade.from = fade.t >= 1 ? fade.to : fade.t < 0.5 ? fade.from : fade.to;
@@ -641,6 +642,8 @@ export function createRenderer(canvas, options) {
     ctx.beginPath(); ctx.arc(sxp, syp, pr * (stage === 11 ? 1.075 : 1.09), 0, TAU); ctx.stroke();
     ctx.globalAlpha = 1;
   }
+
+  resize(); // size the backing store now; the caller still calls resize() on window resize
 
   return {
     drawFrame,
