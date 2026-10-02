@@ -204,6 +204,7 @@ export function createUI(root) {
   let returnFocus = null;
   let choiceHandler = null;   // { choices, onPick, done }
   let hintTimer = 0, bannerTimer = 0, barFlashTimer = 0;
+  let pendingBanner = null;   // stage-up banner held back while the choice cards are open
 
   const setText = (key, node, value) => {
     if (textCache[key] !== value) { node.textContent = value; textCache[key] = value; }
@@ -276,7 +277,9 @@ export function createUI(root) {
     const name = stageName(idx);
 
     if (prevStage !== idx) {
-      if (prevStage !== null && idx > prevStage && hudOn) showStageUp(idx);
+      if (prevStage !== null && idx > prevStage && hudOn) {
+        if (status === 'choice') pendingBanner = idx; else showStageUp(idx);
+      }
       prevStage = idx;
       ladder.setAttribute('aria-label', `Evolution stages, currently ${name}, ${idx + 1} of ${STAGE_COUNT}`);
       for (let i = 0; i < pips.length; i++) {
@@ -285,6 +288,8 @@ export function createUI(root) {
         if (i === idx) pips[i].setAttribute('aria-current', 'step'); else pips[i].removeAttribute('aria-current');
       }
     }
+    if (status === 'choice' && banner.classList.contains('is-on')) banner.classList.remove('is-on');
+    if (pendingBanner !== null && status === 'playing') { showStageUp(pendingBanner); pendingBanner = null; }
     setText('name', nameEl, name);
 
     // Mass count-up (ease-out, ~300 ms)
@@ -315,6 +320,7 @@ export function createUI(root) {
   // ---------- Screens ----------
   function showTitle(onStart) {
     paused = false;
+    pendingBanner = null;
     closeOverlay(pauseOv, true); closeOverlay(endOv, true); closeOverlay(choiceOv, true);
     hud.classList.remove('is-on');
     openOverlay(titleOv, startBtn);
@@ -327,6 +333,7 @@ export function createUI(root) {
   function showEnd(ending, onRestart) {
     ending = ending || {};
     paused = false;
+    pendingBanner = null;
     closeOverlay(pauseOv, true); closeOverlay(choiceOv, true);
     endTitle.textContent = ending.title || 'The End';
     endText.textContent = ending.text || '';
