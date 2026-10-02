@@ -66,6 +66,8 @@ Controls, camera, exact growth thresholds, per-stage choice menus, upgrade lists
 
 Everything below is **our design** unless it cites Part A. Items resting on guesses about the original are marked **ASSUMPTION**.
 
+> **Update 2026-10-02:** the user chose 3D, all 12 stages, mouse-only input and a faithful clone. Sections B3, B4, B6 and Part C reflect that.
+
 ### B1. Pitch
 You are a drifting rock in a physics sandbox of space bodies. Absorb anything smaller, dodge anything bigger, and grow through a chain of celestial forms from meteorite to black hole. At milestone evolutions you choose a branch that shapes your abilities, how the world treats you, and which ending you earn. Runs are short (about 10 to 20 minutes in our version) and replayable for different endings.
 
@@ -78,10 +80,11 @@ You are a drifting rock in a physics sandbox of space bodies. Absorb anything sm
 6. Reach the final form and trigger an ending (or lose by being destroyed or leaving the map).
 
 ### B3. Controls and camera
-Not confirmed (A6). **Our design:**
-- **Camera:** top-down 2D, zoom out as mass grows so the player stays about the same on-screen size (a size-relative zoom). This keeps the "scale" feel without 3D. (The original is 3D [1]; we cut that.)
-- **Movement:** mouse or touch steers toward the pointer, with thrust that accelerates and inertia that decays slightly. Keyboard alternative: WASD/arrows.
-- **Actions:** one optional ability key (Space) unlocked by branch perks. Mouse wheel is not needed because zoom is automatic.
+**Decided by the user (2026-10-02): 3D like the original, 12 stages, mouse only, faithful clone.**
+The original's exact controls and camera are not confirmed (A6), so the following is **ASSUMPTION** until footage or a guide confirms it:
+- **Camera:** 3D third-person camera that follows the player and pulls back as mass grows, so the player stays about the same on-screen size. Environment changes with scale (belts up to galaxy clusters [1]).
+- **Movement:** mouse only. Mouse position or drag steers toward a point in 3D space, with thrust and light inertia. Depth/plane handling (full 3D movement vs. a flat plane with a 3D look) is an open question.
+- **Actions:** no keyboard needed. Evolution choices are clicked on cards. Any perk ability is click-triggered.
 - **UI:** a mass bar, a stage name, an evolution prompt with choice cards, and an edge-of-map warning.
 
 ### B4. Entities
@@ -111,11 +114,11 @@ Sizes are relative to the player's mass. All numbers are **tunable placeholders*
 | Meteoroids, asteroids, comets | Drift, some on orbits | Prey if smaller than you; a collision hazard if larger |
 | Moons / planets / gas giants (NPC bodies) | Orbit or drift; may pursue | Prey, equal or threat by relative mass |
 | Stars (NPC) | Strong gravity; late-game chasers per [2][3] | Threat when bigger; destroy the player on contact |
-| Rival bodies of similar mass | **Our design:** bump and trade mass, not instant kill | Gives a "fair fight" middle zone, which reviewers say the original lacks [3] |
+| Rival bodies of similar mass | **ASSUMPTION:** bump with grace margin [3]; exact resolution unknown | Tune from playtesting against the original |
 | Map-edge field | Warning zone then a kill or "event horizon" ending [4][6] | Confirmed concept |
 | Evolution choice cards | Menu, not a world object | Sets branch and perks |
 
-**Interaction rule (our design):** for body *B* touching the player *P*, compare masses. If P > B × 1.2, P absorbs B. If B > P × 1.2, B damages or destroys P. In between, both bounce and exchange a little mass. Threat AI should be limited (see B6), which addresses the original's biggest complaint [2][3].
+**Interaction rule (ASSUMPTION):** for body *B* touching the player *P*, compare masses. If P > B × 1.2, P absorbs B. If B > P × 1.2, B damages or destroys P. In between, both bounce with a grace margin [3]. Because we are cloning faithfully, threat AI follows the original's aggressive chase [2][3] (see B6), but every chase parameter is exposed as a tunable so it can be softened later.
 
 ### B5. Progression, upgrades, economy, win and lose
 - **Progression:** the mass threshold per stage grows geometrically. Each stage has 1 evolution prompt, and about half of them offer a real branch choice. Phase-limited perks (expire at the end of their stage) match [3].
@@ -128,38 +131,46 @@ Sizes are relative to the player's mass. All numbers are **tunable placeholders*
 ### B6. World and level structure
 - Single contiguous arena per run with a boundary and warning zone [4][6]. Spawn density scales with the current stage rather than fixed levels.
 - Zones by scale: debris field → asteroid belt → planetary system → stellar neighbourhood → galactic core. **ASSUMPTION** that the original does something similar ("belts to galaxy clusters" [1]).
-- **Threat AI (our decision):** only bodies at least 1.2 × your mass pursue you, they have a limited detection radius, and they give up after a delay. This avoids the "conga line" complaint.
+- **Threat AI (faithful clone, per user decision):** larger bodies pursue the player aggressively in mid and late game, the behaviour reviewers describe as a "conga line" [2][3]. We replicate this by default. Tunables (all off by default): detection radius, give-up delay, and a mass-ratio cutoff for who chases. Reviewers dislike this behaviour, so these knobs exist for a later difficulty pass.
 
 ---
 
 ## Part C. Browser MVP scope
 
+### Decisions locked in by the user (2026-10-02)
+- The target is **Drifter Star: Evolution** (confirmed by the user's Steam link).
+- **3D**, like the original.
+- **All 12 stages.**
+- **Mouse-only** input.
+- **Faithful clone**, including the aggressive chase AI (with tunables).
+
 ### C1. Tech approach
-**HTML5 Canvas 2D, plain TypeScript or JavaScript, no engine,** built with Vite. Reasons: 2D top-down circles, simple physics (circle collision and soft gravity), and a small entity count. Do not use a physics library at first; a hand-written circle collision pass is enough. If you want less code, Phaser 3 is a reasonable alternative; I would skip a 3D engine (Three.js or Babylon) at MVP.
+**Three.js (WebGL) with TypeScript, built with Vite.** Reasons: the original is 3D, the browser needs a lightweight scene (spheres, particles, a starfield, and glow shaders), and Three.js has the largest ecosystem. Babylon.js is an equal alternative. Physics: hand-written sphere-sphere collision plus simple gravity, with no physics library at first. Use instanced meshes for debris to handle many small bodies. The original's recommended spec is high (GTX 1660 [1]), so budget body counts and add a quality setting.
 
-### C2. Smallest fun slice
-One arena, **6 forms** (Meteorite → Asteroid → Dwarf Planet → Rocky Planet → Gas Giant → Star), a size-relative zoom camera, absorb and avoid rules, limited-range threat AI, **2 real choice prompts** (Rocky Planet type, Dwarf Star type), a map-edge warning, a lose state and one win ending. Run length of about 5 minutes.
+### C2. Smallest fun slice (revised)
+Because 12 stages and 3D are now in scope, the "slice" is a vertical one, not a smaller game:
+- **Slice 1 (playable core):** one 3D arena, stages 1 to 4 (Meteorite → Rocky Planet), mouse steering, follow-and-pull-back camera, absorb/avoid rules, the original-style chase AI, the first choice menu (Rocky Planet type), map-edge warning, lose state.
+- **Slice 2 (full ladder):** stages 5 to 12 with their choices and the Black Hole ending.
+- **Slice 3 (endings and polish):** Cradle of Life, Event Horizon and Quantum Cosmos endings, audio, visual polish.
 
-### C3. Cut for MVP
-3D, the full 12 stages, all endings (except 1 or 2), phase-expiring perks beyond 2 or 3, audio polish, localisation, saving, achievements, gamepad, mobile touch tuning.
+### C3. Cut or deferred
+Keyboard and gamepad support, touch and mobile, localisation (the original has 10 languages [1]), Steam-style achievements (use a simple in-game ending log instead), and any content beyond what the sources confirm.
 
 ### C4. Prioritized build order
-1. Canvas loop, the player blob with inertia steering, the follow-and-zoom camera.
-2. Body spawner and absorb/avoid mass rules with visual size scaling.
-3. Mass bar and stage thresholds; form changes with a visual swap.
-4. Threat AI with limited chase.
+1. Three.js scene, the player sphere with mouse steering and inertia, the follow-and-pull-back camera.
+2. Body spawner (instanced debris plus NPC spheres) and absorb/avoid mass rules with visual size scaling.
+3. Mass bar and stage thresholds; form changes with a visual swap (stages 1 to 4 first).
+4. Original-style chase AI with tunables.
 5. Lose state, restart, and the map-edge warning.
-6. Evolution choice UI and 2 perks.
-7. Win ending and run summary.
-8. Remaining stages, the second ending (Cradle of Life), the secret endings.
-9. Sound, juice, particles, tuning.
+6. Evolution choice UI (click cards) and phase-limited perks.
+7. Stages 5 to 12 and their choice menus; the Black Hole ending.
+8. The remaining endings (Cradle of Life, Event Horizon, Quantum Cosmos) and an epilogue.
+9. Sound, particles, shaders, performance tuning.
 
-### C5. Open questions for you
-1. Is **Drifter Star: Evolution** the intended game?
-2. Do you want a faithful clone of the original's feel or a rebalanced version (our B4/B6 AI changes)?
-3. 2D top-down (recommended) or an attempt at 3D?
-4. Desktop mouse only, or mobile/touch from day one?
-5. Should all 12 stages ship in v1, or is the 6-stage slice acceptable?
-6. Do you want endings and achievements, and is the Event Horizon a fail or a secret ending?
-7. Any art direction constraints? (The other agent's `docs/creative-direction.md` may answer this.)
-8. Can you check the two unreadable guides (A5 item 7) or provide gameplay footage so that controls, camera and choice menus can be confirmed?
+### C5. Open questions (remaining)
+1. **Movement in 3D:** full 3D steering (up/down as well) or a flat plane with a 3D look? Mouse-only makes full 3D awkward; I would recommend a flat plane unless footage shows otherwise.
+2. **Choice menus:** the per-stage options are unconfirmed beyond Terrestrial Planet, Yellow Dwarf, "Abandon evolution" and the names in A4. Can you share footage or the two unreadable guides (A5 item 7), or should we invent the rest?
+3. **Event Horizon:** keep it as a fail state, or as a secret ending as the original's achievement suggests?
+4. **Ending length:** the original's ending is called anticlimactic [3]. A faithful clone repeats that, so do you want an added epilogue anyway?
+5. **Art direction:** does `docs/creative-direction.md` set limits on the look (realistic vs. stylised)?
+6. **Performance target:** low-end laptops or mid-range desktops? This sets body counts.
