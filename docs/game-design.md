@@ -167,10 +167,13 @@ Keyboard and gamepad support, touch and mobile, localisation (the original has 1
 8. The remaining endings (Cradle of Life, Event Horizon, Quantum Cosmos) and an epilogue.
 9. Sound, particles, shaders, performance tuning.
 
-### C5. Open questions (remaining)
-1. **Movement in 3D:** full 3D steering (up/down as well) or a flat plane with a 3D look? Mouse-only makes full 3D awkward; I would recommend a flat plane unless footage shows otherwise.
-2. **Choice menus:** the per-stage options are unconfirmed beyond Terrestrial Planet, Yellow Dwarf, "Abandon evolution" and the names in A4. Can you share footage or the two unreadable guides (A5 item 7), or should we invent the rest?
-3. **Event Horizon:** keep it as a fail state, or as a secret ending as the original's achievement suggests?
-4. **Ending length:** the original's ending is called anticlimactic [3]. A faithful clone repeats that, so do you want an added epilogue anyway?
-5. **Art direction:** does `docs/creative-direction.md` set limits on the look (realistic vs. stylised)?
-6. **Performance target:** low-end laptops or mid-range desktops? This sets body counts.
+### C5. Open questions, resolved by "go with whatever you recommend" (2026-10-02)
+These are our design decisions, not confirmed facts, and can be revisited.
+1. **Movement in 3D:** a flat movement plane with a fully 3D look (3D models, lighting, a tilted camera). Full 3D steering is awkward with a mouse only. Revisit if footage shows the original uses full 3D flight.
+2. **Choice menus:** keep the confirmed options (Terrestrial Planet, Yellow Dwarf, "Abandon evolution", plus the names listed in A4) and invent the rest as **ASSUMPTION** content: 2 to 3 options at the Rocky Planet, Gas Giant, Dwarf Star and Supergiant stages, with the other stages evolving automatically. Replace with real data if footage or the unreadable guides (A5 item 7) become available.
+3. **Event Horizon:** treated as a secret ending, matching the original's achievement text ("you became eternal"), not a plain fail.
+4. **Epilogue:** add a short epilogue and a run summary. It is the one deliberate departure from a faithful clone, because reviewers call the original ending anticlimactic [3].
+5. **Art direction:** defer to `docs/creative-direction.md` when it lands; until then, stylised rather than photoreal, which also keeps the performance cost down.
+6. **Performance target:** mid-range desktops first, with a quality setting that lowers body counts for low-end laptops.
+
+**Still genuinely open:** exact growth thresholds, stat numbers, and the original's real controls and camera. These need footage or hands-on play of the original.
