@@ -710,7 +710,19 @@ Keep: `player, bodies, time, mass, stageIndex, flags, status, effects, health, p
 
 Smallest change that satisfies R1-R4 in the **existing 2D renderer** (owner W2 to implement; described here, not coded): set `thruster:false` for stages 0-3 in `src/render/palette.js`; remove the leading-edge `#FFB067` heat arc; replace the thrust streaks with grey regolith motes (no additive blending, no warm colours) or nothing; remove warm additive glow from airless rocky/asteroid looks in `bodies.js` (`glowsFor`), keeping lava emission only on the lava branch (R2: hot ground). Add the R10 emitter-cause list as a comment table.
 
-### 6.8 Open questions for the user
+### 6.8 Decisions taken (user delegated: "use your best judgment and whatever you recommend")
+
+The questions below were resolved by adopting the recommendation in each case. They are defaults the workstreams can build on; revisit any of them after playtest.
+
+1. Gas Planet = brown dwarf; the "blue dwarf" branch stays as a stylised hot dwarf and is relabelled in UI text only if the creative director asks.
+2. Movement is explained as "gravitational steering" (no rockets, no exhaust).
+3. Camera B (angled top-down chase), with a top-down readability toggle.
+4. Voids plus beacon, no wall; the Event Horizon ending means being captured by a larger black hole.
+5. Importmap with a vendored, pinned Three.js; no Vite for now.
+6. Quality target: mid-range integrated GPU at 60 fps; mobile gets a reduced quality ladder; 2D lite mode remains.
+7. The "which game" confirmation from `docs/game-design.md` is still open and is not blocking.
+
+### 6.9 Original open questions (for the record)
 
 1. **Stage mapping**: is *Gas Planet* a brown dwarf/"failed star" (recommended), or an ice giant? Should *blue dwarf* stay (it is hypothetical) or be relabelled "hot dwarf"?
 2. **Controls explanation**: is "gravitational steering" (no rockets) an acceptable in-fiction reason for movement?
