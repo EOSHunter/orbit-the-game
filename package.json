@@ -1,0 +1,10 @@
+{
+  "name": "vesper-drift",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser space-evolution game. No build step, no dependencies.",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
