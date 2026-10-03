@@ -30,7 +30,7 @@ export function run(sim, seconds, inputFn) {
 export function lab(createSim, extra = {}) {
   const sim = createSim({
     seed: 'lab',
-    config: { player: { brakeEarly: 0, brakeLate: 0 }, absorb: { pullAccel: 0, debrisFraction: 1 }, ...extra },
+    config: { pace: { enabled: false }, player: { brakeEarly: 0, brakeLate: 0 }, absorb: { pullAccel: 0, debrisFraction: 1 }, ...extra },
   });
   sim.debug.setLoaderEnabled(false);
   sim.debug.clearBodies();
