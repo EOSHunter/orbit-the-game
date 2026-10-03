@@ -5,7 +5,7 @@
 export const CONFIG = {
   radiusUnit: 10,          // radius = radiusUnit * sqrt(mass)  (mass ~ area)
   startMass: 1,
-  absorbEfficiency: 0.4,   // fraction of a prey body's mass that is added to the player
+  absorbEfficiency: 0.14,  // fraction of a prey body's mass that is added to the player (tuned with tests/pace.mjs)
 
   ratio: {
     dominate: 1.2,         // mass ratio at which one body can absorb / hurt the other
@@ -21,6 +21,7 @@ export const CONFIG = {
     regenDelay: 3,                     // seconds after a hit before health regenerates
     regenRate: 0.07,                   // health per second
     invulnTime: 1.2,                   // seconds of invulnerability after a hit
+    maxResist: 0.75,                   // cap on flags.damageResist (perk damage reduction)
   },
 
   absorb: {
@@ -39,7 +40,7 @@ export const CONFIG = {
   boundary: {
     warnAt: 0.85,          // fraction of bounds radius where the warning starts
     deathDelay: 2.5,       // seconds outside the edge before the Event Horizon ending
-    radiiAtStage: 220,     // bounds radius target = this * player radius at the stage's minMass
+    radiiAtStage: 220,     // bounds radius target = this * player radius (at max(stage minMass, current mass))
     easeRate: 0.6,         // 1/s - how fast the bounds grow after an evolution
   },
 
@@ -51,6 +52,9 @@ export const CONFIG = {
     chanceEnd: 0.95,            // ... rising to this at the last stage
     detectionRadius: 30,        // in player radii
     giveUpDelay: 4,             // seconds outside detection before a chaser gives up
+    maxChasers: 3,              // at most this many bodies chase at once (the conga line has a length)
+    maxChaseTime: 8,            // seconds a body chases before it tires and drifts off for good
+    respite: 12,                // seconds with no new chases after a chaser gives up
     massRatioCutoff: 1.2,       // chaser must be this much heavier than the player
     speed: 6.5,                 // u/s cap at minStage
     speedLate: 8.5,             // u/s cap at the last stage
@@ -62,7 +66,7 @@ export const CONFIG = {
 
   world: {
     countEarly: 200,       // live body budget at stage 0 ...
-    countLate: 60,         // ... falling to this at the last stage
+    countLate: 90,         // ... falling to this at the last stage
     spawnMin: 1.15,        // spawn annulus, in view radii
     spawnMax: 1.85,
     despawn: 2.8,          // despawn distance, in view radii
@@ -76,8 +80,7 @@ export const CONFIG = {
     followLag: 0.15,        // s
     lookAhead: 0.1,         // fraction of velocity
     zoomRate: 2.5,          // 1/s
-    pullback: 0.28,         // extra zoom-out on evolve
-    maxShake: 8,            // px
+    pullback: 0.28,         // extra zoom-out on evolve (screen shake lives in the renderer)
   },
 };
 
@@ -121,17 +124,18 @@ export function stageT(stageIndex, stageCount) {
 }
 
 // Drifty momentum: thrust along the steer vector (|steer| <= 1), exponential drag, speed cap.
-export function stepPlayer(p, sx, sy, dt, stageIndex, stageCount) {
+// speedMult (perk flag) scales thrust and the speed cap together, so top speed scales with it.
+export function stepPlayer(p, sx, sy, dt, stageIndex, stageCount, speedMult = 1) {
   const c = CONFIG.player;
   const t = stageT(stageIndex, stageCount);
-  const accel = lerp(c.accelEarly, c.accelLate, t) * p.radius;
+  const accel = lerp(c.accelEarly, c.accelLate, t) * p.radius * speedMult;
   const drag = lerp(c.dragEarly, c.dragLate, t);
   p.vx += sx * accel * dt;
   p.vy += sy * accel * dt;
   const k = Math.exp(-drag * dt);
   p.vx *= k;
   p.vy *= k;
-  limitSpeed(p, c.maxSpeed * p.radius);
+  limitSpeed(p, c.maxSpeed * p.radius * speedMult);
   p.x += p.vx * dt;
   p.y += p.vy * dt;
 }

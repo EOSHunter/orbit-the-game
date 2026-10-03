@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vesper Drift: audio demo</title>
+<style>
+  :root { color-scheme: dark; --bg:#070914; --panel:#10142b; --line:#26305a; --fg:#cfe4ff; --dim:#7f8fb8; --accent:#7fd6ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:20px; background:var(--bg); color:var(--fg); font:14px/1.4 system-ui, sans-serif; }
+  h1 { font-size:18px; margin:0 0 4px; } h2 { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin:0 0 10px; }
+  p.note { color:var(--dim); margin:0 0 16px; max-width:70ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  button { background:#18204a; color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); } button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  button.primary { background:var(--accent); color:#04101c; border-color:var(--accent); font-weight:600; }
+  label.s { display:grid; grid-template-columns:110px 1fr 48px; align-items:center; gap:8px; margin:4px 0; color:var(--dim); }
+  label.s output { text-align:right; color:var(--fg); font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  select { background:#18204a; color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:5px; font:inherit; }
+  #stats { font-variant-numeric:tabular-nums; color:var(--dim); } #status { color:var(--accent); }
+</style>
+</head>
+<body>
+<h1>Vesper Drift: audio demo <span id="status">(locked)</span></h1>
+<p class="note">Everything is synthesised with the Web Audio API. Space is silent: the player body is heard as felt, low-frequency vibration; fields and pulsars are sensor sonification; UI is non-diegetic. Press <b>Unlock audio</b> first (browsers need a gesture).</p>
+
+<div class="row"><button class="primary" id="unlock">Unlock audio</button><span id="stats">voices 0 | peak -inf dBFS</span></div>
+
+<div class="grid">
+  <section><h2>Mix</h2>
+    <label class="s">Master <input type="range" id="v-master" min="0" max="1" step="0.01"><output></output></label>
+    <label class="s">Music <input type="range" id="v-music" min="0" max="1" step="0.01"><output></output></label>
+    <label class="s">SFX <input type="range" id="v-sfx" min="0" max="1" step="0.01"><output></output></label>
+    <div class="row"><button id="mute">Mute: off</button></div>
+  </section>
+
+  <section><h2>Scale &amp; stage (ambience bed, resonance)</h2>
+    <label class="s">Stage <select id="stage"></select><output></output></label>
+    <label class="s">Mass (log) <input type="range" id="mass" min="0" max="6.6" step="0.01" value="1.2"><output></output></label>
+    <div class="row"><button id="evolve">Evolve to next stage</button></div>
+  </section>
+
+  <section><h2>Continuous layers (hud)</h2>
+    <label class="s">Thrust <input type="range" data-hud="thrust" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <label class="s">Gravity depth <input type="range" data-hud="gravityDepth" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <label class="s">Star proximity <input type="range" data-prox="star" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <label class="s">Black hole prox. <input type="range" data-prox="blackHole" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <label class="s">Capture level <input type="range" data-cap="1" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <label class="s">Air density <input type="range" data-air="1" min="0" max="1" step="0.01" value="0"><output></output></label>
+    <div class="row"><button id="air">In atmosphere: off</button><button id="pause">Status: playing</button></div>
+  </section>
+
+  <section><h2>Absorb / chomp (scaled by prey ratio)</h2>
+    <div class="row">
+      <button data-ev="absorb" data-p='{"ratio":0.02,"cls":"meteorite","chain":0}'>Tiny prey</button>
+      <button data-ev="absorb" data-p='{"ratio":0.2,"cls":"asteroid","chain":0}'>Medium</button>
+      <button data-ev="absorb" data-p='{"ratio":0.75,"cls":"rockyPlanet","chain":0}'>Huge prey</button>
+      <button data-ev="absorb" data-p='{"ratio":0.5,"cls":"star","chain":0}'>Star prey</button>
+      <button id="chain">Chain x20 (granular)</button>
+      <button data-ev="absorb" data-p='{"ratio":0.6,"cls":"star","chain":0,"tde":true}'>TDE swell</button>
+    </div>
+  </section>
+
+  <section><h2>Impacts &amp; debris</h2>
+    <div class="row">
+      <button data-ev="hit" data-p='{"strength":0.2,"p":[5,0,0]}'>Hit (light)</button>
+      <button data-ev="hit" data-p='{"strength":0.9,"p":[-5,0,0]}'>Hit (heavy)</button>
+      <button data-ev="bounce" data-p='{"relSpeed":150}'>Bounce</button>
+      <button data-ev="impact" data-p='{"energy":0.7,"ejecta":6,"nearPlayer":true,"p":[8,0,2]}'>Impact nearby</button>
+      <button id="debris">Debris ticks</button>
+    </div>
+  </section>
+
+  <section><h2>Passes, tides &amp; assists</h2>
+    <div class="row">
+      <button data-ev="near-miss" data-p='{"cls":"asteroid","relSpeed":300,"p":[6,0,3]}'>Near-miss (small)</button>
+      <button data-ev="near-miss" data-p='{"cls":"gasGiant","relSpeed":150,"p":[-6,0,3]}'>Near-miss (giant)</button>
+      <button data-ev="roche-disruption" data-p='{"phase":"start","victim":"prey"}'>Roche tear (prey)</button>
+      <button data-ev="roche-disruption" data-p='{"phase":"start","victim":"player"}'>Roche tear (you)</button>
+      <button data-ev="roche-disruption" data-p='{"phase":"end","victim":"prey"}'>Roche end</button>
+      <button data-ev="slingshot" data-p='{"speedGain":15}'>Slingshot (small)</button>
+      <button data-ev="slingshot" data-p='{"speedGain":90}'>Slingshot (big)</button>
+      <button data-ev="orbit-acquired" data-p='{}'>Orbit acquired</button>
+    </div>
+  </section>
+
+  <section><h2>Warnings, sensors, atmosphere</h2>
+    <div class="row">
+      <button data-ev="capture-warning" data-p='{"level":0.25}'>Capture 0.25</button>
+      <button data-ev="capture-warning" data-p='{"level":0.5}'>0.5</button>
+      <button data-ev="capture-warning" data-p='{"level":0.75}'>0.75</button>
+      <button data-ev="capture-warning" data-p='{"level":1}'>1.0</button>
+      <button data-ev="capture-clear" data-p='{}'>Capture clear</button>
+      <button data-ev="health-low" data-p='{"health":0.29}'>Health low</button>
+      <button data-ev="invuln-end" data-p='{}'>Invuln end</button>
+      <button data-ev="beacon-ping" data-p='{"dist":500,"bearing":0.8}'>Beacon ping</button>
+      <button data-ev="region-change" data-p='{"inVoid":true}'>Enter void</button>
+      <button data-ev="region-change" data-p='{"inVoid":false}'>Leave void</button>
+      <button data-ev="pulsar-beam" data-p='{"intensity":0.9,"p":[10,0,0]}'>Pulsar beam</button>
+      <button id="pulsar">Pulsar x6 @ 1.4 Hz</button>
+      <button data-ev="atmosphere-entry" data-p='{"intensity":0.8}'>Atmosphere entry (burn)</button>
+      <button data-ev="atmosphere-exit" data-p='{}'>Atmosphere exit</button>
+    </div>
+  </section>
+
+  <section><h2>Life cycle</h2>
+    <div class="row">
+      <button data-ev="evolve" data-p='{"fromId":"meteorite","toId":"asteroid","fromIndex":0,"toIndex":1,"mass":25}'>Evolve swell</button>
+      <button data-ev="death" data-p='{"cause":"collision"}'>Death (collision)</button>
+      <button data-ev="death" data-p='{"cause":"captured"}'>Death (captured)</button>
+      <button data-ev="ending" data-p='{"kind":"death"}'>Ending: death</button>
+      <button data-ev="ending" data-p='{"kind":"eventHorizon"}'>Ending: event horizon</button>
+      <button data-ev="ending" data-p='{"kind":"finale"}'>Ending: finale</button>
+      <button data-ev="run-start" data-p='{"stageId":"meteorite"}'>Run start (reset)</button>
+    </div>
+  </section>
+
+  <section><h2>UI (hover / click blips, choices)</h2>
+    <div class="row" id="ui"></div>
+    <div class="row"><button class="ui-hover-demo">Hover me for a blip</button></div>
+  </section>
+</div>
+
+<script type="module">
+import { createAudio, STAGE_IDS } from './index.js';
+
+const audio = createAudio({ debug: true });
+window.__audio = audio;
+const $ = (s, r = document) => r.querySelector(s);
+const state = {
+  status: 'playing', mass: Math.pow(10, 1.2), stageId: 'meteorite', health: 1, player: { id: 0, pos: [0, 0, 0] },
+  hud: { thrust: 0, gravityDepth: 0, proximity: { star: 0, blackHole: 0, pulsar: 0 }, inAtmosphere: false, atmosphereDensity: 0, capture: null },
+};
+
+$('#unlock').onclick = async () => { await audio.unlock(); $('#status').textContent = '(running)'; $('#unlock').textContent = 'Audio unlocked'; };
+
+// mix
+const vols = audio.getVolume();
+for (const k of ['master', 'music', 'sfx']) {
+  const el = $('#v-' + k); el.value = vols[k];
+  const out = el.nextElementSibling; out.textContent = (+el.value).toFixed(2);
+  el.oninput = () => { audio.setVolume({ [k]: +el.value }); out.textContent = (+el.value).toFixed(2); };
+}
+const muteBtn = $('#mute');
+const showMute = () => { muteBtn.textContent = 'Mute: ' + (audio.getVolume().muted ? 'on' : 'off'); };
+muteBtn.onclick = () => { audio.setMuted(!audio.getVolume().muted); showMute(); }; showMute();
+
+// stage / mass
+const stageSel = $('#stage');
+STAGE_IDS.forEach((id, i) => stageSel.add(new Option(`${i + 1}. ${id}`, id)));
+stageSel.onchange = () => { state.stageId = stageSel.value; audio.setStage(stageSel.value); };
+const massEl = $('#mass');
+const showMass = () => { state.mass = Math.pow(10, +massEl.value) - 1; massEl.nextElementSibling.textContent = Math.round(state.mass); };
+massEl.oninput = showMass; showMass();
+$('#evolve').onclick = () => {
+  const i = Math.min(11, STAGE_IDS.indexOf(state.stageId) + 1);
+  const from = state.stageId; state.stageId = STAGE_IDS[i]; stageSel.value = state.stageId;
+  audio.event('evolve', { fromId: from, toId: state.stageId, fromIndex: i - 1, toIndex: i, mass: state.mass });
+};
+
+// continuous
+document.querySelectorAll('input[data-hud]').forEach((el) => el.oninput = () => { state.hud[el.dataset.hud] = +el.value; el.nextElementSibling.textContent = (+el.value).toFixed(2); });
+document.querySelectorAll('input[data-prox]').forEach((el) => el.oninput = () => { state.hud.proximity[el.dataset.prox] = +el.value; el.nextElementSibling.textContent = (+el.value).toFixed(2); });
+document.querySelectorAll('input[data-cap]').forEach((el) => el.oninput = () => { state.hud.capture = +el.value > 0 ? { level: +el.value, hostId: 1 } : null; el.nextElementSibling.textContent = (+el.value).toFixed(2); });
+document.querySelectorAll('input[data-air]').forEach((el) => el.oninput = () => { state.hud.atmosphereDensity = +el.value; el.nextElementSibling.textContent = (+el.value).toFixed(2); });
+$('#air').onclick = (e) => { state.hud.inAtmosphere = !state.hud.inAtmosphere; e.target.textContent = 'In atmosphere: ' + (state.hud.inAtmosphere ? 'on' : 'off'); };
+$('#pause').onclick = (e) => {
+  const order = ['playing', 'paused', 'choice']; state.status = order[(order.indexOf(state.status) + 1) % 3];
+  e.target.textContent = 'Status: ' + state.status;
+};
+
+// one-shot event buttons
+document.querySelectorAll('button[data-ev]').forEach((b) => b.onclick = () => audio.event(b.dataset.ev, JSON.parse(b.dataset.p)));
+$('#chain').onclick = () => { for (let i = 0; i < 20; i++) setTimeout(() => audio.event('absorb', { ratio: 0.05, cls: 'meteorite', chain: i + 1 }), i * 60); };
+$('#debris').onclick = () => audio.event('impact', { energy: 0.3, ejecta: 6, nearPlayer: true, p: [3, 0, 0] });
+$('#pulsar').onclick = () => { for (let i = 0; i < 6; i++) setTimeout(() => audio.event('pulsar-beam', { intensity: 0.8, p: [10, 0, 0] }), i * 714); };
+
+// UI sounds (what the UI module would send through onUiSound)
+for (const n of ['hover', 'click', 'confirm', 'back', 'error', 'open', 'close', 'choice.select', 'choice.confirm', 'stagebanner']) {
+  const b = document.createElement('button'); b.textContent = 'ui.' + n; b.onclick = () => audio.playUi('ui.' + n); $('#ui').append(b);
+}
+$('.ui-hover-demo').onmouseenter = () => audio.playUi('ui.hover');
+$('.ui-hover-demo').onclick = () => audio.playUi('ui.click');
+
+// frame loop: continuous layers + stats
+let last = performance.now(), statAcc = 0;
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  audio.update(state, dt);
+  statAcc += dt;
+  if (statAcc > 0.25) { statAcc = 0; const s = audio.getStats(); $('#stats').textContent = `voices ${s.voices} | peak ${isFinite(s.peakDb) ? s.peakDb.toFixed(1) : '-inf'} dBFS`; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ?selftest: unlock without a gesture (needs --autoplay-policy=no-user-gesture-required), fire everything,
+// and write a result summary into #selftest for headless checks.
+if (new URLSearchParams(location.search).has('selftest')) {
+  const errors = []; window.addEventListener('error', (e) => errors.push(e.message));
+  const warn = console.warn; console.warn = (...a) => { errors.push(a.join(' ')); warn(...a); };
+  (async () => {
+    await audio.unlock();
+    state.hud = { thrust: 0.8, gravityDepth: 0.6, proximity: { star: 0.7, blackHole: 0.6, pulsar: 0 }, inAtmosphere: true, atmosphereDensity: 0.6, capture: { level: 0.6, hostId: 1 } };
+    let peak = -Infinity;
+    const pk = setInterval(() => { peak = Math.max(peak, audio.getStats().peakDb); }, 20);
+    for (const stage of STAGE_IDS) { state.stageId = stage; audio.setStage(stage); await new Promise((r) => setTimeout(r, 80)); }
+    const btns = [...document.querySelectorAll('button[data-ev], #ui button, #chain, #debris, #pulsar, #evolve')];
+    for (const b of btns) { b.click(); await new Promise((r) => setTimeout(r, 60)); }
+    await new Promise((r) => setTimeout(r, 1500)); clearInterval(pk);
+    const el = document.createElement('pre'); el.id = 'selftest';
+    el.textContent = JSON.stringify({ ok: errors.length === 0, errors, clicked: btns.length, peakDb: peak, stats: audio.getStats() });
+    document.body.append(el);
+  })();
+}
+</script>
+</body>
+</html>

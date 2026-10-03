@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Browser space-evolution game. No build step, no dependencies.",
   "scripts": {
-    "start": "npx serve ."
+    "start": "node tools/serve.mjs 8000",
+    "test": "node tests/stages.test.mjs && node tests/pace.mjs",
+    "test:smoke": "node tests/smoke.mjs"
   }
 }
