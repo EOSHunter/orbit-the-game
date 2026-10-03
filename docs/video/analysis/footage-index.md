@@ -27,6 +27,11 @@ Companion files in this folder: `transcripts/N.json|.srt` (word-level, speaker-l
 * **IMPORTANT audio finding: the three streams are `a:0` mix, `a:1` system audio, `a:2` mic only** (details in `speaker-labels.md`). In **clips 1-7 the system-audio stream is effectively silent**: no game sound effects, music, or Orbit dings were captured, and the game in clip 5 plays with no sound (the creator remarks on it). **Only clips 8-11 contain game sound and Orbit sound cues/TTS.** For payoff gameplay with audio, use clips 8-11. For voice-over editing, use `a:2` (mic) when you need a clean voice with no game sound under it.
 * Frame rate is ~60 fps (variable-ish: 59.3-60). Everything is a 16:9 full-screen capture **including the Windows taskbar at the bottom (~40 px) and a thin title bar at the top**, so crop/zoom for the final cut. The Orbit UI is small and dark on a 1080p canvas; zooming to cards/panels is advisable.
 * **Creator decision: skip the profanity (clip 1 at 13:56) to keep the video clean.** Treat clip 1 13:55-14:06 as excluded; usable footage on either side.
+* **Creator decisions for the edit:**
+  * Subtitles: word-for-word from the transcript, cleaned up with filler words removed (um, uh, "like", false starts).
+  * Agent voices (Orbit text-to-speech) stay as-is in the audio.
+  * Output: 1080p, 16:9.
+  * Music: comes from the game itself (so use clips 8-11, the only ones with game audio, or take it from those).
 * Language: English. Language/content flags for editing: **clip 1 at 13:56 contains an f-word** ("I'm probably f***ing sh** up by doing all this"); clip 9 at ~1:42 has an audible burp joke; clip 9 ~1:42 mentions "my girlfriend"; clip 9 4:13-4:25 jokes about the dog Laika.
 
 ## Frames
