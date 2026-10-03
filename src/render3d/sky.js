@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { skyBakeVert, skyBakeFrag, skyVert, skyFrag, starsVert, starsFrag } from './glsl/misc.js';
 import { blackbodyRGB } from './util.js';
 
-const STARS = 1100;
+const STARS = 140;
 
 function mulberry(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -14,7 +14,7 @@ export class Sky {
     const mk = () => new THREE.WebGLCubeRenderTarget(size, { type: THREE.HalfFloatType, generateMipmaps: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
     this.rts = [mk(), mk()];
     this.cur = 0; this.fade = 0; this.fadeDur = 2.5; this.fading = false;
-    this.mix = 0; this.gain = 2.6; this.seed = 1; this.density = 0.5; this.key = '';
+    this.mix = 0; this.gain = 0.8; this.seed = 1; this.density = 0.5; this.key = '';
     this.params = { A: new THREE.Color('#04101f'), B: new THREE.Color('#2a6aa8') };
 
     this.bakeUniforms = { uSkyA: { value: new THREE.Color() }, uSkyB: { value: new THREE.Color() }, uSkySeed: { value: 1 }, uSkyDensity: { value: .5 } };
@@ -58,9 +58,9 @@ export class Sky {
       const m = r(), K = 3200 + 9000 * r() * r();
       blackbodyRGB(K, rgb); const mx = Math.max(rgb[0], rgb[1], rgb[2], 1e-3);
       const mag = Math.pow(m, 6);                       // few bright, many faint
-      const b = i < n ? 0.06 + 1.7 * mag : 0;
+      const b = i < n ? 0.04 + 0.35 * mag : 0;
       col[i * 4] = rgb[0] / mx * 0.85 + 0.15; col[i * 4 + 1] = rgb[1] / mx * 0.9 + 0.1; col[i * 4 + 2] = rgb[2] / mx; col[i * 4 + 3] = b;
-      px[i] = 1.0 + 1.7 * mag;
+      px[i] = 1.0 + 0.5 * mag;
     }
     for (const k of ['position', 'aStar', 'aPx']) this.stars.geometry.attributes[k].needsUpdate = true;
   }
