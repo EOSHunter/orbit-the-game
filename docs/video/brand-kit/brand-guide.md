@@ -286,3 +286,15 @@ const p = interpolate(f, [0, timing.panelIn], [0, 1], {easing: Easing.bezier(...
 ```
 
 Fonts: `fontFaceCss()` emits `@font-face` rules (`font-display: block` so renders never show a fallback); with `@remotion/fonts` use `loadFont({family, url: staticFile(...), weight})` over `fontFiles`.
+
+---
+
+## 11. Production decisions (from the creator)
+
+| Topic | Decision |
+|---|---|
+| **Music / game audio** | Comes **from the game itself**. The game ships no audio files: everything is synthesised live with the Web Audio API. Code: `src/audio/` (`engine.js`, `layers.js`, `sfx.js`, `params.js`, `index.js`); design notes `docs/audio-direction.md`; standalone player `src/audio/demo.html` (serve the repo root, e.g. `npm start`, then open `http://localhost:8000/src/audio/demo.html`). To get it into the edit, **record it** (screen-record the game or demo page with system audio) **or render it offline** from that page / `src/audio` using an OfflineAudioContext. Neither is set up yet; the stage ambience beds shift from A3 down to B1 as the player grows, so record per stage. |
+| **Subtitles** | **Cleaned up: filler words removed** (um, uh, like, you know, repeated starts). Keep meaning and voice; don't paraphrase. Style per section 7. |
+| **Agent voices** | **Stay as-is** (no re-voicing or processing). They are told apart on screen by the italic text, role label and role-coloured bar in section 7. |
+| **Output** | **1080p (1920x1080), 16:9, for YouTube**, 30 fps per `theme.ts`. |
+
