@@ -5,7 +5,7 @@ import {
 import {
   createState, createPlayer, populate, updateWorld, rescaleWorldSpeeds, targetBoundsRadius,
 } from './world.js';
-import { updateCamera, snapCamera, kickCamera, addTrauma } from './camera.js';
+import { updateCamera, snapCamera, kickCamera } from './camera.js';
 
 const MAX_EFFECTS = 300;
 const NO_STEER = { x: 0, y: 0 };
@@ -50,7 +50,14 @@ export function createGame({ mod, renderer, ui, camera, input }) {
   let finaleT = 0;
   let boundaryWarn = false;
   let choiceToken = 0;
+  let paused = false;
 
+  // Perk flags set by stages.js applyChoice (all optional).
+  const speedMult = () => (state.flags.speedMult > 0 ? state.flags.speedMult : 1);
+  const damageResist = () => clamp(Number(state.flags.damageResist) || 0, 0, CONFIG.player.maxResist);
+  const absorbBonus = () => Math.max(0, Number(state.flags.absorbBonus) || 0);
+
+  // Screen shake is owned by the renderer (getShake reads each effect's `trauma`).
   function fx(type, x, y, opts) {
     mod.spawnEffect(state, type, x, y, opts);
     if (state.effects.length > MAX_EFFECTS) state.effects.splice(0, state.effects.length - MAX_EFFECTS);
@@ -66,6 +73,7 @@ export function createGame({ mod, renderer, ui, camera, input }) {
   function reset() {
     choiceToken++;
     state.flags = {};
+    state.deathCause = null;
     state.effects.length = 0;
     state.choices = [];
     state.time = 0;
@@ -76,9 +84,11 @@ export function createGame({ mod, renderer, ui, camera, input }) {
     state.edge = 0;
     state.edgeDoom = 0;
     state.stats = { absorbed: 0, hits: 0, elapsed: 0, maxMass: state.mass };
+    state.chaseRest = 0;
     state.bounds.radius = targetBoundsRadius(STAGES, state.stageIndex);
     hitStop = hitTimer = invuln = deathTimer = outsideT = finaleT = 0;
     deathReason = null;
+    paused = false;
     setWarn(false);
     snapCamera(camera, state.player);
     updateProgress();
@@ -116,23 +126,26 @@ export function createGame({ mod, renderer, ui, camera, input }) {
     p.alive = false;
     deathReason = reason;
     deathTimer = 1.6;
-    if (reason === 'death') { state.flags.death = 'stellar-fragment'; state.flags.died = true; }
-    if (reason === 'eventHorizon') { state.flags.death = 'event-horizon'; state.flags.eventHorizon = true; }
+    // stages.js getEnding reads state.deathCause; flags.* are kept for anything else that reads them.
+    if (reason === 'death') { state.deathCause = 'collision'; state.flags.death = 'stellar-fragment'; state.flags.died = true; }
+    if (reason === 'eventHorizon') { state.deathCause = 'boundary'; state.flags.death = 'event-horizon'; state.flags.eventHorizon = true; }
     p.vx *= 0.2;
     p.vy *= 0.2;
     fx('death', p.x, p.y, { radius: p.radius, reason, stageIndex: state.stageIndex });
-    addTrauma(camera, 0.8);
     hitStop = 0.08;
   }
 
   function absorb(b) {
     const p = state.player;
     b.alive = false;
-    p.mass += b.mass * CONFIG.absorbEfficiency;
+    const rel = b.mass / p.mass;
+    p.mass += b.mass * CONFIG.absorbEfficiency * (1 + absorbBonus());
     state.stats.absorbed++;
     state.stats.maxMass = Math.max(state.stats.maxMass, p.mass);
-    fx('absorb', b.x, b.y, { radius: b.radius, mass: b.mass, stageIndex: b.stageIndex, targetId: p.id, dx: p.x - b.x, dy: p.y - b.y });
-    addTrauma(camera, 0.04 + 0.2 * clamp((b.mass / p.mass) * 3, 0, 1));
+    fx('absorb', b.x, b.y, {
+      radius: b.radius, mass: b.mass, stageIndex: b.stageIndex, targetId: p.id, dx: p.x - b.x, dy: p.y - b.y,
+      trauma: 0.03 + 0.17 * clamp(rel * 3, 0, 1),
+    });
     if (state.stageIndex === lastStage && b.mass > p.mass * 0.05) hitStop = Math.max(hitStop, 0.04);
   }
 
@@ -141,12 +154,13 @@ export function createGame({ mod, renderer, ui, camera, input }) {
     const cfg = CONFIG.player;
     state.stats.hits++;
     hitTimer = 0;
-    fx('hit', p.x + nx * p.radius, p.y + ny * p.radius, { radius: p.radius, strength: ratio, stageIndex: b.stageIndex });
-    addTrauma(camera, 0.5);
+    const strength = clamp((ratio - CONFIG.ratio.dominate) / (CONFIG.ratio.lethal - CONFIG.ratio.dominate), 0, 1);
+    fx('hit', p.x + nx * p.radius, p.y + ny * p.radius, { radius: p.radius, strength, damage: true, stageIndex: b.stageIndex });
     hitStop = 0.06;
-    const armor = state.flags.armor > 0 ? clamp(state.flags.armor, 0, 0.9) : 0;
-    const lethal = ratio >= CONFIG.ratio.lethal && !(state.flags.armor > 0);
-    state.health -= (0.35 + 0.12 * Math.min(ratio - CONFIG.ratio.dominate, 4)) * (1 - armor);
+    // damageResist (0..maxResist) scales damage down and raises the one-hit-kill ratio by the same factor.
+    const resist = damageResist();
+    const lethal = ratio >= CONFIG.ratio.lethal / (1 - resist);
+    state.health -= (0.35 + 0.12 * Math.min(ratio - CONFIG.ratio.dominate, 4)) * (1 - resist);
     invuln = cfg.invulnTime;
     p.vx -= nx * CONFIG.collision.knockback * p.radius;
     p.vy -= ny * CONFIG.collision.knockback * p.radius;
@@ -158,7 +172,6 @@ export function createGame({ mod, renderer, ui, camera, input }) {
     state.stageIndex = p.stageIndex = newIndex;
     fx('evolve', p.x, p.y, { radius: p.radius, stageIndex: newIndex, stage: STAGES[newIndex] });
     kickCamera(camera);
-    addTrauma(camera, 0.35);
     if (newIndex === lastStage) finaleT = 0;
 
     let choices = null;
@@ -183,9 +196,7 @@ export function createGame({ mod, renderer, ui, camera, input }) {
   // ---- per-step systems ---------------------------------------------------------------------
   function collide(dt) {
     const p = state.player;
-    const flags = state.flags;
-    const range = flags.absorbRange > 0 ? flags.absorbRange : 1;
-    const pullR = p.radius * (CONFIG.absorb.pullBase + CONFIG.absorb.pullPerStage * state.stageIndex) * range;
+    const pullR = p.radius * (CONFIG.absorb.pullBase + CONFIG.absorb.pullPerStage * state.stageIndex);
     const bodies = state.bodies;
     for (let i = 0; i < bodies.length; i++) {
       const b = bodies[i];
@@ -202,7 +213,7 @@ export function createGame({ mod, renderer, ui, camera, input }) {
           b.vx -= (dx / d) * f;
           b.vy -= (dy / d) * f;
         }
-        if (d < p.radius + b.radius * CONFIG.absorb.contact + p.radius * (range - 1) * 0.5) {
+        if (d < p.radius + b.radius * CONFIG.absorb.contact) {
           absorb(b);
           continue;
         }
@@ -220,7 +231,7 @@ export function createGame({ mod, renderer, ui, camera, input }) {
   }
 
   function updateBounds(dt) {
-    const target = targetBoundsRadius(STAGES, state.stageIndex);
+    const target = targetBoundsRadius(STAGES, state.stageIndex, state.player.mass);
     if (target > state.bounds.radius) {
       state.bounds.radius += (target - state.bounds.radius) * (1 - Math.exp(-CONFIG.boundary.easeRate * dt));
     }
@@ -278,7 +289,7 @@ export function createGame({ mod, renderer, ui, camera, input }) {
       const sdt = dt * scale;
 
       const steer = p.alive ? input.getSteer(camera, p) : NO_STEER;
-      stepPlayer(p, steer.x, steer.y, sdt, state.stageIndex, STAGES.length);
+      stepPlayer(p, steer.x, steer.y, sdt, state.stageIndex, STAGES.length, speedMult());
       ctx.chase = true;
       updateWorld(state, sdt, ctx);
 
@@ -325,5 +336,13 @@ export function createGame({ mod, renderer, ui, camera, input }) {
     ui.update(state);
   }
 
-  return { state, camera, ctx, step, render, showTitle, begin, reset };
+  // Pause is driven by the UI (ui.onPause); main.js stops calling step() while paused.
+  function setPaused(v) {
+    paused = !!v && state.status === 'playing';
+  }
+
+  return {
+    state, camera, ctx, step, render, showTitle, begin, reset, setPaused,
+    get paused() { return paused; },
+  };
 }
