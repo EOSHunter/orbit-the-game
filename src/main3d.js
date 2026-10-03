@@ -72,7 +72,8 @@ export async function start3d() {
     renderer.setOptions({ reducedMotion: !!s.reducedMotion, readability: !!s.readability, topDown: !!s.topDown });
   };
   if (ui) {
-    ui.init({ root: uiRoot, onUiSound: (n) => audio && audio.playUi(n), onSettings: applySettings });
+    // onPause: the UI's Systems panel (Esc / Resume / close) drives the sim pause.
+    ui.init({ root: uiRoot, onUiSound: (n) => audio && audio.playUi(n), onSettings: applySettings, onPause: (p) => sim.setPaused(p) });
     if (ui.attach) ui.attach(bus);
     applySettings(ui.getSettings && ui.getSettings());
     ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
@@ -95,6 +96,7 @@ export async function start3d() {
 
   let topLocal = false;
   addEventListener('keydown', (e) => {
+    if (e.defaultPrevented) return;   // the UI already handled it (Esc menu, T/V toggles); avoid a double toggle
     if (e.code === 'Escape') { const s = sim.getState().status; if (s === 'playing') sim.setPaused(true); else if (s === 'paused') sim.setPaused(false); }
     if (e.code === 'KeyT') { topLocal = !topLocal; renderer.setOptions({ topDown: topLocal }); }
   });
