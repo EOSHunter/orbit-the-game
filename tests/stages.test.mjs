@@ -181,6 +181,10 @@ test('ending: Event Horizon on boundary death, beats other states', () => {
   assert.equal(getEnding(bh).id, 'event_horizon');
 });
 
+test('ending: Event Horizon when captured by a larger black hole (3D build)', () => {
+  assert.equal(getEnding(fresh(11, { status: 'dead', deathCause: 'captured' })).id, 'event_horizon');
+});
+
 test('ending: collision death at the Black Hole stage is still Stellar Fragment', () => {
   const bh = runTo(true, {}); bh.status = 'dead'; bh.deathCause = 'collision';
   assert.equal(getEnding(bh).id, 'stellar_fragment');
