@@ -10,11 +10,20 @@ import { TAU, clamp, lerp, mulberry32, mixHex, lighten, makeCanvas } from './uti
 import { STAGES, CORE } from './palette.js';
 import { getGlow } from './glow.js';
 
+// ---- tunables: deep-space look ----
+const NEBULA_COLORS = ['#5b2a9a', '#1f8c9a', '#2a4fb0', '#b04a8a']; // deep purple, teal, blue, warm magenta
+const NEBULA_CLOUDS = 26;          // clouds per tile (spread over the whole tile so something is always in view)
+const NEBULA_ALPHA = [0.07, 0.16]; // per-cloud additive alpha range (keep low)
+const NEBULA_SIZE = [160, 330];    // cloud radius range, px of the (T-sized) tile
+const GALAXY_COUNT = 5;            // distant galaxies per galaxy tile
+const GALAXY_SIZE = [14, 34];      // galaxy radius range, px
+const GALAXY_BRIGHTNESS = [0.35, 0.8];
 const MARGIN = 40; // extra coverage so screen shake never reveals tile edges
 
 // par: scroll speed relative to world motion on screen. zp: zoom exponent.
 const LAYERS = {
-  nebula: { T: 640, par: 0.05, zp: 0.04 },
+  galaxy: { T: 1536, par: 0.03, zp: 0.03 },
+  nebula: { T: 1024, par: 0.05, zp: 0.04 },
   speck:  { T: 768, par: 0.06, zp: 0.05 },
   dust:   { T: 448, par: 0.10, zp: 0.08 },
   far:    { T: 512, par: 0.20, zp: 0.12 },
@@ -46,6 +55,7 @@ const STAR_COLORS = ['#EAF0FF', '#EAF0FF', '#CFE0FF', '#BFD2FF', '#FFE6C7', '#FF
 export function createStarfield() {
   const L = {
     nebula: newLayerState(LAYERS.nebula),
+    galaxy: newLayerState(LAYERS.galaxy),
     speck: newLayerState(LAYERS.speck),
     dust: newLayerState(LAYERS.dust),
     far: newLayerState(LAYERS.far),
@@ -152,30 +162,62 @@ export function createStarfield() {
   function nebulaFor(stage) {
     let c = nebCache.get(stage);
     if (c) return c;
-    const T = LAYERS.nebula.T, k = 0.5;
+    const T = LAYERS.nebula.T, k = 0.4;
     c = makeCanvas(T * k, T * k);
     const g = c.getContext('2d');
     g.scale(k, k);
     g.globalCompositeOperation = 'lighter';
-    const tint = STAGES[stage].tint;
-    const c1 = lighten(mixHex(tint[1], '#C48BFF', 0.3), 0.12);
-    const c2 = lighten(mixHex(tint[1], '#5E6C9E', 0.3), 0.05);
+    const tint = STAGES[stage].tint[1];
+    const cols = NEBULA_COLORS.map((col) => mixHex(col, tint, 0.18));
     const rng = mulberry32(7000 + stage * 31);
-    for (let i = 0; i < 11; i++) {
-      const x = rng() * T, y = rng() * T, r = 120 + rng() * 170;
-      const col = i % 3 === 0 ? c2 : c1;
-      wrapped(T, x, y, r, (px, py) => {
-        g.globalAlpha = 0.16 + rng() * 0.16;
-        g.drawImage(getGlow(col), px - r, py - r, r * 2, r * 2);
-      });
+    for (let i = 0; i < NEBULA_CLOUDS; i++) {
+      const x = rng() * T, y = rng() * T, r = lerp(NEBULA_SIZE[0], NEBULA_SIZE[1], rng());
+      const col = cols[(rng() * cols.length) | 0], ang = rng() * Math.PI, sq = 0.35 + 0.5 * rng();
+      const al = lerp(NEBULA_ALPHA[0], NEBULA_ALPHA[1], rng());
+      // elongated soft clouds: a few overlapping glows along a rotated axis
+      for (let j = 0; j < 3; j++) {
+        const off = (j - 1) * r * 0.55, rj = r * (0.8 + 0.3 * rng());
+        const cx = x + Math.cos(ang) * off, cy = y + Math.sin(ang) * off;
+        wrapped(T, cx, cy, rj, (px, py) => {
+          g.save();
+          g.translate(px, py); g.rotate(ang); g.scale(1, sq);
+          g.globalAlpha = al;
+          g.drawImage(getGlow(col), -rj, -rj, rj * 2, rj * 2);
+          g.restore();
+        });
+      }
     }
     nebCache.set(stage, c);
+    return c;
+  }
+
+  // a handful of distant galaxies: elliptical smudges with a bright core and a faint spiral-ish disk
+  function bakeGalaxies(T, seed) {
+    const k = 0.75;
+    const c = makeCanvas(Math.ceil(T * k), Math.ceil(T * k));
+    const g = c.getContext('2d');
+    g.scale(k, k);
+    g.globalCompositeOperation = 'lighter';
+    const rng = mulberry32(seed);
+    for (let i = 0; i < GALAXY_COUNT; i++) {
+      const x = ((i + 0.2 + 0.6 * rng()) / GALAXY_COUNT) * T, y = rng() * T;
+      const r = lerp(GALAXY_SIZE[0], GALAXY_SIZE[1], rng() * rng()), ang = rng() * Math.PI, sq = 0.25 + 0.55 * rng();
+      const br = lerp(GALAXY_BRIGHTNESS[0], GALAXY_BRIGHTNESS[1], rng());
+      wrapped(T, x, y, r * 3, (px, py) => {
+        g.save();
+        g.translate(px, py); g.rotate(ang); g.scale(1, sq);
+        g.globalAlpha = br * 0.5; g.drawImage(getGlow('#9db8ff'), -r * 2.4, -r * 2.4, r * 4.8, r * 4.8);
+        g.globalAlpha = br * 0.55; g.drawImage(getGlow('#ffe2b0'), -r * 0.7, -r * 0.7, r * 1.4, r * 1.4);
+        g.restore();
+      });
+    }
     return c;
   }
 
   function ensureTiles() {
     if (tiles) return;
     tiles = {
+      galaxy: bakeGalaxies(LAYERS.galaxy.T, 77),
       speck: bakeSpecks(LAYERS.speck.T, 51),
       dust: bakeDust(LAYERS.dust.T, 11),
       far: bakeStarTile(LAYERS.far.T, 260, [0.5, 1.1], 0, 21, 0),
@@ -242,15 +284,16 @@ export function createStarfield() {
       const dens = (key) => lerp(STAGES[fade.from][key], STAGES[fade.to][key], fade.t);
       ctx.globalCompositeOperation = 'source-over';
 
-      // very faint colour wash for depth (cross-faded between stages)
-      ctx.globalAlpha = 0.22 * (1 - fade.t);
+      // soft layered nebula clouds (cross-faded between stages), then distant galaxies
+      ctx.globalAlpha = 1 - fade.t;
       if (fade.t < 1) drawTiles(ctx, nebulaFor(fade.from), L.nebula, w, h);
       if (fade.t > 0) {
-        ctx.globalAlpha = 0.22 * fade.t;
+        ctx.globalAlpha = fade.t;
         drawTiles(ctx, nebulaFor(fade.to), L.nebula, w, h);
       }
 
       ctx.globalAlpha = 1;
+      drawTiles(ctx, tiles.galaxy, L.galaxy, w, h);
       drawTiles(ctx, tiles.speck, L.speck, w, h);
 
       // two crisp star layers with subtle parallax
