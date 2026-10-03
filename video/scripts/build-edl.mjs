@@ -17,7 +17,7 @@ const docs = path.join(repo, 'docs', 'video');
 const FPS = 30;
 const PROFANITY = {clip: 1, from: 13 * 60 + 55, to: 14 * 60 + 6};
 
-const md = fs.readFileSync(path.join(docs, 'script', 'script.md'), 'utf8');
+const md = fs.readFileSync(path.join(docs, 'script', 'script.md'), 'utf8').replace(/\r\n/g, '\n');
 
 // ------------------------------------------------------------------ helpers
 const tc = (s) => {
@@ -50,8 +50,8 @@ const tableStart = md.indexOf('## Beat table');
 const tableEnd = md.indexOf('\n## ', tableStart + 5);
 const rows = md
   .slice(tableStart, tableEnd)
-  .split('\n')
-  .filter((l) => /^\|\s*\d+\s*\|/.test(l));
+  .split(/\r?\n/)
+  .filter((l) => /^\|\s*\d+[a-z]?\s*\|/.test(l)); // beat IDs: 64, 64a, ...
 
 const splitRow = (line) => {
   // Split on cell pipes; none of the cells contain " | ".
@@ -133,31 +133,73 @@ const chunkText = (text) => {
 const beats = [];
 let cumSec = 0;
 const lengthened = [];
+const fullBleed = new Set([...ov.fullBleed].map(String));
 const READ_CPS = 15; // reading speed for on-screen text, characters per second
 const READ_PAD = 1.0; // seconds to notice the text and finish it
 const warnings = [];
 
+// Breathing room (Hunter: "another clip happens immediately after a sentence"): hold the picture at
+// least HOLD s after the last spoken word of a beat. If Hunter starts his next sentence inside that
+// hold, the mic is faded out just after the line so the next words never leak in.
+const HOLD = 0.6;
+const MAX_HOLD_EXT = 1.2;
+const SAFE_CLIP1_OUT = PROFANITY.from - 1.0; // never run clip 1 towards the excluded window
+const held = [];
+
 for (const line of rows) {
   const [nS, chS, startS, durS, source, onScreen, lineRaw, overlay] = splitRow(line);
-  const n = Number(nS);
+  const n = nS; // beat ID as written in the script ("64", "64a", ...)
   const chapter = Number(chS);
   const scriptDur = Number(durS.replace('s', ''));
   const line_ = parseLine(lineRaw);
+
+  // ---- sources (clip ranges from the table)
+  const parts = source.startsWith('asset:') ? [] : source.split(' + ').map((p) => {
+    const m = p.match(/clip (\d+) (\d+:\d\d(?:\.\d)?)-(\d+:\d\d(?:\.\d)?)/);
+    if (!m) throw new Error(`Bad source in beat ${n}: ${p}`);
+    return {clip: Number(m[1]), in: tc(m[2]), out: tc(m[3])};
+  });
+  const segSum = parts.reduce((acc, p) => acc + p.out - p.in, 0);
+  if (parts.length && Math.abs(segSum - scriptDur) > 0.051) warnings.push(`Beat ${n}: sources sum ${segSum.toFixed(2)}s, table says ${scriptDur}s`);
+
+  // ---- breathing room after Hunter's last word (real recorded lines only)
+  let holdExt = 0;
+  let micUntil = null;
+  let speechEnd = null;
+  const speaks = line_.type !== 'narration' && line_.items.some((it) => it.speaker === 'creator');
+  if (parts.length && speaks) {
+    const last = parts[parts.length - 1];
+    const ws = words(last.clip).filter((w) => w.speaker === 'creator');
+    const said = ws.filter((w) => w.start >= last.in - 0.1 && w.start < last.out);
+    if (said.length) {
+      // Whisper word ends can overrun; never trust more than 0.6 s past the table's out point
+      speechEnd = Math.min(Math.max(...said.map((w) => w.end)), last.out + 0.6);
+      let wanted = Math.max(last.out, speechEnd + HOLD);
+      if (last.clip === PROFANITY.clip) wanted = Math.min(wanted, SAFE_CLIP1_OUT);
+      holdExt = Math.min(MAX_HOLD_EXT, Math.max(0, wanted - last.out));
+      const next = ws.filter((w) => w.start >= last.out - 0.05 && w.start > speechEnd - 0.05).sort((x, y) => x.start - y.start)[0];
+      // the dissolve lets the outgoing clip run ~0.3 s longer, so guard that too
+      if (next && next.start < last.out + holdExt + 0.45) micUntil = Math.max(speechEnd, Math.min(next.start - 0.05, speechEnd + 0.15));
+    }
+  }
+
   // [NARRATION] lines are on-screen text only (nothing is recorded), so give each one time to be read.
-  const chars = line_.items.reduce((a, i) => a + i.text.length, 0);
+  const chars = line_.items.reduce((acc, i) => acc + i.text.length, 0);
   const readable = line_.type === 'narration' ? Math.ceil((chars / READ_CPS + READ_PAD) * 10) / 10 : 0;
-  const dur = Number(Math.max(scriptDur, readable).toFixed(1));
-  if (dur > scriptDur) lengthened.push(`${n} +${(dur - scriptDur).toFixed(1)}s`);
+  const dur = Number(Math.max(scriptDur + holdExt, readable).toFixed(2));
+  if (readable > scriptDur) lengthened.push(`${n} +${(dur - scriptDur).toFixed(1)}s`);
+  if (holdExt > 0.05) held.push(holdExt);
   const beat = {
     n, chapter, scriptStart: startS, scriptDurSec: scriptDur, durSec: dur, onScreen, lineRaw, overlayRaw: overlay,
     startSec: Number(cumSec.toFixed(3)),
     startFrame: f(cumSec),
     durFrames: f(cumSec + dur) - f(cumSec),
     segments: [], chips: [],
+    speechTailSec: speechEnd != null ? Number((parts[parts.length - 1].out + (dur - scriptDur) - speechEnd).toFixed(2)) : null,
   };
 
-  // ---- source
-  if (source.startsWith('asset:')) {
+  // ---- kind
+  if (!parts.length) {
     const assets = [...source.matchAll(/`([^`]+)`/g)].map((m) => m[1]).join(' ');
     const bg = (assets.match(/backgrounds\/([\w-]+\.png)/) || [])[1];
     beat.bg = bg ? `brand-kit/assets/backgrounds/${bg}` : null;
@@ -167,32 +209,26 @@ for (const line of rows) {
     else beat.kind = 'still';
   } else {
     beat.kind = 'clip';
-    let segSum = 0;
-    const parts = source.split(' + ');
+    const fileId = n.replace(/^\d+/, (d) => d.padStart(3, '0'));
     let off = 0;
     parts.forEach((p, i) => {
-      const m = p.match(/clip (\d+) (\d+:\d\d(?:\.\d)?)-(\d+:\d\d(?:\.\d)?)/);
-      if (!m) throw new Error(`Bad source in beat ${n}: ${p}`);
-      const clip = Number(m[1]);
-      const inS = tc(m[2]);
-      const tableOut = tc(m[3]);
-      segSum += tableOut - inS;
+      const isLast = i === parts.length - 1;
       // a lengthened beat lets its last source range run on for the extra time
-      const outS = i === parts.length - 1 ? tableOut + (dur - scriptDur) : tableOut;
-      const d = Number((outS - inS).toFixed(3));
-      if (clip === PROFANITY.clip && inS < PROFANITY.to && outS > PROFANITY.from) {
+      const outS = isLast ? p.out + (dur - scriptDur) : p.out;
+      const d = Number((outS - p.in).toFixed(3));
+      if (p.clip === PROFANITY.clip && p.in < PROFANITY.to && outS > PROFANITY.from) {
         throw new Error(`Beat ${n} touches the excluded clip 1 ${fmt(PROFANITY.from)}-${fmt(PROFANITY.to)} window`);
       }
       const segStart = f(beat.startSec + off) - beat.startFrame;
-      const segEnd = i === parts.length - 1 ? beat.durFrames : f(beat.startSec + off + d) - beat.startFrame;
+      const segEnd = isLast ? beat.durFrames : f(beat.startSec + off + d) - beat.startFrame;
       beat.segments.push({
-        clip, in: inS, out: outS, offsetSec: Number(off.toFixed(3)),
+        clip: p.clip, in: p.in, out: outS, offsetSec: Number(off.toFixed(3)),
         offsetFrame: segStart, durFrames: segEnd - segStart,
-        file: `b${String(n).padStart(3, '0')}_${i}.mp4`,
+        file: `b${fileId}_${i}.mp4`,
+        ...(isLast && micUntil != null ? {micUntil: Number(micUntil.toFixed(2))} : {}),
       });
       off += d;
     });
-    if (Math.abs(segSum - scriptDur) > 0.051) warnings.push(`Beat ${n}: sources sum ${segSum.toFixed(2)}s, table says ${scriptDur}s`);
   }
 
   // ---- line
@@ -216,7 +252,7 @@ for (const line of rows) {
   // ---- layout
   // Footage is always shown clean and full-frame (no effects, no push-ins). Gameplay crops the
   // browser chrome; Orbit screen recordings only the title bar and taskbar.
-  beat.layout = ov.fullBleed.has(n) ? 'full' : 'screen';
+  beat.layout = fullBleed.has(n) ? 'full' : 'screen';
 
   // ---- overlay column
   const lt = overlay.match(/Lower-third \(([^)]+)\):\s*`([^`]+)`\s*\/\s*\*\*([^*]+)\*\*(?:\s*\(([^)]+)\))?/);
@@ -291,13 +327,22 @@ for (const beat of beats) {
   if (timed) {
     const pool = timelineWords(beat);
     let j = 0;
+    const same = (p, t) => p && (p === t || (t.length >= 4 && p.length >= 4 && (p.startsWith(t) || t.startsWith(p))));
     for (const c of chunks) {
       const toks = c.text.split(' ').map(norm).filter(Boolean);
+      // if nothing matches near the pointer (e.g. muted words precede the line), find where the
+      // chunk's first longer word is and continue from there
+      const anchor = toks.find((t) => t.length >= 4);
+      if (anchor && !pool.slice(j, j + 8).some((p) => same(p.n, anchor))) {
+        const k = pool.findIndex((p, i) => i >= j && same(p.n, anchor));
+        if (k > j) j = Math.max(j, k - 2);
+      }
       const hits = [];
       for (const t of toks) {
-        for (let k = j; k < Math.min(pool.length, j + 8); k++) {
-          const p = pool[k].n;
-          if (p && (p === t || (t.length >= 4 && p.length >= 4 && (p.startsWith(t) || t.startsWith(p))))) {
+        // short words ("I", "a", "so") only look a little ahead, so a missing one can't drag the
+        // pointer to a later sentence
+        for (let k = j; k < Math.min(pool.length, j + (t.length <= 2 ? 3 : 8)); k++) {
+          if (same(pool[k].n, t)) {
             hits.push(pool[k]);
             j = k + 1;
             break;
@@ -411,8 +456,9 @@ for (const beat of beats) {
 }
 
 // ------------------------------------------------------------------ roster
-const rosterRows = ov.roster.rows.map((r) => ({...r, atFrame: beats.find((b) => b.n === r.beat).startFrame}));
-const rosterBeats = beats.filter((b) => ov.roster.showBeats.includes(b.n));
+const rosterRows = ov.roster.rows.map((r) => ({...r, atFrame: beats.find((b) => b.n === String(r.beat)).startFrame}));
+const showBeats = ov.roster.showBeats.map(String);
+const rosterBeats = beats.filter((b) => showBeats.includes(b.n));
 const roster = {
   startFrame: rosterBeats[0].startFrame,
   endFrame: rosterBeats[rosterBeats.length - 1].startFrame + rosterBeats[rosterBeats.length - 1].durFrames,
@@ -455,5 +501,6 @@ fs.writeFileSync(path.join(videoDir, 'src', 'data', 'edl.json'), JSON.stringify(
 
 console.log(`EDL: ${beats.length} beats, ${cues.length} cues, ${fmt(edl.totalSec)} (${edl.totalSec}s, ${totalFrames} frames)`);
 console.log(`On-screen-text beats: ${beats.filter((b) => b.narration).length}; lengthened for reading: ${lengthened.join(', ') || 'none'}`);
+console.log(`Breathing room: ${held.length} beats held after the last word (+${held.reduce((a, x) => a + x, 0).toFixed(1)} s); mic faded early on ${beats.filter((b) => b.segments.some((x) => x.micUntil != null)).length}`);
 console.log(`Real-line chunks aligned to transcript words: ${alignedChunks}/${totalRealChunks}`);
 if (warnings.length) console.log(`Warnings:\n  ${warnings.join('\n  ')}`);

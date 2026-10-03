@@ -11,6 +11,8 @@ export interface Segment {
   file: string;
   mic: boolean;
   micFrom?: number;
+  /** clip time (s) after which the mic fades out, so the next sentence never leaks into the hold */
+  micUntil?: number;
 }
 export interface Chip {
   text: string;
@@ -29,7 +31,8 @@ export interface Extra {
   atFrames?: number[];
 }
 export interface Beat {
-  n: number;
+  /** beat ID as written in the script: "64", "64a", ... */
+  n: string;
   chapter: number;
   kind: 'clip' | 'still' | 'chapter' | 'title' | 'end';
   startFrame: number;
@@ -49,9 +52,11 @@ export interface Beat {
   callout: boolean;
   extra: Extra | null;
   bed: 'off' | 'duck' | 'full';
+  /** seconds of picture after Hunter's last word (spoken beats only) */
+  speechTailSec: number | null;
 }
 export interface Cue {
-  beat: number;
+  beat: string;
   text: string;
   speaker: 'creator' | 'orbit';
   narration: boolean;
@@ -68,7 +73,7 @@ export interface Edl {
   chapters: {n: number; name: string; startFrame: number; endFrame: number}[];
   beats: Beat[];
   cues: Cue[];
-  roster: {startFrame: number; endFrame: number; rows: {beat: number; n: string; title: string; role: string; name: string; atFrame: number}[]};
+  roster: {startFrame: number; endFrame: number; rows: {beat: number | string; n: string; title: string; role: string; name: string; atFrame: number}[]};
   beds: {id: string; file: string; label: string; startFrame: number; durFrames: number}[];
 }
 

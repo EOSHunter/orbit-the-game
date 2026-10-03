@@ -131,7 +131,9 @@ export const TitleCard: React.FC<{beat: Beat}> = ({beat}) => {
         <div
           style={{
             fontFamily: fonts.display, fontWeight: 600, fontSize: type.heading.size, color: colors.text, textTransform: 'uppercase', textShadow: effects.textGlow,
-            textAlign: 'center', maxWidth: 1700, lineHeight: 1.2, textWrap: 'balance', ...bannerStyle(frame, 21, 0.4, 0.14),
+            // one line for the whole animation: the tracking starts at 0.22em (fits in ~1800 px) rather
+            // than 0.4em, which wrapped to two lines and then jumped to one
+            textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.2, ...bannerStyle(frame, 21, 0.22, 0.14),
           }}
         >
           {t.title}

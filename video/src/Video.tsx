@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame} from 'remotion';
 import {colors, effects, timing} from './theme';
 import {edl, type Beat} from './edl';
-import {FootageBeat} from './components/Footage';
+import {BEAT_DISSOLVE, FootageBeat} from './components/Footage';
 import {ChapterCard, EndCard, StillBeat, TitleCard} from './components/Cards';
 import {Callout, Chips, Extra, LowerThird, Roster} from './components/Overlays';
 import {Subtitles} from './components/Subtitles';
@@ -23,13 +23,25 @@ const bedLevel = (frame: number) => {
   return interpolate(frame - b.startFrame, [0, BED_RAMP], [prev, cur], {extrapolateRight: 'clamp'});
 };
 
-const BeatView: React.FC<{beat: Beat; mediaRes: number}> = ({beat, mediaRes}) => (
+// Footage beats dissolve into each other (Hunter: hard cuts felt abrupt). The outgoing shot keeps
+// playing for BEAT_DISSOLVE frames under the incoming one, which fades in, so the timeline and
+// subtitles don't move. Cards keep their own entrances (chapter cards add the scan wipe).
+const isClip = (i: number) => edl.beats[i]?.kind === 'clip';
+
+/** The picture: footage or a brand card. */
+const Picture: React.FC<{beat: Beat; mediaRes: number; fadeIn: number; tail: number}> = ({beat, mediaRes, fadeIn, tail}) => (
   <AbsoluteFill>
-    {beat.kind === 'clip' && <FootageBeat beat={beat} mediaRes={mediaRes} />}
+    {beat.kind === 'clip' && <FootageBeat beat={beat} mediaRes={mediaRes} fadeIn={fadeIn} tail={tail} />}
     {beat.kind === 'still' && <StillBeat beat={beat} />}
     {beat.kind === 'chapter' && <ChapterCard beat={beat} />}
     {beat.kind === 'title' && <TitleCard beat={beat} />}
     {beat.kind === 'end' && <EndCard beat={beat} />}
+  </AbsoluteFill>
+);
+
+/** Graphics on top of the picture: callouts, chips, beat-specific graphics. */
+const Graphics: React.FC<{beat: Beat; mediaRes: number}> = ({beat, mediaRes}) => (
+  <AbsoluteFill>
     {beat.callout && <Callout />}
     <Chips chips={beat.chips} durFrames={beat.durFrames} />
     {beat.extra && <Extra beat={beat} mediaRes={mediaRes} />}
@@ -59,9 +71,19 @@ const lowerThirds = edl.beats
 
 export const Video: React.FC<VideoProps> = ({mediaRes}) => (
   <AbsoluteFill style={{background: colors.voidDeep}}>
+    {edl.beats.map((b, i) => {
+      const fadeIn = b.kind === 'clip' && isClip(i - 1) ? BEAT_DISSOLVE : 0;
+      const tail = b.kind === 'clip' && isClip(i + 1) ? BEAT_DISSOLVE : 0;
+      return (
+        <Sequence key={b.n} from={b.startFrame} durationInFrames={b.durFrames + tail} name={`B${b.n} ${b.kind}`}>
+          <Picture beat={b} mediaRes={mediaRes} fadeIn={fadeIn} tail={tail} />
+        </Sequence>
+      );
+    })}
+
     {edl.beats.map((b) => (
-      <Sequence key={b.n} from={b.startFrame} durationInFrames={b.durFrames} name={`B${b.n} ${b.kind}`}>
-        <BeatView beat={b} mediaRes={mediaRes} />
+      <Sequence key={`g${b.n}`} from={b.startFrame} durationInFrames={b.durFrames} name={`B${b.n} graphics`} layout="none">
+        <Graphics beat={b} mediaRes={mediaRes} />
       </Sequence>
     ))}
 

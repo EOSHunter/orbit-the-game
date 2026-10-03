@@ -17,7 +17,8 @@ const TypedText: React.FC<{text: string; frame: number}> = ({text, frame}) => {
   return (
     <>
       {text.slice(0, shown)}
-      <span style={{color: colors.holoHi, opacity: typing || Math.floor(frame / 15) % 2 === 0 ? 1 : 0}}>▍</span>
+      {/* the cursor rides along only while the text is typing, then goes away (no idle blinking) */}
+      <span style={{color: colors.holoHi, opacity: typing ? 1 : 0}}>▍</span>
       {/* the rest is laid out but invisible, so line breaks don't jump while typing */}
       <span style={{opacity: 0}}>{text.slice(shown)}</span>
     </>

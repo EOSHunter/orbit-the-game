@@ -77,13 +77,18 @@ const jobs = [];
 for (const beat of edl.beats) {
   for (const s of beat.segments) {
     const out = path.join(mediaDir, s.file);
-    // a little tail so the last frame never runs dry; never reaches the excluded clip-1 window
-    const dur = s.durFrames / FPS + 0.1;
-    const params = {res, clip: s.clip, in: s.in, dur, mic: s.mic, micFrom: s.micFrom ?? null, v: 3};
+    // 0.5 s tail: the outgoing shot keeps playing under the dissolve into the next one. verify.mjs
+    // checks this tail never reaches the excluded clip-1 window.
+    const dur = s.durFrames / FPS + 0.5;
+    const params = {res, clip: s.clip, in: s.in, dur, mic: s.mic, micFrom: s.micFrom ?? null, micUntil: s.micUntil ?? null, v: 4};
     if (upToDate(out, params)) continue;
     let af;
     if (s.mic) {
-      const gate = s.micFrom != null ? `,volume='if(lt(t,${(s.micFrom - s.in).toFixed(3)}),0,1)':eval=frame` : '';
+      let gate = '';
+      // mic muted until micFrom (beat 90), and/or faded out over 0.1 s after micUntil, so Hunter's
+      // next sentence never leaks into the hold after a line
+      if (s.micFrom != null) gate += `,volume='if(lt(t,${(s.micFrom - s.in).toFixed(3)}),0,1)':eval=frame`;
+      if (s.micUntil != null) gate += `,volume='max(0,min(1,(${(s.micUntil - s.in + 0.1).toFixed(3)}-t)/0.1))':eval=frame`;
       af = `[0:a:1]volume=0.6[s];[0:a:2]volume=2.2${gate}[m];[s][m]amix=inputs=2:normalize=0:duration=first[a]`;
     } else {
       af = '[0:a:1]anull[a]';

@@ -56,7 +56,9 @@ export const Glass: React.FC<{style?: React.CSSProperties; children?: React.Reac
   children,
   brackets = true,
 }) => (
-  <div style={{position: 'absolute', ...effects.panel, ...style}}>
+  // No backdrop blur: headless Chrome intermittently dropped these panels for a single frame
+  // (measured in the 1080p render). The panel's own dark gradient keeps it readable.
+  <div style={{position: 'absolute', ...effects.panel, backdropFilter: 'none', ...style}}>
     {brackets && <Brackets />}
     {children}
   </div>
@@ -72,10 +74,11 @@ export const mono = (size: number = type.kicker.size, color: string = colors.hol
   whiteSpace: 'nowrap',
 });
 
-/** Blinking caret, 1 s period, steps(2). Text ending in `_` gets the caret instead of a literal underscore. */
-export const Caret: React.FC<{frame: number; color?: string}> = ({frame, color}) => (
-  <span style={{opacity: Math.floor(frame / timing.caretBlink) % 2 === 0 ? 1 : 0, color}}>_</span>
-);
+/**
+ * Caret for text ending in `_`. Steady, not blinking (Hunter: blinking reads as flicker; only text
+ * that is typing on may blink, see Subtitles).
+ */
+export const Caret: React.FC<{frame: number; color?: string}> = ({color}) => <span style={{color}}>_</span>;
 
 export const withCaret = (text: string, frame: number, color?: string) =>
   text.endsWith('_') ? (

@@ -2,8 +2,12 @@
 // Everything else (timing, sources, lines, lower-thirds, chips, chapter cards) is parsed from
 // docs/video/script/script.md by build-edl.mjs. Keep this file small.
 
-/** Gameplay shots: the browser chrome is cropped as well. All footage is full-frame with no effects over it. */
-export const fullBleed = new Set([1, 61, 62, 63, 64, 66, 67, 68, 69, 73, 76, 80, 81, 82, 83, 84, 85, 86, 88, 89, 90, 91]);
+/**
+ * Gameplay shots: full-bleed, unframed (browser chrome cropped). Every other recording sits in the
+ * bracketed frame over the chapter's dimmed stage background. Nothing is drawn over the footage itself.
+ * Beat IDs are strings as written in the script ("64a"); plain numbers are fine for numeric IDs.
+ */
+export const fullBleed = new Set([1, 61, 62, 63, 64, '64a', 66, '66a', 67, 68, 69, 73, '73a', 76, 80, 81, 83, 84, 85, 86, 88, 89, 90, 91]);
 
 /** Per-beat audio tweaks. micFrom = clip time (s) where the mic comes back in (beat 90: "Mic muted until 1:54.0"). */
 export const audio = {
@@ -13,11 +17,11 @@ export const audio = {
 /** Chips that should appear on a word rather than at beat start. */
 export const chipAtWord = {11: 'creative'};
 /** Chips that should appear N seconds before the beat ends. */
-export const chipFromEnd = {92: 1.6};
+export const chipFromEnd = {92: 1.6, 65: 2.4};
 
 /** Roster panel (chapter 3). Rows are added on the beat listed and stay until the panel ends. */
 export const roster = {
-  showBeats: [20, 21, 22, 23, 24, 25],
+  showBeats: [20, '64b', 21, 22, 23, 24, 25],
   rows: [
     {beat: 20, n: '01/07', title: 'CREATIVE DIRECTOR', role: 'creativeDirector', name: 'Iris'},
     {beat: 22, n: '02/07', title: 'UI DESIGNER', role: 'uiDesigner', name: 'Juno'},
