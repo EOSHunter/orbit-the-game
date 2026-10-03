@@ -123,6 +123,12 @@ export function getChoicesFor(stageIndex) {
   return [...defs.map(({ id, label, description }) => ({ id, label, description })), { ...ABANDON }];
 }
 
+/** Flags the player would hold after picking `choiceId` at `stageIndex` ({} for Abandon or an unknown id). Pure; for previews. */
+export function choiceFlags(stageIndex, choiceId) {
+  const def = (CHOICE_DEFS[stageIndex] || []).find((d) => d.id === choiceId);
+  return def && def.effect.flag ? { [def.effect.flag[0]]: def.effect.flag[1] } : {};
+}
+
 function ensureFlags(state) {
   const f = (state.flags ??= {});
   f.speedMult ??= 1;
