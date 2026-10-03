@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="none">
+  <!-- One HUD corner bracket (the game draws 4 of these on every panel: 9px arms, 1.5px stroke, cyan + soft glow). Rotate 90/180/270 for the other corners. -->
+  <path d="M1 12 V1 H12" stroke="#5CE1FF" stroke-width="1.5" stroke-linecap="square"/>
+</svg>
