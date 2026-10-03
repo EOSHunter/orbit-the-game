@@ -11,8 +11,8 @@
     "srt": "node scripts/write-srt.mjs",
     "verify": "node scripts/verify.mjs",
     "studio": "remotion studio src/index.ts --port=3918",
-    "render:rough": "npm run edl && npm run prep && npm run srt && remotion render src/index.ts VesperDrift out/rough-cut.mp4 --scale=0.5 --props=props/rough.json --crf=26 --port=3917 && npm run verify -- out/rough-cut.mp4",
-    "render:final": "npm run edl && npm run prep:1080 && npm run srt && remotion render src/index.ts VesperDrift out/final-1080p.mp4 --props=props/final.json --crf=18 --port=3917 && npm run verify -- out/final-1080p.mp4",
+    "render:rough": "npm run edl && npm run prep && npm run srt && node scripts/render.mjs out/rough-cut.mp4 --scale=0.5 --props=props/rough.json --crf=26 && npm run verify -- out/rough-cut.mp4",
+    "render:final": "npm run edl && npm run prep:1080 && npm run srt && node scripts/render.mjs out/final-1080p.mp4 --props=props/final.json --crf=18 && npm run verify -- out/final-1080p.mp4",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

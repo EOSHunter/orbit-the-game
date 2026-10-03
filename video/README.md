@@ -34,7 +34,7 @@ Other commands:
 - The original recordings `1.mp4 … 11.mp4`. By default they're read in place from the main checkout
   (`C:/Users/hunte/R7 Orbit Projects/orbit-the-game/docs/video/`). Set `FOOTAGE_DIR` to read them from somewhere else.
   They're never copied into git. The proxies live in `public/media/` (gitignored).
-- Remotion renders on port 3917. If that's taken, change `--port` in `package.json`. Port 3000 was avoided because the game's dev server often uses it.
+- Renders pick a free port automatically (`scripts/render.mjs`); Remotion's default 3000 is often taken by the game's dev server.
 
 ## How it fits together
 
