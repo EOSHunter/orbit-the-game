@@ -3,18 +3,13 @@
 // itself when its data is absent, so the same HUD runs on the 2D build's legacy state.
 
 import {
-  el, svg, num, clamp, fmtMass, fmtTime, fmtDist, fmtBearing, clsName, icon, stageGlyph, relShape,
+  el, num, clamp, fmtMass, fmtTime, fmtDist, fmtBearing, clsName, icon, stageGlyph, relShape,
   REL_LABEL, STAGE_CODES,
 } from './util.js';
 
 const MAX_MARKERS = 12;
 const LOG_MAX = 5;
 const SCRAMBLE = '#%/<>[]=+*01░▒';
-const BLIP_D = {
-  threat: 'M0 -3.6 3.6 0 0 3.6 -3.6 0z',
-  prey: 'M-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0',
-  neutral: 'M-2.6 0a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0',
-};
 
 // ctx: { scale(), stageName(i), stageCount, stageRange(i), stageMin(i), announce(msg, assertive), sound(name),
 //        reduced(), openMenu(), capture(), canCapture(state), toggleSetting(key), getSettings() }
@@ -97,34 +92,7 @@ export function createHud(ctx) {
   const scanner = el('section', 'vd-panel vd-frame vd-scanner', null, { 'aria-label': 'Sensor sweep' });
   const scanHead = el('div', 'vd-scan-head vd-mono');
   const timeEl = el('span', 'vd-scan-time');
-  const rangeEl = el('span', 'vd-scan-range');
-  scanHead.append(el('span', 'vd-dim', 'T+ '), timeEl, el('span', 'vd-spacer'), el('span', 'vd-dim', 'RNG '), rangeEl);
-  const radarWrap = el('div', 'vd-radar');
-  const sweep = el('div', 'vd-radar-sweep', null, { 'aria-hidden': 'true' });
-  const rsvg = svg('svg', { viewBox: '-50 -50 100 100', class: 'vd-radar-svg', role: 'img', 'aria-label': 'Radar' });
-  rsvg.innerHTML =
-    '<circle r="46" class="vd-r-ring vd-r-outer"/><circle r="30.7" class="vd-r-ring"/><circle r="15.3" class="vd-r-ring"/>' +
-    '<path d="M-46 0H-4M4 0H46M0 -46V-4M0 4V46" class="vd-r-cross"/>' +
-    '<path d="M0 -49.5 2.4 -45.4H-2.4z" class="vd-r-north"/>' +
-    '<g class="vd-r-ticks"></g>';
-  const ticks = rsvg.querySelector('.vd-r-ticks');
-  for (let a = 0; a < 360; a += 15) {
-    const r1 = a % 90 === 0 ? 41.5 : 43.6, rad = (a * Math.PI) / 180;
-    ticks.appendChild(svg('line', { x1: (Math.sin(rad) * r1).toFixed(2), y1: (-Math.cos(rad) * r1).toFixed(2), x2: (Math.sin(rad) * 46).toFixed(2), y2: (-Math.cos(rad) * 46).toFixed(2) }));
-  }
-  const ping = svg('circle', { r: '46', class: 'vd-r-ping' });
-  const beacon = svg('path', { d: 'M0 -48 3.4 -42.6 0 -44.2 -3.4 -42.6z', class: 'vd-r-beacon' });
-  const blipG = svg('g', { class: 'vd-r-blips' });
-  const self = svg('path', { d: 'M0 -3.4 2.6 2.6 0 1.3 -2.6 2.6z', class: 'vd-r-self' });
-  rsvg.append(ping, blipG, beacon, self);
-  const blips = [];
-  for (let i = 0; i < MAX_MARKERS; i++) {
-    const p = svg('path', { class: 'vd-r-blip' });
-    p.style.display = 'none';
-    blipG.appendChild(p);
-    blips.push({ node: p, rel: '', tf: '' });
-  }
-  radarWrap.append(rsvg, sweep);
+  scanHead.append(el('span', 'vd-dim', 'T+ '), timeEl);
   const prox = el('div', 'vd-prox');
   const proxRows = {};
   for (const [k, label] of [['star', 'STAR'], ['blackHole', 'B.HOLE'], ['pulsar', 'PULSAR']]) {
@@ -137,7 +105,7 @@ export function createHud(ctx) {
     proxRows[k] = { row, f };
   }
   const seedEl = el('div', 'vd-seed vd-mono');
-  scanner.append(scanHead, radarWrap, prox, seedEl);
+  scanner.append(scanHead, prox, seedEl);
   tr.appendChild(scanner);
 
   // ---------- Target panel (right) ----------
@@ -261,7 +229,6 @@ export function createHud(ctx) {
   let pendingBanner = null; // stage-up banner held back while the choice cards are open (from main #7)
   let shownMass = 0;
   let decodeStart = -1, decodeName = '';
-  let range = 1000;
   let legacyEdge = false;
   let bannerTimer = 0, hintTimer = 0;
   let lastLog = null;
@@ -313,7 +280,7 @@ export function createHud(ctx) {
     restart(vigDmg, 'is-on');
   }
 
-  function beaconPing() { restart(ping, 'is-ping'); restart(voidAlert.a, 'is-ping'); }
+  function beaconPing() { restart(voidAlert.a, 'is-ping'); }
   function captureFlash() { restart(capAlert.a, 'is-flash'); }
   function warnLegacy(on) { legacyEdge = !!on; edgeAlert.a.classList.toggle('is-on', legacyEdge); }
 
@@ -323,7 +290,6 @@ export function createHud(ctx) {
     nameEl.classList.remove('is-decoding');
     shownMass = 0;
     decodeStart = -1;
-    range = 1000;
     legacyEdge = false;
     for (const k in cache) delete cache[k];
     pctCache.p = -1;
@@ -443,7 +409,6 @@ export function createHud(ctx) {
       show('atmo', atmoChip, false);
       setStyle('cap', vigCap, '--cap', '0');
       show('markers', markers, false);
-      setText('range', rangeEl, '--');
       return;
     }
 
@@ -456,36 +421,15 @@ export function createHud(ctx) {
       }
     }
 
-    // Radar blips
     const list = Array.isArray(hud.markers) ? hud.markers : [];
-    let far = 0;
-    for (let i = 0; i < list.length && i < MAX_MARKERS; i++) { const d = num(list[i].dist); if (d !== null && d > far) far = d; }
-    const target = Math.max(200, far * 1.15);
-    range += (target - range) * (reduced ? 1 : 1 - Math.exp(-dt / 0.6));
-    setText('range', rangeEl, fmtDist(range));
-    for (let i = 0; i < MAX_MARKERS; i++) {
-      const b = blips[i];
-      const m = list[i];
-      if (!m || num(m.dist) === null || num(m.bearing) === null) {
-        if (b.tf !== 'off') { b.tf = 'off'; b.node.style.display = 'none'; }
-        continue;
-      }
-      const rel = m.rel === 'threat' || m.rel === 'prey' ? m.rel : 'neutral';
-      if (b.rel !== rel) { b.rel = rel; b.node.setAttribute('d', BLIP_D[rel]); b.node.setAttribute('class', `vd-r-blip vd-rel-${rel}`); }
-      const r = 45 * Math.sqrt(clamp(m.dist / range, 0, 1));
-      const tf = `translate(${(Math.sin(m.bearing) * r).toFixed(1)} ${(-Math.cos(m.bearing) * r).toFixed(1)})`;
-      if (b.tf !== tf) { if (b.tf === 'off' || b.tf === '') b.node.style.display = ''; b.tf = tf; b.node.setAttribute('transform', tf); }
-    }
 
-    // Region / beacon (boundary replacement)
+    // Region (boundary replacement)
     const reg = hud.region;
     const inVoid = !!(reg && reg.inVoid);
     show('voidAlert', voidAlert.a, inVoid);
     const nm = reg && reg.nearestMatter;
-    show('beacon', beacon, inVoid && !!nm);
     if (inVoid) {
       setText('voidSub', voidAlert.sub, nm ? `NEAREST MATTER ${fmtDist(nm.dist)} · BRG ${fmtBearing(nm.bearing)}` : 'NO MATTER IN RANGE');
-      if (nm) setAttr('beaconTf', beacon, 'transform', `rotate(${((nm.bearing * 180) / Math.PI).toFixed(1)})`);
     }
     toggle('voidScan', scanner, 'is-void', inVoid);
 

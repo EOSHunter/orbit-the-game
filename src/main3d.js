@@ -135,6 +135,7 @@ export async function start3d() {
     while (acc >= STEP && n < MAX_STEPS) { sim.step(STEP); acc -= STEP; n++; }
     if (n === MAX_STEPS) acc = 0;                             // never spiral
     const state = sim.getState();
+    canvas.style.cursor = state.status === 'playing' ? 'none' : '';   // hide the system cursor only during active play
     renderer.drawFrame(state, raw);
     if (ui) ui.update(state, view);
     if (audio) audio.update(state, raw);

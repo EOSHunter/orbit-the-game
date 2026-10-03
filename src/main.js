@@ -86,6 +86,7 @@ async function main() {
   function frame(now) {
     requestAnimationFrame(frame);
     if (hidden) return;
+    canvas.style.cursor = game.state.status === 'playing' && !game.paused ? 'none' : ''; // hide the system cursor only during active play
     const dt = Math.min(MAX_FRAME, (now - last) / 1000);
     last = now;
     if (game.paused) {

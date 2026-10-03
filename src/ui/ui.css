@@ -222,29 +222,6 @@
 .vd-ui .vd-tr { position: absolute; right: var(--gap); top: var(--gap); width: calc(208px * var(--s)); display: flex; flex-direction: column; gap: calc(10px * var(--s)); }
 .vd-ui .vd-scanner { padding: calc(10px * var(--s)); }
 .vd-ui .vd-scan-head { display: flex; gap: 4px; font-size: calc(10.5px * var(--s)); color: var(--holo-hi); margin-bottom: calc(6px * var(--s)); }
-.vd-ui .vd-radar { position: relative; width: 100%; aspect-ratio: 1; }
-.vd-ui .vd-radar-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.vd-ui .vd-r-ring { fill: none; stroke: rgba(92, 225, 255, 0.22); stroke-width: 0.5; }
-.vd-ui .vd-r-outer { stroke: var(--holo-dim); stroke-width: 0.7; fill: rgba(92, 225, 255, 0.04); }
-.vd-ui .vd-r-cross { stroke: rgba(92, 225, 255, 0.18); stroke-width: 0.4; stroke-dasharray: 1 1.5; }
-.vd-ui .vd-r-ticks line { stroke: var(--holo-dim); stroke-width: 0.6; }
-.vd-ui .vd-r-north { fill: var(--holo-hi); }
-.vd-ui .vd-r-self { fill: var(--holo-hi); }
-.vd-ui .vd-r-blip { stroke: none; transition: transform 120ms linear; }
-.vd-ui .vd-r-blip.vd-rel-prey { fill: var(--prey); filter: drop-shadow(0 0 1.5px var(--prey)); }
-.vd-ui .vd-r-blip.vd-rel-threat { fill: var(--threat); filter: drop-shadow(0 0 2px var(--threat)); }
-.vd-ui .vd-r-blip.vd-rel-neutral { fill: none; stroke: var(--neutral); stroke-width: 0.9; }
-.vd-ui .vd-r-beacon { fill: var(--amber); filter: drop-shadow(0 0 2px var(--amber)); }
-.vd-ui .vd-r-ping { fill: none; stroke: var(--amber); stroke-width: 0.8; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.vd-ui .vd-r-ping.is-ping { animation: vd-ping 1.4s var(--ease); }
-@keyframes vd-ping { 0% { opacity: 0.9; transform: scale(0.1); } 100% { opacity: 0; transform: scale(1.05); } }
-.vd-ui .vd-radar-sweep {
-  position: absolute; inset: 4%; border-radius: 50%; pointer-events: none;
-  background: conic-gradient(from 0deg, rgba(92, 225, 255, 0) 0deg, rgba(92, 225, 255, 0) 300deg, rgba(92, 225, 255, 0.28) 358deg, rgba(184, 243, 255, 0.6) 360deg);
-  animation: vd-spin 3.2s linear infinite;
-}
-.vd-ui .vd-scanner.is-void .vd-radar-sweep { background: conic-gradient(from 0deg, rgba(255, 181, 71, 0) 300deg, rgba(255, 181, 71, 0.25) 358deg, rgba(255, 220, 160, 0.6) 360deg); }
-.vd-ui .vd-scanner.is-nofeed .vd-radar { display: none; } /* legacy 2D state: no sensor data, keep just the clock */
 .vd-ui .vd-scanner.is-nofeed .vd-scan-head { margin-bottom: 0; }
 
 .vd-ui .vd-prox { display: grid; gap: calc(3px * var(--s)); margin-top: calc(8px * var(--s)); }
@@ -549,7 +526,6 @@
 .vd-ui.vd-readable .vd-panel::after, .vd-ui.vd-readable .vd-grain { display: none; }
 .vd-ui.vd-readable .vd-label { font-size: calc(11.5px * var(--s)); }
 .vd-ui.vd-readable .vd-tgt-meta, .vd-ui.vd-readable .vd-tele-sub, .vd-ui.vd-readable .vd-mk-dist { font-size: calc(11px * var(--s)); }
-.vd-ui.vd-readable .vd-r-blip.vd-rel-neutral { stroke-width: 1.4; }
 
 /* ---------- Responsive ---------- */
 .vd-ui.vd-narrow { --gap: 8px; }
@@ -584,8 +560,7 @@
 
 /* ---------- Reduced motion (OS setting or the in-game switch) ---------- */
 .vd-ui.vd-rm *, .vd-ui.vd-rm *::before, .vd-ui.vd-rm *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
-.vd-ui.vd-rm .vd-radar-sweep, .vd-ui.vd-rm .vd-grain, .vd-ui.vd-rm .vd-vig--dmg, .vd-ui.vd-rm .vd-bar-fill::after, .vd-ui.vd-rm .vd-sc-ring { animation: none !important; }
-.vd-ui.vd-rm .vd-radar-sweep { opacity: 0.35; }
+.vd-ui.vd-rm .vd-grain, .vd-ui.vd-rm .vd-vig--dmg, .vd-ui.vd-rm .vd-bar-fill::after, .vd-ui.vd-rm .vd-sc-ring { animation: none !important; }
 .vd-ui.vd-rm .vd-card { opacity: 1; }
 .vd-ui.vd-rm .vd-log-line { animation: none !important; }
 .vd-ui.vd-rm .vd-banner.is-on { animation: none !important; opacity: 1; }
