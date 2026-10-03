@@ -202,7 +202,7 @@ test('finale: after the last stage the run ends after 1.6x mass or 30 s with the
   assert.ok(e.payload.ending && e.payload.ending.title);
   // the mass route
   const sim2 = lab(createSim); sim2.debug.setPlayer({ mass: 1.8e6 }); run(sim2, 0.1);
-  sim2.debug.setPlayer({ mass: 3.2e6 * 1.7 }); run(sim2, 0.1);
+  sim2.debug.setPlayer({ mass: 1.8e6 * 1.7 }); run(sim2, 0.1);
   assert.equal(sim2.getState().status, 'ended');
 });
 
