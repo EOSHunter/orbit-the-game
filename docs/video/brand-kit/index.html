@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R7 Orbit × Vesper Drift — Brand Kit</title>
+<style>
+@font-face{font-family:"Barlow Semi Condensed";font-weight:400;src:url(assets/fonts/BarlowSemiCondensed-Regular.ttf)}
+@font-face{font-family:"Barlow Semi Condensed";font-weight:500;src:url(assets/fonts/BarlowSemiCondensed-Medium.ttf)}
+@font-face{font-family:"Barlow Semi Condensed";font-weight:600;src:url(assets/fonts/BarlowSemiCondensed-SemiBold.ttf)}
+@font-face{font-family:"Barlow Semi Condensed";font-weight:700;src:url(assets/fonts/BarlowSemiCondensed-Bold.ttf)}
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url(assets/fonts/JetBrainsMono-Regular.ttf)}
+@font-face{font-family:"JetBrains Mono";font-weight:500;src:url(assets/fonts/JetBrainsMono-Medium.ttf)}
+:root{--void:#050812;--mid:#0a1424;--holo:#5ce1ff;--hi:#b8f3ff;--dim:rgba(92,225,255,.42);--faint:rgba(92,225,255,.14);--text:#e6f6ff;--mist:#86a3bf;--amber:#ffb547;--gold:#caab6c;
+--display:"Barlow Semi Condensed","Bahnschrift",system-ui,sans-serif;--mono:"JetBrains Mono",Consolas,monospace;
+--glass:linear-gradient(140deg,rgba(10,34,52,.66),rgba(6,14,30,.5) 60%,rgba(10,26,44,.6))}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--text);font:400 18px/1.5 var(--display);background-image:radial-gradient(ellipse at 50% 0,#10224a55,transparent 60%)}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(120,220,255,.03) 0 1px,transparent 1px 3px)}
+header{padding:72px 6vw 40px;text-align:center}
+.kick{font:500 13px var(--mono);letter-spacing:.3em;color:var(--holo);text-transform:uppercase}
+h1{margin:12px 0 4px;font-weight:300;font-size:clamp(40px,8vw,96px);letter-spacing:.42em;margin-right:-.42em;text-transform:uppercase;text-shadow:0 0 24px rgba(92,225,255,.45)}
+h1 b{display:block;font-weight:600;font-size:.4em;letter-spacing:1.1em;margin-right:-1.1em;color:var(--holo)}
+.sub{color:var(--mist)}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:10px;background:rgba(5,8,18,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--faint)}
+nav a{font:500 12px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mist);text-decoration:none;padding:6px 12px;border:1px solid transparent}
+nav a:hover{color:var(--hi);border-color:var(--dim)}
+section{max-width:1200px;margin:0 auto;padding:56px 6vw 8px}
+h2{font-weight:600;font-size:34px;letter-spacing:.18em;text-transform:uppercase;margin:0 0 6px;text-shadow:0 0 16px rgba(92,225,255,.4)}
+h2+p{color:var(--mist);margin:0 0 24px;max-width:70ch}
+h3{font:500 13px var(--mono);letter-spacing:.2em;color:var(--holo);text-transform:uppercase;margin:32px 0 12px}
+.panel{position:relative;background:var(--glass);border:1px solid var(--faint);padding:20px}
+.panel:before{content:"";position:absolute;inset:0;pointer-events:none;--c:var(--holo);
+background:linear-gradient(var(--c),var(--c)) top left/10px 1.5px,linear-gradient(var(--c),var(--c)) top left/1.5px 10px,linear-gradient(var(--c),var(--c)) top right/10px 1.5px,linear-gradient(var(--c),var(--c)) top right/1.5px 10px,linear-gradient(var(--c),var(--c)) bottom left/10px 1.5px,linear-gradient(var(--c),var(--c)) bottom left/1.5px 10px,linear-gradient(var(--c),var(--c)) bottom right/10px 1.5px,linear-gradient(var(--c),var(--c)) bottom right/1.5px 10px;background-repeat:no-repeat;filter:drop-shadow(0 0 3px rgba(92,225,255,.6))}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.sw{border:1px solid var(--faint);background:var(--mid);cursor:pointer}
+.sw i{display:block;height:84px}
+.sw div{padding:8px 10px;font-size:15px}.sw code{display:block;font:500 12px var(--mono);color:var(--mist);letter-spacing:.06em}
+.sw small{color:var(--mist);font-size:13px;line-height:1.3;display:block}
+code{font-family:var(--mono)}
+.logos{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.logos figure{margin:0;border:1px solid var(--faint)}
+.logos .bg{display:grid;place-items:center;height:220px}
+.logos img{width:170px}
+.logos figcaption{padding:8px 10px;font:500 12px var(--mono);color:var(--mist);letter-spacing:.05em;background:var(--mid)}
+.shots{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.shots figure{margin:0;border:1px solid var(--faint);background:var(--mid)}
+.shots img{display:block;width:100%;cursor:zoom-in}
+.shots figcaption{padding:8px 10px;font:500 12px var(--mono);letter-spacing:.1em;color:var(--mist)}
+.specimen{font-size:64px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;line-height:1.1}
+.two{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.btn{display:inline-block;min-width:200px;text-align:center;padding:12px 28px;border:1px solid var(--holo);background:linear-gradient(180deg,rgba(92,225,255,.12),rgba(92,225,255,.03));font-weight:600;font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:#fff;text-shadow:0 0 8px rgba(92,225,255,.8);transition:.16s}
+.btn:hover{background:linear-gradient(180deg,rgba(92,225,255,.24),rgba(92,225,255,.06));box-shadow:0 0 22px rgba(92,225,255,.3)}
+.btn.g{color:var(--mist);border-color:var(--faint);text-shadow:none}
+kbd{font:500 12px var(--mono);padding:1px 6px;border:1px solid var(--dim);color:var(--hi);background:rgba(92,225,255,.07);border-radius:2px}
+.bar{height:8px;background:rgba(0,0,0,.55);border:1px solid var(--faint);position:relative;margin:10px 0}
+.bar i{position:absolute;inset:0;width:62%;background:linear-gradient(90deg,#1aa9d6,#5ce1ff 70%,#b8f3ff);box-shadow:0 0 12px rgba(92,225,255,.6)}
+.roles{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.lt{position:relative;padding:16px 20px 16px 28px;background:var(--glass);border:1px solid var(--faint)}
+.lt:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c);box-shadow:0 0 18px var(--c)}
+.lt .k{font:500 13px var(--mono);letter-spacing:.3em;color:var(--c)}
+.lt .n{font-weight:600;font-size:30px;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 20px rgba(92,225,255,.4);line-height:1.15}
+.lt .s{font:500 12px var(--mono);letter-spacing:.14em;color:var(--mist);text-transform:uppercase;margin-top:4px}
+.stage{position:relative;aspect-ratio:16/9;background:#050812 center/cover;border:1px solid var(--faint);overflow:hidden}
+.sub-demo{position:absolute;left:50%;transform:translateX(-50%);bottom:7%;width:max-content;max-width:72%;display:flex;flex-direction:column;background:rgba(5,8,18,.78);border:1px solid var(--faint);border-left:5px solid var(--c);border-radius:4px;padding:.6vw 1.5vw;font-weight:500;font-size:clamp(14px,2.2vw,28px);line-height:1.28;text-align:center;color:var(--t);font-style:var(--i);text-wrap:balance}
+.sub-demo small{font:500 clamp(9px,1vw,13px) var(--mono);letter-spacing:.16em;color:var(--c);text-align:left;font-style:normal}
+table{border-collapse:collapse;width:100%;font-size:16px}
+td,th{padding:8px 12px;border-bottom:1px solid var(--faint);text-align:left}
+th{font:500 12px var(--mono);letter-spacing:.2em;color:var(--holo);text-transform:uppercase}
+td code{color:var(--hi);font-size:13px}
+.ease{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.ease .t{height:40px;background:var(--mid);border:1px solid var(--faint);position:relative;overflow:hidden}
+.ease .t i{position:absolute;top:14px;left:0;width:12px;height:12px;border-radius:50%;background:var(--hi);box-shadow:0 0 10px var(--holo);animation:mv 2.4s var(--e) infinite alternate}
+@keyframes mv{from{left:0}to{left:calc(100% - 12px)}}
+.todo li{margin:6px 0}
+.todo{color:var(--mist)}
+footer{padding:60px 6vw;text-align:center;color:var(--mist);font:500 12px var(--mono);letter-spacing:.2em}
+#lb{position:fixed;inset:0;background:rgba(2,4,9,.92);display:none;place-items:center;z-index:20;cursor:zoom-out}#lb img{max-width:96vw;max-height:96vh}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--mid);border:1px solid var(--holo);padding:6px 14px;font:500 12px var(--mono);opacity:0;transition:.2s}
+</style></head><body>
+<header>
+  <div class="kick">Brand kit // status: draft v0.1 // logo pending final master</div>
+  <h1>Vesper<b>Drift</b></h1>
+  <p class="sub">Video brand kit for the R7 Orbit build-a-game-with-AI-agents vlog · 1920×1080 · 30 fps · Remotion</p>
+</header>
+<nav><a href="#palette">Palette</a><a href="#type">Type</a><a href="#logo">Logo</a><a href="#ui">UI style</a><a href="#roles">Roles</a><a href="#subs">Subtitles</a><a href="#motion">Motion</a><a href="#shots">Screens</a><a href="#bg">Backgrounds</a><a href="#todo">Missing</a></nav>
+
+<section id="palette"><h2>Palette</h2><p>Dressed like the game: void navy and cyan instrument layer. Gold belongs to the R7 Orbit logo only. Click a swatch to copy its hex.</p>
+<h3>Core</h3><div class="grid" id="core"></div>
+<h3>Signal colours (they carry meaning)</h3><div class="grid" id="sig"></div>
+<h3>Space &amp; logo</h3><div class="grid" id="space"></div></section>
+
+<section id="type"><h2>Typography</h2><p>The game itself uses system fonts (Bahnschrift, not redistributable). The kit bundles open-licence matches: Barlow Semi Condensed and JetBrains Mono (SIL OFL 1.1).</p>
+<div class="two">
+<div class="panel"><div class="kick">Display · Barlow Semi Condensed</div><div class="specimen">Meteorite</div>
+<p style="font-weight:300;font-size:56px;letter-spacing:.42em;margin:.2em 0;text-transform:uppercase;text-shadow:0 0 24px rgba(92,225,255,.45)">Vesper</p>
+<p style="font-weight:400;font-size:20px">The quick brown fox absorbs a smaller asteroid. 0123456789</p></div>
+<div class="panel"><div class="kick">Mono · JetBrains Mono</div>
+<p style="font:500 22px var(--mono);letter-spacing:.3em;color:var(--holo)">STG 07/12 // STR</p>
+<p style="font:500 14px var(--mono);letter-spacing:.16em;color:var(--mist)">MASS · HULL · NEXT ▸ GIANT STAR</p>
+<p style="font:italic 500 52px var(--mono);color:var(--hi);margin:.2em 0">1.90M</p>
+<p style="font:400 15px var(--mono);color:var(--mist)">ACCRETION SURVEY // CLASS-0 BODY_</p></div></div>
+<h3>Scale @1080p</h3>
+<table><tr><th>Role</th><th>Size</th><th>Weight</th><th>Tracking</th></tr>
+<tr><td>Wordmark VESPER / DRIFT</td><td>168 / 66</td><td>300 / 600</td><td>0.42em / 1.1em</td></tr>
+<tr><td>Chapter title</td><td>96</td><td>600</td><td>0.24em</td></tr>
+<tr><td>Heading</td><td>64</td><td>600</td><td>0.18em</td></tr>
+<tr><td>Lower-third name</td><td>44</td><td>600</td><td>0.12em</td></tr>
+<tr><td>Subtitle</td><td>42</td><td>500</td><td>0.01em</td></tr>
+<tr><td>Kicker / label (mono)</td><td>22 / 20</td><td>500</td><td>0.3em / 0.16em</td></tr></table></section>
+
+<section id="logo"><h2>R7 Orbit logo</h2><p>Current 512 px file plus transparent variants derived from it. A vector or ≥2048 px master is still needed for large placements.</p>
+<div class="logos">
+<figure><div class="bg" style="background:#050812"><img src="assets/logo/r7-orbit-logo.png"></div><figcaption>r7-orbit-logo.png · original tile</figcaption></figure>
+<figure><div class="bg" style="background:#050812"><img src="assets/logo/r7-orbit-mark-gold-transparent.png"></div><figcaption>mark-gold-transparent · dark bg</figcaption></figure>
+<figure><div class="bg" style="background:#eaf0ff"><img src="assets/logo/r7-orbit-mark-bronze-for-light-bg.png"></div><figcaption>mark-bronze · light bg</figcaption></figure>
+<figure><div class="bg" style="background:#0a1424"><img src="assets/logo/r7-orbit-mark-white.png"></div><figcaption>mark-white · watermark</figcaption></figure>
+<figure><div class="bg" style="background:#caab6c"><img src="assets/logo/r7-orbit-mark-ink.png"></div><figcaption>mark-ink · on light/gold</figcaption></figure>
+<figure><div class="bg" style="background:#050812"><img src="assets/ui/vesper-drift-emblem.svg"></div><figcaption>vesper-drift-emblem.svg · game emblem</figcaption></figure>
+</div>
+<p style="color:var(--mist)">Clear space = half the mark height · min width 96 px · never recolour to cyan · no glow on the gold.</p></section>
+
+<section id="ui"><h2>UI style</h2><p>Dark glass, cyan hairlines, square corners with corner brackets, scanlines, letter-spaced uppercase.</p>
+<div class="two">
+<div class="panel"><div class="kick">STG 01/12 // MET</div><div style="font-weight:600;font-size:34px;letter-spacing:.12em;text-transform:uppercase">Meteorite</div>
+<div style="font:500 12px var(--mono);letter-spacing:.16em;color:var(--mist)">MASS <span style="font:italic 500 22px var(--mono);color:var(--hi)">1.0</span></div>
+<div class="bar"><i></i></div><div style="font:500 12px var(--mono);letter-spacing:.12em;color:var(--mist)">NEXT ▸ ASTEROID <span style="float:right;color:var(--holo)">62%</span></div></div>
+<div class="panel"><p><a class="btn">Initiate drift</a> &nbsp; <a class="btn g">Settings</a></p>
+<p><kbd>MOUSE</kbd>/<kbd>WASD</kbd> STEER · <kbd>SPACE</kbd> STABILISE · <kbd>Q</kbd> CAPTURE</p>
+<p style="font:500 14px var(--mono);letter-spacing:.14em"><span style="color:#5ff0c0">● PREY</span> &nbsp; <span style="color:#7fd6ff">○ NEUTRAL</span> &nbsp; <span style="color:#ff5e73">◆ THREAT</span></p></div></div></section>
+
+<section id="roles"><h2>Agent roles</h2><p>Lower-third plates, one colour per role. The same colour tags that agent's subtitles. The creator is always plain white.</p><div class="roles" id="rolegrid"></div></section>
+
+<section id="subs"><h2>Subtitles</h2><p>42 px @1080p, bottom-centre, 90 px up, max two lines, void glass box. Creator: upright white, no label. Agents: italic cool tint, role label + coloured bar.</p>
+<div class="two">
+<div class="stage" style="background-image:url(assets/backgrounds/bg-stage12-black-hole-clean.png)"><div class="sub-demo" style="--c:#fff;--t:#fff;--i:normal">So I asked the team to build a whole universe.</div></div>
+<div class="stage" style="background-image:url(assets/backgrounds/bg-stage08-star-clean.png)"><div class="sub-demo" style="--c:#e0608f;--t:#d6f4ff;--i:italic"><small>◆ RENDERER</small>I made the star surface boil, so you can see every cell up close.</div></div></div></section>
+
+<section id="motion"><h2>Motion</h2><p>One easing for almost everything: the game's own <code>cubic-bezier(0.215, 0.61, 0.355, 1)</code>. Calm, scanned-on, never bouncy.</p>
+<div class="ease">
+<div class="panel"><code>out</code> .215 .61 .355 1<div class="t" style="--e:cubic-bezier(.215,.61,.355,1)"><i></i></div></div>
+<div class="panel"><code>pop</code> .34 1.56 .64 1 (chips only)<div class="t" style="--e:cubic-bezier(.34,1.56,.64,1)"><i></i></div></div>
+<div class="panel"><code>inOut</code> .65 0 .35 1<div class="t" style="--e:cubic-bezier(.65,0,.35,1)"><i></i></div></div>
+<div class="panel"><code>in</code> .55 .055 .675 .19 (exits)<div class="t" style="--e:cubic-bezier(.55,.055,.675,.19)"><i></i></div></div></div>
+<h3>Timing @30 fps</h3>
+<table><tr><th>Motion</th><th>ms</th><th>frames</th></tr>
+<tr><td>Panel in / out</td><td>320 / 240</td><td>10 / 7</td></tr><tr><td>Progress bar / ghost</td><td>200 / 900</td><td>6 / 27</td></tr>
+<tr><td>Stage-name decode</td><td>500</td><td>15</td></tr><tr><td>Banner total (un-blur + tracking collapse)</td><td>2200</td><td>66</td></tr>
+<tr><td>Crossfade</td><td>400</td><td>12</td></tr><tr><td>Title hold / chapter hold / lower-third hold</td><td>2600 / 2400 / 4500</td><td>78 / 72 / 135</td></tr></table>
+<h3>Cards &amp; transitions</h3>
+<p style="color:var(--mist)"><b style="color:var(--text)">Title card:</b> emblem → status line typed → VESPER un-blurs (tracking 0.6→0.42em) → DRIFT → "built with R7 Orbit" gold mark. <b style="color:var(--text)">Chapter card:</b> CHAPTER 03/09 kicker, 96 px title, 1 px line draws out, 12-step stage ladder advances. <b style="color:var(--text)">Transitions:</b> 400 ms crossfade; cyan scan-line wipe between chapters; 120 ms coral/cyan glitch on "it broke". No spins, shake, whip-zooms or fire. Nothing faster than 3 Hz.</p></section>
+
+<section id="shots"><h2>Game screenshots</h2><p>Captured from the running game. Click to enlarge.</p><div class="shots" id="shotgrid"></div></section>
+<section id="bg"><h2>Clean backgrounds</h2><p>No HUD, 1920×1080. Dim to ~55% and add the vignette.</p><div class="shots" id="bggrid"></div></section>
+
+<section id="todo"><h2>Still missing</h2><ul class="todo">
+<li>R7 Orbit logo vector or ≥2048 px master (coming from you)</li>
+<li>Video title, and whether "Vesper Drift" or "R7 Orbit" leads; confirm "Hunter" as the on-screen name</li>
+<li>Confirmation of the seven roles, their colours, and who did what</li>
+<li>Audio: the game has no sound files; music and SFX choices or a recording</li>
+<li>Your footage; gameplay of the evolution-choice menu and ending screens</li></ul></section>
+<footer>R7 ORBIT × VESPER DRIFT · BRAND KIT · SEE brand-guide.md AND theme.ts</footer>
+<div id="lb"></div><div class="toast" id="toast">copied</div>
+<script>
+const sw=(id,a)=>document.getElementById(id).innerHTML=a.map(([n,h,u])=>`<div class="sw" data-h="${h}"><i style="background:${h}"></i><div>${n}<code>${h}</code><small>${u}</small></div></div>`).join('');
+sw('core',[['Void','#050812','Backgrounds, letterbox'],['Void mid','#0A1424','Panel base'],['Holo cyan','#5CE1FF','Primary accent'],['Holo hi','#B8F3FF','Glow cores, values'],['Moon white','#E6F6FF','Primary text'],['Mist','#86A3BF','Labels, secondary']]);
+sw('sig',[['Amber','#FFB547','Caution, emphasis'],['Violet','#B48CFF','Evolution'],['Mint (prey)','#5FF0C0','Good / success'],['Glacier','#7FD6FF','Neutral'],['Coral (threat)','#FF5E73','Bad / bug']]);
+sw('space',[['Nebula body','#2E5F8C',''],['Nebula core','#8FB3D9',''],['H-alpha','#C8456E','Star-era nebula'],['O-III','#3FB8B0','Star-era nebula'],['R7 gold','#CAAB6C','Logo only'],['R7 gold light','#E6C98C','Logo highlight'],['R7 tile','#0D0D0F','Logo tile']]);
+const R=[['CREATIVE DIRECTOR','CD','#B48CFF','Vision, art bible, what the game should feel like'],['UI DESIGNER','UI','#5CE1FF','The holographic HUD, menus and screens'],['SOUND DESIGNER','SN','#FFB547','Everything you hear, synthesised live'],['ENGINE','EN','#5FF0C0','Game loop, input, camera, wiring'],['RENDERER','RN','#E0608F','Planets, stars, nebulae, black holes in 3D'],['SIMULATION','SM','#6EA2FF','Gravity, absorption, stages, infinite universe'],['QA','QA','#FF5E73','Playtests, balance runs, finding what breaks']];
+rolegrid.innerHTML=R.map((r,i)=>`<div class="lt" style="--c:${r[2]}"><div class="k">AGENT 0${i+1}/07 // ${r[1]}</div><div class="n">${r[0]}</div><div class="s">${r[3]}</div></div>`).join('');
+const S=[['01-title','Title screen'],['02-hud-meteorite','HUD · stage 1 Meteorite'],['03-hud-rocky-lava','HUD · stage 4 Rocky Planet (lava)'],['04-hud-gas-giant','HUD · stage 5 Gas Giant'],['05-hud-star','HUD · stage 8 Star'],['06-hud-neutron-star','HUD · stage 11 Neutron Star'],['07-hud-black-hole','HUD · stage 12 Black Hole'],['08-settings','Settings panel'],['mock-lowerthird-and-agent-subtitle','Mockup · lower-third + agent subtitle']];
+shotgrid.innerHTML=S.map(s=>`<figure><img loading="lazy" src="screenshots/${s[0]}.png"><figcaption>${s[1]}</figcaption></figure>`).join('');
+const B=['stage01-asteroid','stage04-rocky-lava','stage05-gas-giant','stage08-star','stage11-neutron','stage12-black-hole'];
+bggrid.innerHTML=B.map(b=>`<figure><img loading="lazy" src="assets/backgrounds/bg-${b}-clean.png"><figcaption>bg-${b}-clean.png</figcaption></figure>`).join('');
+document.addEventListener('click',e=>{const s=e.target.closest('.sw');if(s){navigator.clipboard?.writeText(s.dataset.h);toast.style.opacity=1;toast.textContent='copied '+s.dataset.h;setTimeout(()=>toast.style.opacity=0,900)}
+const im=e.target.closest('.shots img');if(im){lb.innerHTML='<img src="'+im.src+'">';lb.style.display='grid'}else if(e.target.closest('#lb'))lb.style.display='none'});
+</script></body></html>
