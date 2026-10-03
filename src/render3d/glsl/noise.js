@@ -140,8 +140,10 @@ vec3 starLayer(vec3 d, float cells, float seed, float bright, float sharp){
 vec3 skyBake(vec3 d){
   vec3 p = d * 1.2 + uSkySeed * 13.7;
   float haze = fbm(p, 3);
-  vec3 col = uSkyA * (.35 + .15 * haze);
-  col += uSkyB * .03 * haze;
+  float band = exp(-pow(dot(d, normalize(vec3(.3, .9, .35))) * 2.6, 2.));
+  vec3 col = uSkyA * (.4 + .15 * haze + .5 * band);
+  col += uSkyB * (.03 * haze + .09 * band * (.6 + .6 * haze));
+  col += starLayer(d, 90., uSkySeed + 5., .5, 1400.) * (.4 + band) * .5;
   return col;
 }
 `;

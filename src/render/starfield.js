@@ -156,8 +156,8 @@ export function createStarfield() {
     if (tiles) return;
     tiles = {
       dust: bakeDust(LAYERS.dust.T, 11),
-      far: bakeStarTile(LAYERS.far.T, 120, [0.45, 0.95], 0, 21, 0),
-      mid: bakeStarTile(LAYERS.mid.T, 70, [0.8, 1.9], 2, 31, 3),
+      far: bakeStarTile(LAYERS.far.T, 260, [0.5, 1.1], 0, 21, 0),
+      mid: bakeStarTile(LAYERS.mid.T, 120, [0.8, 2.1], 0, 31, 6),
       fore: bakeFore(LAYERS.fore.T, 41),
     };
   }
@@ -220,16 +220,26 @@ export function createStarfield() {
       const dens = (key) => lerp(STAGES[fade.from][key], STAGES[fade.to][key], fade.t);
       ctx.globalCompositeOperation = 'source-over';
 
-      // sparse, dim far stars only: no nebula, dust or twinkle so small bodies stay readable
-      ctx.globalAlpha = 0.35 * dens('stars');
+      // very faint colour wash for depth (cross-faded between stages)
+      ctx.globalAlpha = 0.22 * (1 - fade.t);
+      if (fade.t < 1) drawTiles(ctx, nebulaFor(fade.from), L.nebula, w, h);
+      if (fade.t > 0) {
+        ctx.globalAlpha = 0.22 * fade.t;
+        drawTiles(ctx, nebulaFor(fade.to), L.nebula, w, h);
+      }
+
+      // two crisp star layers with subtle parallax
+      const sd = clamp(dens('stars'), 0.6, 1);
+      ctx.globalAlpha = 0.8 * sd;
       drawTiles(ctx, tiles.far.c, L.far, w, h);
+      ctx.globalAlpha = sd;
+      drawTiles(ctx, tiles.mid.c, L.mid, w, h);
       ctx.globalAlpha = 1;
     },
 
     /** Out-of-focus foreground motes (drawn over the bodies). */
     drawForeground(ctx, w, h, quality, reduced) {
-      return; // foreground motes removed: they compete with small bodies
-      if (quality < 2 || reduced || !tiles) return;
+      return; // foreground motes stay off: they overlap small bodies
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = 1;
       drawTiles(ctx, tiles.fore, L.fore, w, h);
