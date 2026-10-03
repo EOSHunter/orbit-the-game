@@ -154,12 +154,12 @@ test('lifecycle: title -> playing -> restart reuses the state object; pause free
 test('evolution, choices, health-low, invuln and endings follow the 2D rules', () => {
   const sim = lab(createSim);
   const st = sim.getState(); const log = recorder(sim);
-  sim.debug.setPlayer({ mass: 20, natural: true });
+  sim.debug.setPlayer({ mass: 5, natural: true });
   run(sim, 0.1);
   assert.equal(st.stageId, 'asteroid');
   assert.ok(log.some((e) => e.type === 'evolve' && e.payload.fromId === 'meteorite' && e.payload.toId === 'asteroid'));
   assert.equal(st.status, 'playing', 'stage 1 has no menu');
-  sim.debug.setPlayer({ mass: 80, natural: true });
+  sim.debug.setPlayer({ mass: 15, natural: true });
   run(sim, 0.1);
   assert.equal(st.status, 'choice'); assert.equal(st.stageId, 'dwarf_planet');
   const open = log.find((e) => e.type === 'choice-open');
@@ -191,7 +191,7 @@ test('evolution, choices, health-low, invuln and endings follow the 2D rules', (
 test('finale: after the last stage the run ends after 1.6x mass or 30 s with the finale ending', () => {
   const sim = lab(createSim);
   const st = sim.getState(); const log = recorder(sim);
-  sim.debug.setPlayer({ mass: 3.2e6 });
+  sim.debug.setPlayer({ mass: 1.8e6 });
   run(sim, 0.1);
   assert.equal(st.stageId, 'black_hole');
   assert.equal(st.status, 'playing');
@@ -201,7 +201,7 @@ test('finale: after the last stage the run ends after 1.6x mass or 30 s with the
   assert.equal(e.payload.kind, 'finale');
   assert.ok(e.payload.ending && e.payload.ending.title);
   // the mass route
-  const sim2 = lab(createSim); sim2.debug.setPlayer({ mass: 3.2e6 }); run(sim2, 0.1);
+  const sim2 = lab(createSim); sim2.debug.setPlayer({ mass: 1.8e6 }); run(sim2, 0.1);
   sim2.debug.setPlayer({ mass: 3.2e6 * 1.7 }); run(sim2, 0.1);
   assert.equal(sim2.getState().status, 'ended');
 });
