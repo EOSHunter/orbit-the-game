@@ -1,6 +1,6 @@
 # R7 Orbit × Vesper Drift: video brand guide
 
-> Confirmed: video title **Vesper Drift**, creator on-screen name **Hunter**. Final logo masters (SVG + 2048/4096 PNG) are in the kit.
+> Confirmed: agent roles and colours, audio from the creator's clips, video title **Vesper Drift**, creator on-screen name **Hunter**. Final logo masters (SVG + 2048/4096 PNG) are in the kit.
 
 For the casual vlog "I built a game by directing a team of AI agents in R7 Orbit" (under 10 min, Remotion, 1920×1080 @ 30 fps).
 Machine-readable twin of this document: [`theme.ts`](./theme.ts). Every value below is lifted from the game's own code and docs unless marked *(video decision)*.
@@ -259,6 +259,8 @@ See `screenshots/mock-lowerthird-and-agent-subtitle.png` for the look (the lower
 ---
 
 ## 8. Sound (reference only)
+
+**Decision:** the video's audio comes from the creator's own clips (no separate music/SFX library). The notes below are only for matching the game's feel if you add small UI blips.
 
 The game ships **no audio files**: everything is synthesised live (`src/audio/`, `docs/audio-direction.md`). UI sound names: `ui.click ui.hover ui.confirm ui.back ui.error ui.open ui.close ui.choice.select ui.choice.confirm ui.stagebanner`. Character: dry, bright, non-diegetic blips; low "felt" rumbles; sonar pings; a stage ambience that drops from A3 to B1 as the player grows. For the video: UI blips for panel in/out, a soft sub-bass swell under chapter cards, a quiet sonar ping for lower-thirds. Capture real audio by screen-recording the game with sound, or the demo page `src/audio/demo.html`.
 
