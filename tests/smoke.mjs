@@ -109,7 +109,7 @@ await send('Runtime.enable');
 await send('Log.enable');
 await send('Page.enable');
 await send('Emulation.setFocusEmulationEnabled', { enabled: true }).catch(() => {});
-await send('Page.navigate', { url: URL_ROOT });
+await send('Page.navigate', { url: `${URL_ROOT}?renderer=2d` });   // the 2D build (3D is the default; see smoke3d.mjs)
 
 const S = 'window.__orbit.state';
 const OV = (cls) => `document.querySelector('.vd-overlay.${cls}.is-on')`;
