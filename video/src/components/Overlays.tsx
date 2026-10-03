@@ -11,13 +11,14 @@ export const LowerThird: React.FC<{lt: NonNullable<Beat['lowerThird']>; durFrame
   const p = inP(frame, 0, timing.panelIn) * outP(frame, durFrames, timing.panelOut);
   const item = (i: number) => panelStyle(inP(frame, 4 + i * timing.stagger, timing.panelIn), 'x');
   return (
-    <Glass style={{left: lowerThird.x, bottom: lowerThird.bottom, width: lowerThird.width, padding: '24px 28px 24px 40px', ...panelStyle(p, 'x')}}>
+    // grows to fit long names on one line ("ATLAS: GAME DESIGN RESEARCH"), from the brand's 640 px up to 900 px
+    <Glass style={{left: lowerThird.x, bottom: lowerThird.bottom, minWidth: lowerThird.width, maxWidth: 900, padding: '24px 40px 24px 40px', ...panelStyle(p, 'x')}}>
       <div style={{position: 'absolute', left: 0, top: 0, bottom: 0, width: lowerThird.accentBar, background: accent, boxShadow: `0 0 14px ${accent}`}} />
       <div style={{...mono(lowerThird.kickerSize, accent, '0.3em'), ...item(0)}}>{lt.kicker}</div>
       <div
         style={{
           fontFamily: fonts.display, fontWeight: 600, fontSize: lowerThird.nameSize, letterSpacing: '0.12em', textTransform: 'uppercase',
-          color: '#FFFFFF', textShadow: effects.textGlow, marginTop: 8, lineHeight: 1.1, ...item(1),
+          color: '#FFFFFF', textShadow: effects.textGlow, marginTop: 8, lineHeight: 1.1, whiteSpace: 'nowrap', ...item(1),
         }}
       >
         {lt.name}
@@ -89,7 +90,7 @@ export const Roster: React.FC<{roster: Edl['roster']}> = ({roster}) => {
   return (
     <Glass style={{right: 110, top: 80, width: 560, padding: '22px 26px', ...panelStyle(p)}}>
       <div style={{...mono(18, colors.holo, '0.3em'), marginBottom: 14}}>
-        <span style={{opacity: Math.floor(frame / 24) % 2 ? 0.3 : 1}}>▮</span> AGENT ROSTER // PHASE 3
+        ▮ AGENT ROSTER // PHASE 3
       </div>
       {roster.rows.map((r) => {
         const f = frame - (r.atFrame - roster.startFrame);

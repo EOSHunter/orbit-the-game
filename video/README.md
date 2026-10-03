@@ -48,11 +48,15 @@ docs/video/brand-kit/assets ─────────────────�
 docs/video/brand-kit/theme.ts ◄── imported directly by src/theme.ts (single source for colours, fonts, motion)
 ```
 
-- **Beat → picture.** `clip` beats play their proxy segment(s) back to back, **full-frame and clean**: nothing is drawn over the picture itself (no scanlines, vignette, glow, grain, tint or push-ins). Only the title bar and taskbar are cropped, plus the browser chrome on gameplay. Branding lives on the title, chapter and end cards, lower-thirds, subtitles and callouts. `asset:` beats become the title card, chapter cards (stage background + `stageTints`, stage ladder, banner un-blur), illustration stills, or the end card.
+- **Beat → picture.** Gameplay beats are full-bleed and unframed (browser chrome and taskbar cropped). Screen recordings of Orbit sit in the bracketed frame over the chapter's dimmed stage background (brand §5, §6.7). **Nothing is drawn over the footage itself**: no scanlines, grain, vignette, tint or push-ins. `asset:` beats become the title card, chapter cards (stage background + `stageTints`, stage ladder, banner un-blur), illustration stills, or the end card.
+- **Story order.** Chapters follow the order things happened: research → the first build team → merging, QA and version 1 (2D) → the Phase 3 specialists going 3D → the comeback (3D flop, cost, R7 Orbit upgrading itself, iterating) → the finished game. Beat IDs are kept from the original script; new beats have letter suffixes (`64a`, `70a`, …). Hunter's personal smart assistant "R7" (not part of R7 Orbit) is cut, and `verify` keeps it out.
+- **Breathing room.** `build-edl.mjs` holds each spoken beat at least 0.6 s past Hunter's last word (from the word-level transcripts). If Hunter's next sentence starts inside that hold, the mic fades out 0.15 s after the line (`micUntil`), so it never leaks in.
+- **Dissolves.** Footage beats dissolve into each other over 8 frames, and the "+" joins inside a beat over 4. The outgoing shot keeps playing (proxies carry a 0.5 s tail) under the incoming one, so the timeline and subtitles don't move. Chapter cards keep the scan-wipe.
 - **Audio** (script "Audio streams"). Proxies are mixed from the source's separate streams: `a:2` mic (+6.8 dB) plus `a:1` system at 0.6 on real-line beats. On `[NARRATION]`, TTS and "mic muted" beats it's `a:1` only. Beat 90 keeps the mic muted until 1:54.0.
 - **Music bed.** The game ships no audio files. Following the script's audio plan, each chapter's bed is lifted from the game's own sound (`a:1`) in clips 9-11 and looped with crossfades. Each bed is a clearly named `MUSIC BED …` sequence in Studio. It plays only under beats without their own game audio (clips 1-7 and cards), ducked about 18 dB under speech and up on silent beats. To use a proper stem later (e.g. rendered from `src/audio/demo.html`), change the bed's source in `edl-overrides.mjs › beds` or drop a file over `public/media/beds/<id>.m4a`.
-- **Subtitles** (brand §7). The text comes verbatim from the script's "Hunter's line" column, split into ≤ 2-line cues at sentence/clause breaks. Cues on real lines are timed by aligning their words to the word-level transcripts. Narration cues are spread across their beat. Hunter is white and upright. Orbit's TTS is italic and tinted, with a cyan bar and a `◆ ORBIT` label; `HUNTER` is labelled when the voice switches back. `out/subtitles.srt` has exactly the same cues.
-- **Lower-thirds** hold 4.5 s across cuts (brand §6.5), with the role colour on the bar and white for Hunter. The chapter-3 roster panel builds row by row.
+- **Subtitles** (brand §7). The text comes verbatim from the script's "Hunter's line" column, split into ≤ 2-line cues at sentence/clause breaks. Cues on real lines are timed by aligning their words to the word-level transcripts. On-screen-text cues type on with a cursor that disappears once the line is complete. Hunter is white and upright. Orbit's TTS is italic and tinted, with a cyan bar and a `◆ ORBIT` label; `HUNTER` is labelled when the voice switches back. `out/subtitles.srt` has exactly the same cues.
+- **Lower-thirds** hold 4.5 s across cuts (brand §6.5), with the role colour on the bar and white for Hunter. They widen from 640 px up to 900 px so long names stay on one line. The roster panel (chapter 5) builds row by row.
+- **No flicker.** Glass panels don't use `backdrop-filter` (headless Chrome dropped them for single frames), and nothing blinks except the cursor while text is typing.
 
 ## On-screen text instead of narration
 
@@ -60,8 +64,7 @@ Nothing is recorded for the video, and there is no AI voiceover: R7 Orbit makes 
 The 19 `[NARRATION]` lines are shown as **on-screen text**. They sit in the subtitle box, typed on character by character with the
 game's caret, and are in the .srt like every other line. Under them you hear only the clip's own system audio and the game
 music bed, which comes up to full level because there's no speech. `build-edl.mjs` lengthens a beat whose line needs more time
-to read (15 characters/s + 1 s). Its last source range simply runs on, so 17 beats grow by 0.4-1.5 s and the cut runs
-8:16 instead of the script's 8:03.
+to read (15 characters/s + 1 s). Its last source range simply runs on.
 
 ## The R7 Orbit reveal
 
@@ -75,5 +78,10 @@ TEAM OF AI AGENTS IN R7 ORBIT*. The lines come from the script's beat 94 row.
 - **Beat 57's Harbor "cut-out"** is a frozen full frame from clip 4, not a cropped card.
 - The Orbit UI is small in the full-frame screen recordings; the zooms above are what fixes that.
 - **No blur/crop pass yet** for account details on the Claude usage page (beat 70) or for taskbar notifications (script Gaps #11).
-- **Transitions** are hard cuts, plus a scan-wipe into each chapter card. No crossfades yet.
 - The audio mix is rough: fixed gains, no loudness normalisation.
+
+## Runtime
+
+With the full story, breathing room and reading time the cut runs about **10:51**. Hunter agreed a little over 10:00 is
+fine, so `verify` passes up to 11:00 (and says so when the cut is over 10:00). Trim reserve if needed: beat 54 (robot-workers
+joke, 11 s), beat 70's Max-plan half (6 s), beat 26 (agent names, 8 s).
