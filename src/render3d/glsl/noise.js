@@ -136,18 +136,12 @@ vec3 starLayer(vec3 d, float cells, float seed, float bright, float sharp){
   }
   return col;
 }
-// Baked once into a cubemap (nebula + faint dust stars); crisp bright stars are Points.
+// Baked once into a cubemap: a near-flat dark tint with a very faint, low-contrast haze; crisp stars are Points.
 vec3 skyBake(vec3 d){
-  vec3 p = d * 1.7 + uSkySeed * 13.7;
-  float band = exp(-pow(dot(d, normalize(vec3(.3, .9, .35))) * 3.2, 2.));
-  float n1 = fbm(p * 1.1, 5);
-  float n2 = fbm(p * 2.7 + 4.2, 4);
-  float neb = smoothstep(.22, .7, n1 * (.6 + .9 * band)) * (.6 + .7 * n2);
-  float dark = smoothstep(.45, .8, fbm(p * 3.3 + 11., 3)) * .5;
-  vec3 col = uSkyA * (.4 + .6 * band);
-  col += uSkyB * neb * (.6 + .9 * band) * (1. - dark);
-  col += starLayer(d, 90., uSkySeed + 5., 1.2, 1400.) * (.5 + band);
-  col += vec3(.9, .95, 1.) * band * band * .025 * fbm(p * 14., 3);
+  vec3 p = d * 1.2 + uSkySeed * 13.7;
+  float haze = fbm(p, 3);
+  vec3 col = uSkyA * (.35 + .15 * haze);
+  col += uSkyB * .03 * haze;
   return col;
 }
 `;

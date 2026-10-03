@@ -177,8 +177,8 @@ export function createRenderer(canvas, options) {
   function drawBackground() {
     const a = STAGES[fade.from].tint, b = STAGES[fade.to].tint;
     const t = easeOutCubic(fade.t);
-    const inner = mixHex(a[1], b[1], t);
-    const outer = mixHex(mixHex(a[0], b[0], t), CORE.voidDeep, 0.35);
+    const outer = mixHex(mixHex(a[0], b[0], t), CORE.voidDeep, 0.6);
+    const inner = mixHex(mixHex(a[1], b[1], t), outer, 0.8);
     const diag = Math.hypot(w, h) / 2;
     const g = ctx.createRadialGradient(w / 2, h * 0.46, 0, w / 2, h / 2, diag * 1.1);
     g.addColorStop(0, inner);
@@ -469,7 +469,6 @@ export function createRenderer(canvas, options) {
         ctx.beginPath(); ctx.arc(rc.sx, rc.sy, rc.r * 1.0, a - 0.9, a + 0.9); ctx.stroke();
       }
     }
-    for (let i = 0; i < n; i++) drawRim(order[i], time, hc);
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
 
@@ -636,10 +635,6 @@ export function createRenderer(canvas, options) {
       ctx.beginPath(); ctx.arc(sxp, syp, pr * 1.04, a - 0.95, a + 0.95); ctx.stroke();
     }
     ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 0.9;
-    ctx.strokeStyle = REL.player;
-    ctx.lineWidth = Math.max(1.5, Math.min(2.2, pr * 0.06));
-    ctx.beginPath(); ctx.arc(sxp, syp, pr * (stage === 11 ? 1.075 : 1.09), 0, TAU); ctx.stroke();
     ctx.globalAlpha = 1;
   }
 

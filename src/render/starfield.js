@@ -220,28 +220,15 @@ export function createStarfield() {
       const dens = (key) => lerp(STAGES[fade.from][key], STAGES[fade.to][key], fade.t);
       ctx.globalCompositeOperation = 'source-over';
 
-      // nebula: cross-fade between the baked tiles of the two stages
-      ctx.globalAlpha = 0.9 * (1 - fade.t);
-      if (fade.t < 1) drawTiles(ctx, nebulaFor(fade.from), L.nebula, w, h);
-      if (fade.t > 0) {
-        ctx.globalAlpha = 0.9 * fade.t;
-        drawTiles(ctx, nebulaFor(fade.to), L.nebula, w, h);
-      }
-
-      ctx.globalAlpha = clamp(dens('dust'), 0.1, 1);
-      drawTiles(ctx, tiles.dust, L.dust, w, h);
-
-      const sd = dens('stars');
-      ctx.globalAlpha = sd;
+      // sparse, dim far stars only: no nebula, dust or twinkle so small bodies stay readable
+      ctx.globalAlpha = 0.35 * dens('stars');
       drawTiles(ctx, tiles.far.c, L.far, w, h);
-      ctx.globalAlpha = sd;
-      drawTiles(ctx, tiles.mid.c, L.mid, w, h);
-      if (quality >= 1 && !reduced) drawTwinkle(ctx, tiles.mid.twinkle, L.mid, w, h, time, sd, 0.8);
       ctx.globalAlpha = 1;
     },
 
     /** Out-of-focus foreground motes (drawn over the bodies). */
     drawForeground(ctx, w, h, quality, reduced) {
+      return; // foreground motes removed: they compete with small bodies
       if (quality < 2 || reduced || !tiles) return;
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = 1;

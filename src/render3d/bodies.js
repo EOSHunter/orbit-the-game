@@ -1,12 +1,12 @@
 // Turns state.bodies (+ player) into draw calls:
 //   rock family  -> three InstancedMesh LOD batches (lo / mid / big), shader-driven procedural surfaces
 //   terrestrial, gas giant, brown dwarf, star, neutron star -> pooled meshes (few, big, expensive shaders)
-//   black hole   -> lensed billboard + optional jets; glow billboards; beams; relation outlines (overlay)
+//   black hole   -> lensed billboard + optional jets; glow billboards; beams
 // Emission is written ONLY for causes on the contract's whitelist (util.causeAllowed).
 import * as THREE from 'three';
 import { rockVert, rockFrag } from './glsl/rock.js';
 import { sphereVert, planetFrag, gasFrag, starFrag, atmoVert, atmoFrag, ringVert, ringFrag, glowVert, glowFrag, beamVert, beamFrag } from './glsl/bodies.js';
-import { bhVert, bhFrag, outlineVert, outlineFrag } from './glsl/misc.js';
+import { bhVert, bhFrag } from './glsl/misc.js';
 import { causeAllowed, blackbodyRGB, hexLinear, lum, seedFloat, frac01, writeTRS, quatAxisAngle, quatMul } from './util.js';
 
 const SMALL = new Set(['meteorite', 'asteroid', 'debris', 'fragment', 'comet']);
@@ -49,7 +49,7 @@ class RockBatch {
   next() { return this.count < this.cap ? this.count++ : -1; }
 }
 
-class InstBatch {            // generic instanced quads (glow, outlines)
+class InstBatch {            // generic instanced quads (glow)
   constructor(cap, material, attrs) {
     this.cap = cap; this.count = 0;
     const geo = new THREE.PlaneGeometry(2, 2);
@@ -107,14 +107,6 @@ export class BodyLayer {
     }), [['aGlow', 4], ['aGlow2', 3]]);
     this.glow.mesh.renderOrder = 20;
     scene.add(this.glow.mesh);
-
-    this.outlines = new InstBatch(400, new THREE.ShaderMaterial({
-      uniforms: { uViewH: shared.uViewH, uPixelRatio: { value: 1 } }, vertexShader: outlineVert, fragmentShader: outlineFrag,
-      transparent: true, depthTest: false, depthWrite: false,
-    }), [['aCol', 4]]);
-    this.outlines.mesh.renderOrder = 100;
-    overlayScene.add(this.outlines.mesh);
-    this.outlineMat = this.outlines.mesh.material;
 
     this.beams = [];
     this.beamUsed = 0;
@@ -196,7 +188,7 @@ export class BodyLayer {
 
   begin() {
     for (const b of Object.values(this.batches)) b.begin();
-    this.glow.begin(); this.outlines.begin();
+    this.glow.begin();
     this.beamUsed = 0;
     this.emitters.length = 0;
     for (const k in this.pools) for (const it of this.pools[k]) it.used = false;
@@ -207,7 +199,7 @@ export class BodyLayer {
 
   end(dotsOverlayCtx) {
     for (const b of Object.values(this.batches)) b.end();
-    this.glow.end(); this.outlines.end();
+    this.glow.end();
     for (let i = this.beamUsed; i < this.beams.length; i++) this.beams[i].visible = false;
     for (const k in this.pools) for (const it of this.pools[k]) { if (!it.used) it.root.visible = false; }
     this.active = this._nextActive;
@@ -265,22 +257,6 @@ export class BodyLayer {
     if (b.state === 'absorbing' && b.absorbT != null) R *= 1 - 0.7 * b.absorbT;
     const px = R * proj11 * H * 0.5 / dist;
     const cls = b.cls;
-    const isSelf = b.rel === 'self';
-
-    // ---- relation outline (overlay, HUD only) ----
-    if (!isSelf && b.rel && px > 0.4 && ctx.relation) {
-      const col = ctx.relation[b.rel];
-      if (col) {
-        const i = this.outlines.next();
-        if (i >= 0) {
-          this.outlines.setXYZS(i, b.p[0], b.p[1], b.p[2], R);
-          const a = this.outlines.a.aCol.array, o = i * 4;
-          const strong = opts.readability ? 1 : (b.rel === 'neutral' ? 0.0 : 0.55);
-          a[o] = col[0]; a[o + 1] = col[1]; a[o + 2] = col[2];
-          a[o + 3] = Math.min(1, strong * Math.min(1, px / 6 + 0.3));
-        }
-      }
-    }
 
     const emitting = cls === 'star' || cls === 'neutronStar' || cls === 'blackHole';
     // hysteresis: a body already drawn as a mesh stays a mesh down to 0.9 px, so it cannot flicker dot <-> mesh at the threshold
