@@ -2,8 +2,17 @@
 // Distances are world units. Speeds/accelerations are expressed in "player radii" (u) per second so
 // that the game feels identical at every scale (the camera zooms to keep the player a constant size).
 
+// ---- gravity tunables (see gravityPull below) ------------------------------------------------------
+export const GRAVITY_STRENGTH = 1.4;     // u/s^2 pull at a body's own surface from an equal-sized source (scales with size ratio)
+export const GRAVITY_SOFTEN = 0.5;       // softening length as a fraction of the source radius (keeps the pull finite up close)
+export const GRAVITY_RANGE = 8;          // pull reaches this many source radii, fading smoothly to zero over the outer 30 %
+export const GRAVITY_MIN_RATIO = 1.5;    // a source must be this much heavier than the body it pulls
+export const GRAVITY_MAX_ACCEL = 5;      // u/s^2 hard cap on the total pull on any body (stability)
+export const GRAVITY_ON_PLAYER = 1;      // multiplier on how hard larger bodies pull the player
+export const GRAVITY_ON_BODIES = 1;      // multiplier on how hard the player and larger bodies pull other bodies
+
 export const CONFIG = {
-  radiusUnit: 10,          // radius = radiusUnit * sqrt(mass)  (mass ~ area)
+  radiusUnit: 10,         // radius = radiusUnit * sqrt(mass)  (mass ~ area)
   startMass: 1,
   absorbEfficiency: 0.14,  // fraction of a prey body's mass that is added to the player (tuned with tests/pace.mjs)
 
@@ -117,6 +126,34 @@ export function classify(playerMass, bodyMass, prev) {
   if (playerMass >= bodyMass * prey) return 'prey';
   if (bodyMass >= playerMass * threat) return 'threat';
   return 'neutral';
+}
+
+// Adds the pull of `src` on a body at (tx, ty) into out.x / out.y (acceleration, world units/s^2).
+// Softened inverse-square, proportional to the source's size, cut off beyond GRAVITY_RANGE source radii.
+// The caller clamps the total with capPull(); `scale` is a per-target multiplier.
+export function gravityPull(src, tx, ty, scale, out) {
+  const dx = src.x - tx;
+  const dy = src.y - ty;
+  const range = GRAVITY_RANGE * src.radius;
+  const d2 = dx * dx + dy * dy;
+  if (d2 > range * range) return;
+  const eps = GRAVITY_SOFTEN * src.radius;
+  const q = d2 + eps * eps;
+  // a = G * R^3 * d / q^1.5: at d ~ R this is ~0.7 * G * R, i.e. proportional to the source's size.
+  let k = (GRAVITY_STRENGTH * scale * src.radius * src.radius * src.radius) / (q * Math.sqrt(q));
+  const d = Math.sqrt(d2);
+  if (d > 0.7 * range) {
+    const t = clamp((d - 0.7 * range) / (0.3 * range), 0, 1);
+    k *= 1 - t * t * (3 - 2 * t);
+  }
+  out.x += dx * k;
+  out.y += dy * k;
+}
+
+export function capPull(out, unit) {
+  const max = GRAVITY_MAX_ACCEL * unit;
+  const m = Math.hypot(out.x, out.y);
+  if (m > max) { out.x *= max / m; out.y *= max / m; }
 }
 
 export function stageT(stageIndex, stageCount) {
