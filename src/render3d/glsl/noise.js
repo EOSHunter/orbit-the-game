@@ -116,6 +116,10 @@ uniform vec3 uSkyA;      // deep tint
 uniform vec3 uSkyB;      // nebula tint
 uniform float uSkySeed;
 uniform float uSkyDensity;
+uniform vec3 uNebCol[4];     // layered nebula colours
+uniform vec4 uNebCfg;        // x strength, y scale, z coverage (higher = more cloud), w galactic band strength
+uniform vec4 uGalA[12];      // xyz direction, w angular radius (rad)
+uniform vec4 uGalB[12];      // x rotation, y flatten (0..1), z brightness (0 = unused), w spiral amount
 vec3 starLayer(vec3 d, float cells, float seed, float bright, float sharp){
   vec3 q = d * cells;
   vec3 i = floor(q);
@@ -136,13 +140,46 @@ vec3 starLayer(vec3 d, float cells, float seed, float bright, float sharp){
   }
   return col;
 }
-// Baked once into a cubemap: a near-flat dark tint with a very faint, low-contrast haze; crisp stars are Points.
+// Baked once into a cubemap: dark base, layered soft nebula clouds, a faint galactic band, distant galaxies.
+vec3 galaxyAt(vec3 d){
+  vec3 acc = vec3(0.);
+  for (int i = 0; i < 12; i++){
+    vec4 A = uGalA[i], B = uGalB[i];
+    if (B.z <= 0.) continue;
+    vec3 g = A.xyz;
+    if (dot(d, g) < .9) continue;
+    vec3 u = normalize(cross(g, abs(g.y) < .9 ? vec3(0., 1., 0.) : vec3(1., 0., 0.)));
+    vec3 v = cross(g, u);
+    float c = cos(B.x), sn = sin(B.x);
+    vec2 q = vec2(dot(d, u), dot(d, v));
+    q = vec2(c * q.x - sn * q.y, sn * q.x + c * q.y);
+    q.y /= max(.12, 1. - B.y);
+    float rr = length(q) / A.w;
+    if (rr > 4.) continue;
+    float core = exp(-rr * rr * 26.);
+    float disk = exp(-rr * 3.2);
+    float arms = 1. + B.w * .55 * cos(2. * atan(q.y, q.x) - 6. * log(rr + .08));
+    vec3 cc = vec3(1., .86, .62), dc = vec3(.62, .74, 1.);
+    acc += B.z * (cc * core * 1.2 + dc * disk * .38 * arms) * (1. - smoothstep(2.5, 4., rr));
+  }
+  return acc;
+}
 vec3 skyBake(vec3 d){
-  vec3 p = d * 1.2 + uSkySeed * 13.7;
-  float haze = fbm(p, 3);
-  float band = exp(-pow(dot(d, normalize(vec3(.3, .9, .35))) * 2.6, 2.));
-  vec3 col = uSkyA * (.4 + .15 * haze + .5 * band);
-  col += uSkyB * (.03 * haze + .09 * band * (.6 + .6 * haze));
+  vec3 p = d * uNebCfg.y + uSkySeed * 13.7;
+  float bandH = dot(d, normalize(vec3(.3, .9, .35)));
+  float band = exp(-pow(bandH * 2.6, 2.));
+  float haze = fbm(p * .8, 3);
+  vec3 col = uSkyA * (.4 + .15 * haze + .45 * band);
+  // four cloud layers, each with its own noise field and a soft, wide threshold so there is always some cloud in view
+  for (int k = 0; k < 4; k++){
+    float fk = float(k);
+    float n = fbm(p * (1. + .35 * fk) + vec3(7.3 * fk, 3.1 * fk, 11.7 - 5. * fk), 4);
+    float m = smoothstep(.62 - uNebCfg.z, .95 - uNebCfg.z * .6, n + .12 * band);
+    float detail = .75 + .5 * fbm(p * 3.5 + fk * 19., 3);
+    col += mix(uNebCol[k], uSkyB, .2) * m * detail * uNebCfg.x * (.7 + .5 * smoothstep(.2, .8, fbm(p * .5 + fk * 5., 2)));
+  }
+  col += uSkyB * .08 * band * (.6 + .6 * haze) * uNebCfg.w;
+  col += galaxyAt(d);
   col += starLayer(d, 90., uSkySeed + 5., .5, 1400.) * (.4 + band) * .5;
   return col;
 }

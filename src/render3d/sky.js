@@ -4,6 +4,15 @@ import * as THREE from 'three';
 import { skyBakeVert, skyBakeFrag, skyVert, skyFrag, starsVert, starsFrag, speckVert, speckFrag } from './glsl/misc.js';
 import { blackbodyRGB } from './util.js';
 
+// ---- tunables: deep-space look ----
+const NEBULA_COLORS = ['#5b2a9a', '#1f8c9a', '#2a4fb0', '#b04a8a'];  // deep purple, teal, blue, warm magenta
+const NEBULA_STRENGTH = 0.12;        // overall cloud brightness (keep low so small bodies stay readable)
+const NEBULA_SCALE = 1.5;            // cloud size: lower = larger clouds
+const NEBULA_COVERAGE = 0.14;        // 0..0.4, higher = more of the sky covered by cloud
+const BAND_STRENGTH = 1.0;           // faint galactic band tint (0 = off)
+const GALAXY_COUNT = 9;              // max 12
+const GALAXY_SIZE = [0.014, 0.045];  // angular radius range, radians
+const GALAXY_BRIGHTNESS = [0.5, 1.1];
 const STARS = 700;
 const SPECKS = 6000;
 const PLANE = [0.3, 0.9, 0.35];
@@ -19,7 +28,11 @@ export class Sky {
     this.mix = 0; this.gain = 1.3; this.seed = 1; this.density = 0.5; this.key = '';
     this.params = { A: new THREE.Color('#04101f'), B: new THREE.Color('#2a6aa8') };
 
-    this.bakeUniforms = { uSkyA: { value: new THREE.Color() }, uSkyB: { value: new THREE.Color() }, uSkySeed: { value: 1 }, uSkyDensity: { value: .5 } };
+    this.bakeUniforms = { uSkyA: { value: new THREE.Color() }, uSkyB: { value: new THREE.Color() }, uSkySeed: { value: 1 }, uSkyDensity: { value: .5 },
+      uNebCol: { value: NEBULA_COLORS.map((c) => new THREE.Color(c)) },
+      uNebCfg: { value: new THREE.Vector4(NEBULA_STRENGTH, NEBULA_SCALE, NEBULA_COVERAGE, BAND_STRENGTH) },
+      uGalA: { value: Array.from({ length: 12 }, () => new THREE.Vector4(0, 1, 0, 0.02)) },
+      uGalB: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) } };
     this.bakeScene = new THREE.Scene();
     this.bakeScene.add(new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.ShaderMaterial({ uniforms: this.bakeUniforms, vertexShader: skyBakeVert, fragmentShader: skyBakeFrag, side: THREE.BackSide, depthTest: false })));
     this.cubeCam = new THREE.CubeCamera(0.1, 10, this.rts[0]);
@@ -73,9 +86,22 @@ export class Sky {
 
   _bake(rt, seed, tintA, tintB, density) {
     const u = this.bakeUniforms;
+    this._layoutGalaxies(seed);
     u.uSkyA.value.set(tintA); u.uSkyB.value.set(tintB); u.uSkySeed.value = seed; u.uSkyDensity.value = density;
     this.cubeCam.renderTarget = rt;
     this.cubeCam.update(this.renderer, this.bakeScene);
+  }
+
+  _layoutGalaxies(seed) {
+    const r = mulberry((seed * 15485863) | 0 || 7), A = this.bakeUniforms.uGalA.value, B = this.bakeUniforms.uGalB.value;
+    for (let i = 0; i < 12; i++) {
+      if (i >= GALAXY_COUNT) { B[i].set(0, 0, 0, 0); continue; }
+      // spread by stratifying latitude so galaxies are placed around the whole sky, not clumped
+      const z = -1 + 2 * ((i + r()) / GALAXY_COUNT), a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z);
+      const sz = GALAXY_SIZE[0] + (GALAXY_SIZE[1] - GALAXY_SIZE[0]) * r() * r();
+      A[i].set(s * Math.cos(a), z, s * Math.sin(a), sz);
+      B[i].set(r() * Math.PI, 0.15 + 0.7 * r(), GALAXY_BRIGHTNESS[0] + (GALAXY_BRIGHTNESS[1] - GALAXY_BRIGHTNESS[0]) * r(), r() < 0.5 ? 0.9 : 0.2);
+    }
   }
 
   _fillStars(seed, density) {
