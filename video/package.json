@@ -1,0 +1,29 @@
+{
+  "name": "vesper-drift-video",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Remotion project for the Vesper Drift / R7 Orbit vlog (rough cut + final).",
+  "type": "module",
+  "scripts": {
+    "edl": "node scripts/build-edl.mjs",
+    "prep": "node scripts/prep-media.mjs --res 540",
+    "prep:1080": "node scripts/prep-media.mjs --res 1080",
+    "srt": "node scripts/write-srt.mjs",
+    "verify": "node scripts/verify.mjs",
+    "studio": "remotion studio src/index.ts --port=3918",
+    "render:rough": "npm run edl && npm run prep && npm run srt && remotion render src/index.ts VesperDrift out/rough-cut.mp4 --scale=0.5 --props=props/rough.json --crf=26 --port=3917 && npm run verify -- out/rough-cut.mp4",
+    "render:final": "npm run edl && npm run prep:1080 && npm run srt && remotion render src/index.ts VesperDrift out/final-1080p.mp4 --props=props/final.json --crf=18 --port=3917 && npm run verify -- out/final-1080p.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.532",
+    "@remotion/fonts": "^4.0.532",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.532"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}

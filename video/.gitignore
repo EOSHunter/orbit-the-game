@@ -1,0 +1,8 @@
+node_modules/
+out/
+# generated from the untracked recordings and the brand kit by scripts/prep-media.mjs
+public/media/
+public/brand-kit/
+# Hunter's narration takes (audio, not committed)
+public/narration/
+.remotion/
