@@ -135,6 +135,7 @@ export function createRenderer(opts = {}) {
       if (vfx) vfx.attach(b);
       offs = [
         b.on('run-start', () => { chase.reset(); lastStage = null; }),
+        b.on('status', (e) => { if (e.status === 'title') { chase.reset(); lastStage = null; } }),
         b.on('rebase', (e) => chase.rebase(e.shift)),
         b.on('evolve', () => chase.onEvolve()),
       ];

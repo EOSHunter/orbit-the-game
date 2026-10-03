@@ -105,7 +105,10 @@ export function createAudio(opts = {}) {
       if (E) setTarget(E.buses.ambDuck.gain, 1, 0.3);
       if (p && p.stageId) setStage(p.stageId);
     },
-    status(p) { status = p.status; },
+    status(p) {
+      status = p.status;
+      if (p.status === 'title') { H['run-start']({ stageId: STAGE_IDS[0] }); }   // quit to menu: same clean slate as a new run
+    },
     absorb(p) {
       const chain = p.chain || 0;
       if (!gate.allow(chain > 1 ? 'chew' : 'absorb', T(), chain > 1 ? 0.07 : 0.05)) return;

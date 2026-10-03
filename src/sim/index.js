@@ -1419,6 +1419,7 @@ export function createSim(opts = {}) {
     player.state = 'alive'; player.absorbT = 0; player.invuln = false; player.rel = 'self'; player._dead = false;
     growPlayer();
     refreshPlayerLook();
+    updateEmissive(player);   // no step runs before the next frame: drop the previous run's glow now
     if (dev) applyDevStart(dev);
     playerAlive = true; hitStop = 0; hitTimer = 0; invuln = 0; deathTimer = 0; deathKind = null; finaleT = 0; healthLowFired = false;
     chainT = -99; chainN = 0;
@@ -1461,7 +1462,7 @@ export function createSim(opts = {}) {
         }
       }
     } finally { quiet = false; }
-    updateEmissive(player);   // no step runs before the first frame: drop the previous run's glow now
+    updateEmissive(player);
     state.status = prev;
   }
 
@@ -1494,6 +1495,15 @@ export function createSim(opts = {}) {
     if (!dev) return false;
     restart(spec.seed != null ? spec.seed : null, dev);
     return true;
+  }
+
+  /** Abandon the run and return to the title state: a full reset (same seed), nothing started. */
+  function quitToTitle() {
+    const prev = state.status;
+    resetRun(null);
+    input = { x: 0, z: 0, stabilize: false }; pausedFrom = null;
+    state.status = 'title';
+    if (prev !== 'title') emit('status', { status: 'title', prev });
   }
 
   function setPaused(p) {
@@ -1611,7 +1621,7 @@ export function createSim(opts = {}) {
     getState: () => state,
     step,
     setInput(i) { input = { x: Number(i.x) || 0, z: Number(i.z) || 0, stabilize: !!i.stabilize }; },
-    start, restart, startAt, pickChoice, previewChoice, setPaused,
+    start, restart, startAt, quitToTitle, pickChoice, previewChoice, setPaused,
     setOptions(o) { options = { ...options, ...o }; },
     exportSave, importSave,
     debug,

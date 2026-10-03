@@ -62,6 +62,20 @@ export async function start3d() {
     try { history.replaceState(null, '', u.href.replace(/%2C/g, ',')); } catch (e) { /* non-fatal */ }
   }
 
+  // ---- quit to menu: reset the run (sim, input, URL dev params) and show the title again ----
+  const showTitle = () => ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
+  function quitToMenu() {
+    if (!sim.quitToTitle) return;
+    sim.quitToTitle();
+    input.reset();
+    const u = new URL(location.href);
+    if (u.searchParams.has('stage') || u.searchParams.has('form')) {
+      u.searchParams.delete('stage'); u.searchParams.delete('form');
+      try { history.replaceState(null, '', u.href); } catch (e) { /* non-fatal */ }
+    }
+    showTitle();
+  }
+
   // ---- renderer first: if it cannot init, throw before touching the UI so boot.js can fall back to 2D ----
   const renderer = createRenderer({ canvas, clsList: CLS_LIST });
   if (!(await renderer.init())) throw new Error('render3d init() returned false');
@@ -92,12 +106,12 @@ export async function start3d() {
   };
   if (ui) {
     // onPause: the UI's Systems panel (Esc / Resume / close) drives the sim pause.
-    ui.init({ root: uiRoot, onUiSound: (n) => audio && audio.playUi(n), onSettings: applySettings, onPause: (p) => sim.setPaused(p) });
+    ui.init({ root: uiRoot, onUiSound: (n) => audio && audio.playUi(n), onSettings: applySettings, onPause: (p) => sim.setPaused(p), onQuit: quitToMenu });
     if (ui.attach) ui.attach(bus);
     applySettings(ui.getSettings && ui.getSettings());
     // Developer start (title "Dev start" button or backtick): begin a run at any stage and form.
     if (sim.startAt) ui.setDevMenu({ stages: devStages(), query: devQuery, initial: devSpec, onStart: devStart });
-    if (devSpec) devStart(devSpec); else ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
+    if (devSpec) devStart(devSpec); else showTitle();
     bus.on('choice-open', (e) => ui.showChoice(e.choices, (id) => sim.pickChoice(id), { preview: (c) => renderer.renderPreview && renderer.renderPreview(sim.previewChoice(c.id)) }));
     bus.on('ending', (e) => ui.showEnd(e.ending, () => sim.restart()));
   } else {
