@@ -8,12 +8,8 @@
     "start": "node tools/serve.mjs 8000",
     "test": "node --test \"tests/*.test.mjs\"",
     "test:pace": "node tests/pace.mjs && node tests/sim.pace.mjs --runs 6 --dt 60",
-<<<<<<< HEAD
-    "test:smoke": "node tests/smoke.mjs"
-=======
     "test:smoke": "node tests/smoke.mjs",
     "test:balance": "node tests/sim.balance.mjs --runs 12"
->>>>>>> main
   },
   "engines": {
     "node": ">=22"
