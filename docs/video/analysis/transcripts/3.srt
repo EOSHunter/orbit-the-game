@@ -1,0 +1,100 @@
+1
+00:00:00,940 --> 00:00:11,770
+[creator] okay and we're back so all the agents just finished the build agents at least
+
+2
+00:00:11,770 --> 00:00:22,590
+[creator] so they're all done it's still so annoying with how glitchy it is there
+
+3
+00:00:22,590 --> 00:00:28,390
+[creator] and I just asked orbit what's next it says all four builds are are finished
+
+4
+00:00:28,390 --> 00:00:33,330
+[creator] each one reviews cleanly yada yada yada
+
+5
+00:00:33,330 --> 00:00:39,880
+[creator] Um, next you need to merge all four branches into main.
+
+6
+00:00:41,280 --> 00:00:43,100
+[creator] Each task word tree is separate, yada, yada.
+
+7
+00:00:43,380 --> 00:00:45,860
+[creator] So I'll go ahead and get these merged.
+
+8
+00:00:50,450 --> 00:00:52,710
+[creator] Confirm it to you before any that we're facing.
+
+9
+00:00:52,970 --> 00:01:05,370
+[creator] So just pushing, go ahead and push these, um, or actually just go
+
+10
+00:01:05,370 --> 00:01:14,240
+[creator] ahead and merge this, I'm just going to tell each one of these to merge.
+
+11
+00:01:14,940 --> 00:01:17,020
+[creator] Go ahead and merge this to main
+
+12
+00:01:18,620 --> 00:01:21,320
+[creator] to main not me
+
+13
+00:01:25,700 --> 00:01:34,990
+[creator] Merge this to main and tell this one as well. Go ahead and merge this to main
+
+14
+00:01:58,510 --> 00:02:05,670
+[creator] I've went ahead and had each one of them merge of
+
+15
+00:02:05,670 --> 00:02:08,210
+[creator] When I had and had
+
+16
+00:02:08,970 --> 00:02:16,650
+[creator] It understands what I'm saying. It's alright. So now
+
+17
+00:02:17,500 --> 00:02:19,500
+[creator] it is creating a
+
+18
+00:02:20,460 --> 00:02:24,000
+[creator] a new agent to integrate and play test.
+
+19
+00:02:28,360 --> 00:02:31,340
+[creator] Create a new canvas called integrate.
+
+20
+00:02:37,120 --> 00:02:39,140
+[creator] Integrate, I said integrate.
+
+21
+00:02:44,640 --> 00:02:45,660
+[creator] Gotta wait for that, okay.
+
+22
+00:02:47,860 --> 00:02:48,980
+[creator] I'll let this finish.
+
+23
+00:02:55,050 --> 00:02:56,350
+[creator] Actually, we'll call it play test.
+
+24
+00:03:02,710 --> 00:03:06,070
+[creator] When this finishes, we will move it over to play test.
+
+25
+00:03:08,310 --> 00:03:10,430
+[creator] So I will be back when that is done.
+

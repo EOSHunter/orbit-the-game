@@ -1,0 +1,276 @@
+1
+00:00:00,590 --> 00:00:04,710
+[creator] Okay, I'm back after a little bit and
+
+2
+00:00:04,710 --> 00:00:07,990
+[creator] Ended up starting phase four. I don't know if this is in the other one
+
+3
+00:00:08,510 --> 00:00:10,510
+[creator] there are some issues like
+
+4
+00:00:11,050 --> 00:00:16,490
+[creator] Whenever I was testing some of the audio didn't work and 3d wasn't loading
+
+5
+00:00:16,490 --> 00:00:18,610
+[creator] so I got all that fixed and
+
+6
+00:00:19,190 --> 00:00:20,930
+[creator] This is the game now
+
+7
+00:00:26,560 --> 00:00:27,200
+[creator] which
+
+8
+00:00:28,760 --> 00:00:30,820
+[creator] Graphics wise I like the 3d
+
+9
+00:00:32,940 --> 00:00:38,940
+[creator] meteors and everything I feel like I'm going way too fast though also don't
+
+10
+00:00:38,940 --> 00:00:44,580
+[creator] really like this like targeting I don't like the outlines also like the old
+
+11
+00:00:44,580 --> 00:00:55,340
+[creator] background more but I will say I do like the UI I don't really like this like
+
+12
+00:00:55,340 --> 00:01:00,940
+[creator] radar up here it feels pretty unnecessary but everything else looks
+
+13
+00:01:00,940 --> 00:01:18,300
+[creator] pretty nice keep crashing and everything I guess we'll see if I can get leveled
+
+14
+00:01:18,300 --> 00:01:30,480
+[creator] up here there still is like no gravity though like eventually like these
+
+15
+00:01:30,480 --> 00:01:35,040
+[creator] smaller pieces should just like automatically start floating towards me
+
+16
+00:01:35,040 --> 00:01:40,480
+[creator] because I'm the bigger body but I'm sure that's something I could end up getting
+
+17
+00:01:40,480 --> 00:01:48,500
+[creator] updated nice animation there like the sound effects but yeah having all these
+
+18
+00:01:49,960 --> 00:01:54,220
+[creator] outlines is kinda annoying
+
+19
+00:01:54,220 --> 00:01:59,180
+[creator] I don't really like it this is just going crazy so definitely gonna be removing the radar
+
+20
+00:02:00,060 --> 00:02:02,680
+[creator] don't really know why I added that
+
+21
+00:02:04,700 --> 00:02:18,260
+[creator] explosions are pretty cool the game
+
+22
+00:02:18,260 --> 00:02:26,070
+[creator] just restarted so what is happening
+
+23
+00:02:26,070 --> 00:02:35,240
+[creator] alright this is not really playable I don't know
+
+24
+00:02:35,240 --> 00:02:39,000
+[creator] what's happening why is everything just flying down this way
+
+25
+00:02:40,380 --> 00:02:47,940
+[creator] I can't even tell what's going on opus did not cook with this not gonna lie I
+
+26
+00:02:47,940 --> 00:02:53,480
+[creator] think the the 2d version is better I like the UI better on this but like what
+
+27
+00:02:53,480 --> 00:03:02,020
+[creator] am I looking at this is not playable yeah so I think I'm just gonna stop
+
+28
+00:03:03,700 --> 00:03:11,900
+[creator] there maybe maybe I can make it keep the sound effects let's see if I do do low
+
+29
+00:03:11,900 --> 00:03:36,360
+[creator] does that change anything not really it's just it's not good i had higher hopes but i think it
+
+30
+00:03:36,360 --> 00:03:42,960
+[creator] may have over cooked a little bit here this is very overwhelming like what is happening
+
+31
+00:03:46,600 --> 00:03:56,710
+[creator] okay well i think that's enough of that oh well the first version was better
+
+32
+00:03:57,230 --> 00:04:02,870
+[creator] the rest not so great i think the only thing i would do to the first version is just update the
+
+33
+00:04:02,870 --> 00:04:08,870
+[creator] and add sound effects maybe not worry about all the 3d stuff because well we
+
+34
+00:04:08,870 --> 00:04:12,690
+[creator] just saw it did not do well with that I'm sure I could spend more time and
+
+35
+00:04:12,690 --> 00:04:17,030
+[creator] actually make this nice but this is more so just to see if I could actually build
+
+36
+00:04:17,030 --> 00:04:26,910
+[creator] something with orbit so probably not gonna continue it will say usage
+
+37
+00:04:32,610 --> 00:04:36,730
+[creator] $446, $409 just on this game which is not playable.
+
+38
+00:04:37,810 --> 00:04:39,770
+[creator] Granted this is not money I'm actually spending.
+
+39
+00:04:41,550 --> 00:04:47,430
+[creator] This is what it would be in API credits or tokens but it's just using my clod account
+
+40
+00:04:47,430 --> 00:04:48,990
+[creator] so I don't have to worry about all that.
+
+41
+00:04:50,050 --> 00:04:56,890
+[creator] And as far as the usage goes over here I'm on the max plan and I've only used 17% for
+
+42
+00:04:56,890 --> 00:05:03,970
+[creator] week and I started this two days ago three days ago something like that and
+
+43
+00:05:06,420 --> 00:05:16,370
+[creator] yeah so I've like hardly put it into it at all now I'm just working on some more
+
+44
+00:05:16,370 --> 00:05:23,290
+[creator] features for r7 so I guess I could I could show that real quick just close
+
+45
+00:05:23,290 --> 00:05:35,840
+[creator] out of this actually and we're going to do this guy dev and I guess we could
+
+46
+00:06:08,460 --> 00:06:11,060
+[creator] Open source tool is for whiteboards, but
+
+47
+00:06:12,400 --> 00:06:14,660
+[creator] So I gotta figure that out a little bit
+
+48
+00:06:16,160 --> 00:06:20,920
+[creator] The goal here is to actually be able to have agents
+
+49
+00:06:22,180 --> 00:06:28,680
+[creator] Create workflow or not workflows, but I'm gonna guess workflows too, but diagrams charts
+
+50
+00:06:29,480 --> 00:06:35,620
+[creator] I can add and create like mood boards here for what I like and then have those agents actually reference it here
+
+51
+00:06:35,620 --> 00:06:38,840
+[creator] so I don't have to go into the actual repo, drop in files.
+
+52
+00:06:40,420 --> 00:06:45,140
+[creator] It just gives me an idea of some stuff I could do.
+
+53
+00:06:47,350 --> 00:06:57,030
+[creator] You can also create multiple boards, which is pretty cool.
+
+54
+00:06:59,640 --> 00:07:02,980
+[creator] And then there are some settings that are new.
+
+55
+00:07:05,870 --> 00:07:07,110
+[creator] Sounds, here we go.
+
+56
+00:07:10,660 --> 00:07:12,760
+[creator] So if an agent is waiting on me,
+
+57
+00:07:12,760 --> 00:07:15,900
+[creator] I will hear this ding here, that bell.
+
+58
+00:07:16,820 --> 00:07:19,540
+[creator] If Orbit needs me, I'll hear this.
+
+59
+00:07:20,480 --> 00:07:29,500
+[creator] And then when an agent is done with the task, then if an agent hits a problem, I'm probably
+
+60
+00:07:29,500 --> 00:07:39,980
+[creator] going to have to make these louder though, yeah, and I can also have the agent speak
+
+61
+00:07:39,980 --> 00:07:45,580
+[creator] out loud so it will say whatever its name is, in this case like Atlas needs you.
+
+62
+00:07:46,420 --> 00:07:58,410
+[creator] So it would say that with one of the voices here if I have this turned on, I hate that
+
+63
+00:07:54,540 --> 00:07:57,440
+[agent_tts] This is how I will read answers to you.
+
+64
+00:07:58,410 --> 00:08:00,890
+[creator] voice, I kind of hate all of these but you know it's whatever.
+
+65
+00:08:02,230 --> 00:08:09,380
+[creator] It's a lot better than using systems, because that's pretty bad.
+
+66
+00:08:05,640 --> 00:08:07,540
+[agent_tts] This is how I will read answers to you.
+
+67
+00:08:10,240 --> 00:08:17,020
+[creator] I could always plug in 11 Labs if I wanted to, but I don't know, maybe I'll do that
+
+68
+00:08:17,020 --> 00:08:20,500
+[creator] so I can actually have R7's voice in here, that could be cool.
+
+69
+00:08:23,840 --> 00:08:25,120
+[creator] But alright, that's it.
+

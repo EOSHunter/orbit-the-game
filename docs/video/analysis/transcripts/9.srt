@@ -1,0 +1,396 @@
+1
+00:00:00,850 --> 00:00:13,830
+[creator] okay so update I made some changes to r7 orbit itself not specifically this game
+
+2
+00:00:13,830 --> 00:00:22,050
+[creator] I was having some github issues there was requiring a lot of manual fixes and
+
+3
+00:00:22,050 --> 00:00:26,550
+[creator] like I want this to be like as autonomous as it can be I don't want to
+
+4
+00:00:26,550 --> 00:00:35,430
+[creator] to do all that manual stuff you feel me so got a bunch of stuff updated so like
+
+5
+00:00:35,430 --> 00:00:41,430
+[creator] now I have like this github thing so I can actually make sure everything I'm
+
+6
+00:00:41,430 --> 00:00:47,290
+[creator] working on here has everything from github like whenever I reopen r7 orbit
+
+7
+00:00:47,290 --> 00:00:56,530
+[creator] because before it wasn't showing everything that was in github so I
+
+8
+00:00:58,530 --> 00:01:10,070
+[creator] and fix just a few things with the game itself. I just played through it. It took 12 minutes.
+
+9
+00:01:10,070 --> 00:01:21,000
+[creator] I died to a black hole. So yeah, I just gave it a new prompt though. As I was playing,
+
+10
+00:01:21,020 --> 00:01:26,660
+[creator] I was just telling it things to fix. So we're going to see how this goes. I also have sound
+
+11
+00:01:26,660 --> 00:01:29,780
+[creator] fix in now that you're hearing that are not from
+
+12
+00:01:29,780 --> 00:01:30,660
+[creator] the game
+
+13
+00:01:33,960 --> 00:01:34,540
+[creator] uh...
+
+14
+00:01:34,540 --> 00:01:36,580
+[creator] we actually turned one down there
+
+15
+00:01:41,540 --> 00:01:43,100
+[creator] and some effects
+
+16
+00:01:43,100 --> 00:01:44,740
+[creator] excuse me i just worked
+
+17
+00:01:44,740 --> 00:01:46,820
+[creator] so it would go for it
+
+18
+00:01:47,780 --> 00:01:48,360
+[creator] uh...
+
+19
+00:01:48,360 --> 00:01:50,680
+[creator] some effects that you're hearing of these little like
+
+20
+00:01:51,400 --> 00:01:53,900
+[creator] so anytime the test finishes
+
+21
+00:01:53,900 --> 00:01:55,840
+[creator] it will let me know with
+
+22
+00:01:55,840 --> 00:01:58,340
+[creator] sound i can also
+
+23
+00:01:58,340 --> 00:01:59,440
+[creator] do
+
+24
+00:01:59,440 --> 00:02:00,720
+[creator] to to to
+
+25
+00:02:17,330 --> 00:02:18,750
+[agent_tts] Atlus needs you.
+
+26
+00:02:26,360 --> 00:02:28,620
+[creator] whenever orbit needs me will
+
+27
+00:02:28,620 --> 00:02:34,000
+[creator] make this noise then when an agent is done working
+
+28
+00:02:34,000 --> 00:02:36,880
+[creator] if agent hits a problem
+
+29
+00:02:38,840 --> 00:02:41,720
+[creator] and then if I'm away from my computer or
+
+30
+00:02:42,600 --> 00:02:46,480
+[creator] doom-scrolling on my phone then it will
+
+31
+00:02:47,100 --> 00:02:51,520
+[creator] remind me every five minutes so that's just something new
+
+32
+00:02:53,080 --> 00:02:55,880
+[creator] we're gonna turn the voice on actually so
+
+33
+00:02:57,930 --> 00:03:17,200
+[creator] everything here is done ahead push this to github all right so then it's done so
+
+34
+00:03:17,200 --> 00:03:24,120
+[creator] that github piece went away up the up there at the top let's just get an
+
+35
+00:03:24,120 --> 00:03:34,650
+[creator] update here can you give me the update on what each agent worked on and what's
+
+36
+00:03:34,650 --> 00:03:56,880
+[creator] finished and maybe yeah so everything should be ready now so it's telling me
+
+37
+00:03:56,880 --> 00:04:02,720
+[creator] what each agent did I also updated some of the actual agent names that are in
+
+38
+00:04:02,720 --> 00:04:12,480
+[creator] so they're more like space-related. So you have like Voyager, Kaisar, Polaris, Leica,
+
+39
+00:04:13,580 --> 00:04:18,800
+[creator] Leica I think is how it's pronounced, was one of the dogs that I'm pretty sure the Russians
+
+40
+00:04:18,800 --> 00:04:28,420
+[creator] sent into space, which is kind of messed up, really messed up I would say, anyway. So here
+
+41
+00:04:28,420 --> 00:04:43,120
+[creator] is the update. So let me turn the sound back on. I also had it hide the mouse so it's no
+
+42
+00:04:43,120 --> 00:04:51,420
+[creator] longer in the way. This I think looks a lot better. I want the background to be back though.
+
+43
+00:04:51,440 --> 00:05:00,930
+[creator] It kind of looks just like we're under water or in a void somewhere. But you know it still
+
+44
+00:05:00,930 --> 00:05:22,110
+[creator] isn't bad. I do think it looks a lot better than how it looked before though. It also
+
+45
+00:05:22,110 --> 00:05:31,150
+[creator] have added gravity so larger planets and objects should pull the other ones in. I don't know how
+
+46
+00:05:31,150 --> 00:05:36,730
+[creator] well that's actually working. I feel like I can kind of feel it pulling me but I could be wrong.
+
+47
+00:05:37,170 --> 00:05:42,350
+[creator] Let's see if I just stop next to this one. I guess its gravity isn't strong enough.
+
+48
+00:05:43,830 --> 00:05:53,120
+[creator] We'll just keep playing through. But I will say this feels
+
+49
+00:05:55,100 --> 00:06:03,020
+[creator] very very very much like Drifter Star. Alright let's see if I go near this. Will this object
+
+50
+00:06:03,020 --> 00:06:13,200
+[creator] pull me in closer? It doesn't really seem like the gravity is working the way I intended
+
+51
+00:06:13,200 --> 00:06:27,430
+[creator] it. I also don't really like that you can see these like kind of spawning in as you
+
+52
+00:06:27,430 --> 00:06:33,590
+[creator] go. They should be spawned off the screen. As you can see like they just keep spawning
+
+53
+00:07:20,740 --> 00:07:32,170
+[creator] let's go check that out was that over here it just it looks so good this is
+
+54
+00:07:32,170 --> 00:07:42,020
+[creator] all in the browser very impressed all right then I had to add images you could
+
+55
+00:07:42,020 --> 00:07:45,960
+[creator] actually see what you're gonna evolve into they're a little pixelated but it's
+
+56
+00:07:50,370 --> 00:07:55,030
+[creator] fine hmm let's do let's do this one since it
+
+57
+00:07:55,030 --> 00:08:11,630
+[creator] absorbs more and one thing actually while this is still put up we need some
+
+58
+00:08:11,630 --> 00:08:17,350
+[creator] stars in the background still it sort of just feels like we're in a void or like
+
+59
+00:08:18,950 --> 00:08:28,630
+[creator] underwater we need some sort of background still need stars we'll just
+
+60
+00:08:28,630 --> 00:08:37,520
+[creator] send that off I'm sure I'm gonna have to prove of some things so alright this
+
+61
+00:08:37,520 --> 00:08:40,500
+[creator] ones starting back up now backgrounds to empty
+
+62
+00:08:41,120 --> 00:08:43,260
+[creator] uh... so this was the agent those
+
+63
+00:08:43,840 --> 00:08:47,680
+[creator] charge of uh... simplifying the background that asked for before
+
+64
+00:08:47,680 --> 00:08:52,060
+[creator] uh... because whenever i remove the outlines of everything
+
+65
+00:08:52,580 --> 00:08:55,720
+[creator] whenever you get really big you're not going to have to see
+
+66
+00:08:55,720 --> 00:08:57,700
+[creator] a lot of these smaller
+
+67
+00:08:57,700 --> 00:09:02,480
+[creator] asteroids and planets and you'll eventually see what i mean
+
+68
+00:09:02,480 --> 00:09:04,980
+[creator] we turn the wind back up here
+
+69
+00:09:19,730 --> 00:09:23,070
+[creator] While this is working, I'm actually gonna go back full screen.
+
+70
+00:09:42,530 --> 00:09:44,970
+[creator] Another thing I wanna do is in Drifter Star,
+
+71
+00:09:45,150 --> 00:09:48,230
+[creator] you can actually kinda bang into these bigger asteroids
+
+72
+00:09:48,230 --> 00:09:52,150
+[creator] and break pieces off of them and capture those pieces.
+
+73
+00:09:52,170 --> 00:09:54,830
+[creator] That's something I wanna add to this.
+
+74
+00:09:55,450 --> 00:09:57,730
+[creator] Because right now, unless, like that right there,
+
+75
+00:09:57,770 --> 00:09:59,510
+[creator] I should've been able to break pieces off.
+
+76
+00:09:59,770 --> 00:10:03,090
+[creator] Maybe I am, but it just doesn't have a visual for that.
+
+77
+00:10:04,490 --> 00:10:07,430
+[creator] But regardless, that's something I wanna add
+
+78
+00:10:07,430 --> 00:10:14,720
+[creator] and just especially the gravity like these pieces should
+
+79
+00:10:15,360 --> 00:10:18,860
+[creator] like since I'm much larger they should be feeling the gravity
+
+80
+00:10:18,860 --> 00:10:28,060
+[creator] of what I am. Polaris is done which means
+
+81
+00:10:21,460 --> 00:10:21,940
+[agent_tts] This is done.
+
+82
+00:10:30,740 --> 00:10:33,500
+[creator] we should have a nicer background
+
+83
+00:10:33,500 --> 00:10:36,780
+[creator] brought back the stars in both renders
+
+84
+00:10:37,640 --> 00:10:41,640
+[creator] 2D and 3D or no the 2D hasn't been
+
+85
+00:10:42,940 --> 00:10:46,680
+[creator] viewed which is okay I only really care about the 3D right now
+
+86
+00:10:46,680 --> 00:10:54,810
+[creator] I'm still has a 2d fallback though oh that's maybe if I refresh this gonna
+
+87
+00:10:54,810 --> 00:11:16,780
+[creator] suck I gotta restart now but Polaris finished I'm able to just refresh the
+
+88
+00:11:16,780 --> 00:11:21,280
+[creator] browser or does something need to rerun and open it in the browser for media
+
+89
+00:11:21,280 --> 00:11:33,890
+[creator] tests for media tests whatever I know there are stars back there even though
+
+90
+00:11:33,890 --> 00:11:42,260
+[creator] they don't really they don't really look like stars they don't really look like
+
+91
+00:11:42,260 --> 00:11:47,000
+[creator] stars to me they look like very far away planets like they don't have a glow to
+
+92
+00:11:47,000 --> 00:11:47,560
+[creator] them
+
+93
+00:11:47,560 --> 00:11:49,420
+[creator] still doesn't quite like space
+
+94
+00:11:49,420 --> 00:11:50,760
+[creator] those more like little
+
+95
+00:11:50,760 --> 00:11:52,580
+[creator] flat speckles
+
+96
+00:12:04,000 --> 00:12:08,200
+[creator] so yeah this is the game so far i'm not going to keep recording just because
+
+97
+00:12:09,140 --> 00:12:12,200
+[creator] uh... there's no need for me to record this entire
+
+98
+00:12:13,000 --> 00:12:13,480
+[creator] process
+
+99
+00:12:16,240 --> 00:12:17,420
+[creator] so i will be back
+

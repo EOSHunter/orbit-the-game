@@ -1,0 +1,36 @@
+1
+00:00:00,850 --> 00:00:02,850
+[creator] So it's a new day
+
+2
+00:00:04,250 --> 00:00:06,370
+[creator] There were some merge conflicts
+
+3
+00:00:07,910 --> 00:00:13,730
+[creator] Between Lark and Juno here the engine and 3d renderer and the UI designer, so we're getting those fix now
+
+4
+00:00:17,590 --> 00:00:18,710
+[creator] so basically
+
+5
+00:00:18,710 --> 00:00:20,350
+[creator] told orbit
+
+6
+00:00:21,530 --> 00:00:26,730
+[creator] One I just started my computer so orbit needed I guess to still catch up
+
+7
+00:00:28,070 --> 00:00:32,810
+[creator] But ended up showing so Juno and Lark had merge conflicts like I said
+
+8
+00:00:32,810 --> 00:00:42,650
+[creator] So I let Orbit know, and then it went ahead and just sent follow-ups to each of them on its own.
+
+9
+00:00:44,590 --> 00:00:50,090
+[creator] So Lark is merged, no conflicts, now we're just waiting on Juno, and we should be able to test the game from there.
+
