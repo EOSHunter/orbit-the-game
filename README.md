@@ -33,12 +33,13 @@ page. Any static server works (`npx serve`, `python -m http.server 8000`).
 | WASD / arrow keys | Steer with the keyboard |
 | Space (or Shift) | Stabilise (3D build): kill drift and settle |
 | Q | Capture (HUD action; shows as locked unless the host wires it up) |
-| Esc | Pause / open the menu |
+| Esc or the settings button (top right) | Pause / open the menu |
 | T | Toggle top-down camera (3D build) |
 | 1-4 or click | Pick an evolution card |
 
 Rim colours show what is safe: **mint** = smaller (absorb), **blue** = about your size (bounce), **coral** = bigger
-(it hurts). See [docs/how-to-play.md](docs/how-to-play.md) for the stages, mass rules and endings.
+(it hurts, and much bigger kills). From the Rocky Planet stage on, some bigger bodies chase you; in the 2D build,
+leaving the arena past the warning ends the run. See [docs/how-to-play.md](docs/how-to-play.md) for the stages, mass rules and endings.
 
 ## Tests
 
