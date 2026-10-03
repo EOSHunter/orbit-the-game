@@ -11,6 +11,7 @@ import { BodyLayer, makeShared } from './bodies.js';
 import { DotsLayer } from './dots.js';
 import { Sky } from './sky.js';
 import { Vfx } from './vfx.js';
+import { PreviewRenderer } from './preview.js';
 import { ChaseCamera } from './camera.js';
 import { GradeShader } from './glsl/misc.js';
 import { CLS_DEFAULT, blackbodyRGB, hexLinear } from './util.js';
@@ -48,7 +49,7 @@ export function createRenderer(opts = {}) {
   const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere();
   const keyW = new THREE.Vector3(), keyV = new THREE.Vector3();
   const all = [];
-  let relation = null, curState = null, dbgEl = null, dbgT = 0;
+  let relation = null, curState = null, dbgEl = null, dbgT = 0, preview = null;
 
   const ctx = {
     camPos: [0, 0, 0], viewMatrix4: null, proj11: 1, H: 1080, frustum, sphere, L: [0, 1, 0], opts: options, time: 0, all,
@@ -247,12 +248,21 @@ export function createRenderer(opts = {}) {
         },
       };
     },
+    /** A small canvas showing `body` (a detached sim body) as the game draws it, on black. Null if the renderer is not ready. */
+    renderPreview(body) {
+      if (!ready || !body) return null;
+      try {
+        preview ??= new PreviewRenderer({ renderer: R, looks, clsList, sky });
+        return preview.render(body);
+      } catch (e) { console.warn('[render3d] preview failed', e); return null; }
+    },
     getStats() { return stats; },
     /** Test/debug helper: the emissive elements drawn this frame with their causes. */
     getEmitters() { return bodies ? bodies.emitters.concat(vfx.listing) : []; },
     dispose() {
       api.detach();
       if (dbgEl) dbgEl.remove();
+      if (preview) { preview.dispose(); preview = null; }
       if (sky) sky.dispose();
       if (composer) composer.dispose();
       if (R) { R.dispose(); R = null; }

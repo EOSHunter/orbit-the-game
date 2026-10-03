@@ -85,7 +85,7 @@ export async function start3d() {
     if (ui.attach) ui.attach(bus);
     applySettings(ui.getSettings && ui.getSettings());
     ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
-    bus.on('choice-open', (e) => ui.showChoice(e.choices, (id) => sim.pickChoice(id)));
+    bus.on('choice-open', (e) => ui.showChoice(e.choices, (id) => sim.pickChoice(id), { preview: (c) => renderer.renderPreview && renderer.renderPreview(sim.previewChoice(c.id)) }));
     bus.on('ending', (e) => ui.showEnd(e.ending, () => sim.restart()));
   } else {
     // no UI yet: start straight away so the world is visible

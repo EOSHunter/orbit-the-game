@@ -5,7 +5,7 @@
 //   • 2D build (legacy):   createUI(root) -> { update, showChoice, showTitle, showEnd, warnBoundary, onPause, ... }
 // Imports nothing but stages.js / looks.js (both optional, read-only).
 
-import { el, num, clamp, fmtMass, fmtTime, fmtDist, fmtBearing, clsName, icon } from './util.js';
+import { el, num, clamp, fmtMass, fmtTime, fmtDist, fmtBearing, clsName, icon, stageGlyph } from './util.js';
 import { createHud } from './hud.js';
 
 const FALLBACK_STAGES = [
@@ -453,7 +453,7 @@ export function createUI(root, opts = {}) {
     };
   }
 
-  function showChoice(choices, onPick) {
+  function showChoice(choices, onPick, opts = {}) {
     choices = (choices || []).slice(0, 4);
     if (!choices.length) return;
     cards.textContent = '';
@@ -470,7 +470,9 @@ export function createUI(root, opts = {}) {
       const lab = el('span', 'vd-card-label', c.label || c.id);
       const desc = el('span', 'vd-card-desc', c.description || '');
       const schem = el('span', 'vd-card-schem', null, { 'aria-hidden': 'true' });
-      schem.innerHTML = `<svg viewBox="0 0 60 24"><path d="M2 12h14l4-8h20l4 8h14" /><circle cx="30" cy="12" r="${3 + i}"/></svg>`;
+      let shot = null;
+      try { shot = typeof opts.preview === 'function' ? opts.preview(c) : null; } catch (e) { shot = null; }
+      if (shot) { shot.className = 'vd-card-shot'; schem.appendChild(shot); } else schem.innerHTML = stageGlyph(idx);   // no 3D renderer: the stage glyph
       b.append(key, tag, schem, lab, desc);
       b.onclick = () => pick(i);
       b.addEventListener('focus', () => sound('ui.choice.select'));
@@ -662,7 +664,7 @@ export function init(opts = {}) {
   inst = createUI(opts.root || null, opts);
 }
 export const showTitle = (onStart, opts) => I().showTitle(onStart, opts);
-export const showChoice = (choices, onPick) => I().showChoice(choices, onPick);
+export const showChoice = (choices, onPick, opts) => I().showChoice(choices, onPick, opts);
 export const showEnd = (ending, onRestart) => I().showEnd(ending, onRestart);
 export const update = (state, view) => I().update(state, view);
 export const attach = (bus) => I().attach(bus);

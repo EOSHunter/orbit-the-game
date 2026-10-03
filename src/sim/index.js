@@ -1,6 +1,6 @@
 // Simulation / Universe (SIM): the public entry point. Pure JS, no rendering, no DOM, no Math.random/Date.
 // See src/sim/README.md for the model; docs/interfaces.md section 4 for the contract.
-import { STAGES as DEFAULT_STAGES, getChoicesFor, applyChoice, getEnding } from '../stages.js';
+import { STAGES as DEFAULT_STAGES, getChoicesFor, applyChoice, getEnding, choiceFlags } from '../stages.js';
 import { CONFIG, mergeConfig } from './config.js';
 import { createBus } from './events.js';
 import { createUniverse, GEN_VERSION, makeLevels } from './universe.js';
@@ -1548,12 +1548,21 @@ export function createSim(opts = {}) {
     stagesIn: stages,
   };
 
+  /** A detached copy of the player's body as it would look after picking `id` (read-only; for choice previews). */
+  function previewChoice(id) {
+    const b = { ...player, id: -1, p: [0, 0, 0], v: [0, 0, 0], spin: { axis: player.spin.axis.slice(), rate: 0, phase: 0.6 },
+      atmosphere: null, ring: null, beam: null, entry: null, emissive: null, _em: { cause: 'impact-flash', intensity: 0 }, _flash: 0, _hot: 0, feeding: 0, rel: 'self' };
+    playerLook(cfg, b, stageIdForPlayer(), { ...state.flags, ...choiceFlags(state.stageIndex, id) }, seedH);
+    updateEmissive(b);
+    return b;
+  }
+
   const sim = {
     events: bus,
     getState: () => state,
     step,
     setInput(i) { input = { x: Number(i.x) || 0, z: Number(i.z) || 0, stabilize: !!i.stabilize }; },
-    start, restart, pickChoice, setPaused,
+    start, restart, pickChoice, previewChoice, setPaused,
     setOptions(o) { options = { ...options, ...o }; },
     exportSave, importSave,
     debug,
