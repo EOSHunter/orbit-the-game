@@ -176,6 +176,7 @@ npx serve .                       # or any static server at the repo root
 /src/render3d/demo.html           # renderer-only demo on fixture states, no SIM needed
    ?stage=<meteorite|asteroid|dwarf_planet|rocky_planet|gas_giant|gas_planet|dwarf_star|star|giant_star|supergiant_star|neutron_star|black_hole|gallery|entry>
    &quality=low|med|high   &topdown=1   &solo=1 (player only)   &fire=hit,impact,absorb,evolve,death,...   &hideui=1
+   &n=600                  (stress: add N extra rocks/planets around the player)
    &debug=emitters         (works on every page that creates the renderer)
 ```
 
@@ -245,7 +246,17 @@ The demo panel has buttons for every stage, every contract event, top-down / rea
 | `high` | 2 | 4× | on | 1024 | 110 |
 | `auto` | high features + dynamic resolution 0.6–1.0 (drops 0.1 after ~40 frames over 21 ms, recovers 0.05 after 300 frames under 15 ms) | | | | |
 
-Measured on the fixture demo under headless Chrome/SwiftShader (software GL, so GPU numbers are meaningless): JS cost of `drawFrame` ≈ 0.3–0.8 ms for 36 bodies, 22–38 draw calls, 40k–240k triangles, well inside the 2 ms JS budget; still **to be profiled on real GPUs** (research §4.6).
+Measured on the fixture demo in headless Chrome on a desktop GPU (RTX-class, 1080p, GPU-synced, 60 frames): 36 bodies ≈ 0.3 / 0.4 / 1.5 ms (low / med / high); `?n=600` extra bodies ≈ 1.0 / 1.9 / 2.2 ms with ~210 draw calls and 0.4M triangles (was 2.1M before sphere LOD). A desktop GPU hides fill-rate cost, so **still to be profiled on integrated / mobile GPUs** (research §4.6).
+
+Cost controls: pooled spheres (planet, gas, star) and atmosphere shells switch between 96x64 / 48x32 / 24x16 (shell 64x40 / 32x20) by on-screen radius (`low` never uses the top tier), the black-hole ray march uses 40 / 72 / 110 steps scaled down to 0.5x when its quad fills the screen, and star granulation cells are capped at about 5 px so far stars do not shimmer.
+
+## Looks contract notes (`src/data/looks.js` vs the fallback)
+
+The renderer reads the **real** looks shape first and the fallback shape second:
+
+* Star: `emission.intensity` (10) is HDR radiance. The disc is drawn at `1.25 * (intensity/10)^0.35` (just under the bloom threshold, so granulation survives tone mapping); the corona billboard uses `extras.corona {size, intensity}`; granulation is `extras.granulation {cellsPerRadius, contrast}` (spec 4.6: two Worley octaves, dark lanes). Neutron temperature is clamped to 40 000 K and the halo comes from `extras.halo`.
+* Terrestrial planet: `extras.variant === 'terrestrial'` selects the planet shader; colours come from `extras.land / ocean / iceCaps / clouds / seaLevel`.
+* Pooled spheres: object +y is the pole, tipped into the play plane (the camera looks down the sim's +y, which made bands render as concentric rings). Rings follow the same pole.
 
 ## Known limitations / next steps
 
@@ -253,4 +264,6 @@ Measured on the fixture demo under headless Chrome/SwiftShader (software GL, so 
 * No shadow maps; eclipses are analytic for large bodies only (2 occluders each). Rock instances in the `lo`/`mid` LODs receive no eclipses.
 * Sky `level` parallax is not implemented (stars are at infinity; `sky.level` only seeds the bake via the key).
 * Comet coma/tail (`body.coma`) is not drawn yet (the nucleus is). Planned: non-emissive dust sprites pointing away from `state.key.dir`.
+* The sim `rate`/`axis` of a sphere now only sets spin about a presentation pole; if SIM wants the real axis visible, drop `_visAxis` in `bodies.js`.
+* Neutron-star beams use the old cone shader (wider than spec 4.7's `exp(-(θ/halfAngle)²)` profile); granulation lacks faculae and the second octave of super-granulation.
 * Cutover (default `3d`, deletion of the 2D files, the 2D fire fix in `src/render/**`) is deliberately **not** part of this change.

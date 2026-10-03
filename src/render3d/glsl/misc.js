@@ -86,7 +86,7 @@ void main(){
           vec3 tp = vec3(rc * 2.2, cos(ph) * 1.6, sin(ph) * 1.6);
           float turb = .6 + .8 * fbm(tp * vec3(1., 1.6, 1.6), 4);
           float edge = smoothstep(rin * .98, rin * 1.12, rc) * (1. - smoothstep(rout * .7, rout, rc));
-          vec3 em = blackbody(Td * D) * min(pow(D, 2.2), 5.) * pow(rin / rc, 1.6) * turb * edge * uDiscI * .22;
+          vec3 em = blackbody(Td * D) * min(pow(D, 2.2), 3.) * pow(rin / rc, 1.6) * turb * edge * uDiscI * .16;
           col += trans * em;
           trans *= .12;
         }

@@ -1,7 +1,6 @@
-// Entry point. ?renderer=2d|3d chooses the stack. Until cutover the default is 2d; at cutover flip
-// DEFAULT_RENDERER to '3d'. 3D falls back to 2D automatically when WebGL2 is missing or the renderer
-// fails to initialise.
-const DEFAULT_RENDERER = '2d';
+// Entry point. ?renderer=2d|3d chooses the stack; the 3D build is the default. 3D falls back to 2D
+// automatically when WebGL2 is missing or the renderer fails to initialise.
+const DEFAULT_RENDERER = '3d';
 
 function hasWebGL2() {
   try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; }
