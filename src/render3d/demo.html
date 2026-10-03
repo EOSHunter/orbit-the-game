@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>render3d demo (fixtures, no SIM)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script type="importmap">
+{ "imports": { "three": "../../vendor/three/build/three.module.js", "three/addons/": "../../vendor/three/examples/jsm/" } }
+</script>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font:12px/1.3 system-ui,sans-serif;color:#cfe}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #p{position:fixed;left:8px;top:8px;width:230px;background:rgba(5,10,20,.78);border:1px solid #234;padding:8px;border-radius:6px;z-index:5}
+  #p h4{margin:6px 0 3px;font-size:11px;color:#8ab;text-transform:uppercase;letter-spacing:.06em}
+  #p button,#p select{background:#12202e;color:#cfe;border:1px solid #2a4258;border-radius:4px;padding:3px 6px;margin:1px;font:inherit;cursor:pointer}
+  #p button:hover{background:#1c3144}
+  #p label{display:block;margin:2px 0}
+  #st{position:fixed;left:8px;bottom:8px;background:rgba(5,10,20,.7);padding:4px 8px;border-radius:4px;font:11px monospace;white-space:pre}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="p">
+  <b>render3d demo</b> &mdash; fixtures only
+  <h4>Stage</h4><div id="stages"></div>
+  <h4>Events</h4><div id="events"></div>
+  <h4>View</h4>
+  <label><input type="checkbox" id="td"> top-down</label>
+  <label><input type="checkbox" id="rd"> readability</label>
+  <label><input type="checkbox" id="rm"> reduced motion</label>
+  Quality <select id="q"><option>auto</option><option>high</option><option>med</option><option>low</option></select>
+  <div style="margin-top:4px;color:#789">Drag to pan, wheel to zoom the player's scale. <code>?debug=emitters</code> lists emitters.</div>
+</div>
+<pre id="st"></pre>
+<script type="module" src="./demo.js"></script>
+</body>
+</html>
