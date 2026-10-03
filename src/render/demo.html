@@ -1,0 +1,354 @@
+<!doctype html>
+<!--
+  Vesper Drift - renderer demo. Runs src/render/index.js without the engine.
+
+  ES modules are blocked on file:// by most browsers, so serve the repo root, e.g.
+      python -m http.server 8000      (then open http://localhost:8000/src/render/demo.html)
+      npx serve .
+  Query params (handy for screenshots): ?mode=gallery|field &stage=1..12 &n=300 &kind=prey|neutral|threat
+      &warm=3 (simulate N seconds before the first paint) &fx=absorb|hit|death|evolve &edge=1 (field: start at the arena edge)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vesper Drift - renderer demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #070914; color: #EAF0FF; overflow: hidden;
+    font: 12px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #panel { position: fixed; left: 12px; top: 12px; width: 262px; max-height: calc(100vh - 24px); overflow: auto;
+    background: rgba(22,27,56,.82); border: 1px solid #2F3A73; border-radius: 12px; padding: 12px 12px 10px; }
+  h1 { margin: 0 0 2px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  .sub { color: #8F9BC7; margin-bottom: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
+  .lbl { color: #8F9BC7; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; margin-top: 6px; }
+  button, select { font: inherit; color: #EAF0FF; background: #10142B; border: 1px solid #2F3A73; border-radius: 6px;
+    padding: 3px 8px; cursor: pointer; }
+  button:hover { border-color: #7FD6FF; }
+  button.on { background: #2A1F4D; border-color: #C48BFF; }
+  button.st { width: 38px; padding: 3px 0; }
+  label { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; cursor: pointer; }
+  #stats { color: #8F9BC7; font-variant-numeric: tabular-nums; white-space: pre; margin-top: 4px; }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  #labels div { position: absolute; transform: translate(-50%, 0); text-align: center; color: #EAF0FF;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 1px 6px #070914; white-space: nowrap; }
+  #labels small { display: block; color: #8F9BC7; letter-spacing: .04em; text-transform: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="labels"></div>
+<div id="panel">
+  <h1>Vesper Drift</h1>
+  <div class="sub">Renderer demo. Field mode: move the mouse to steer.</div>
+  <div class="lbl">View</div>
+  <div class="row"><button id="m-gallery">Gallery</button><button id="m-field">Field</button></div>
+  <div class="lbl">Player stage</div>
+  <div class="row" id="stages"></div>
+  <div class="row"><button id="evolve">Evolve &rarr; next</button></div>
+  <div class="lbl">Effects</div>
+  <div class="row"><button id="fx-absorb">Absorb</button><button id="fx-hit">Hit</button><button id="fx-death">Death</button></div>
+  <div class="lbl">Rim state (gallery)</div>
+  <div class="row" id="kinds"></div>
+  <div class="lbl">Options</div>
+  <div class="row">
+    <label><input type="checkbox" id="o-hc"> high contrast</label>
+    <label><input type="checkbox" id="o-rm"> reduced motion</label>
+    <label><input type="checkbox" id="o-shake" checked> shake</label>
+  </div>
+  <div class="row">
+    <label>quality <select id="o-q"><option value="auto">auto</option><option value="2">high</option><option value="1">medium</option><option value="0">low</option></select></label>
+    <label>bodies <select id="o-n"><option>60</option><option>150</option><option selected>300</option><option>600</option></select></label>
+  </div>
+  <div id="stats"></div>
+</div>
+
+<script type="module">
+import { createRenderer, spawnEffect, STAGES, REL } from './index.js';
+
+const qs = new URLSearchParams(location.search);
+const canvas = document.getElementById('c');
+const renderer = createRenderer(canvas);
+const labelsEl = document.getElementById('labels');
+const statsEl = document.getElementById('stats');
+
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const rand = (a, b) => a + Math.random() * (b - a);
+const GROWTH = 1.55;
+const playerRadius = (stage) => 12 * Math.pow(GROWTH, stage);
+
+let mode = qs.get('mode') === 'field' ? 'field' : 'gallery';
+let stage = clamp((parseInt(qs.get('stage') || '4', 10) || 4) - 1, 0, 11);
+let galleryKind = qs.get('kind') || 'mixed';
+let nBodies = parseInt(qs.get('n') || '300', 10) || 300;
+
+const state = {
+  time: 0,
+  effects: [],
+  bounds: { radius: 1e6 },
+  player: { id: 0, x: 0, y: 0, vx: 0, vy: 0, radius: 12, mass: 144, kind: 'player', stageIndex: stage, seed: 42.5, alive: true },
+  bodies: [],
+};
+const camera = { x: 0, y: 0, zoom: 1 };
+let nextId = 1;
+const mouse = { x: innerWidth / 2, y: innerHeight / 2 };
+let respawnAt = 0;
+let hitCooldown = 0;
+
+// ---- scenarios --------------------------------------------------------------------------------
+
+function kindFor(b) {
+  const p = state.player;
+  if (p.mass >= b.mass * 1.2) return 'prey';
+  if (b.mass >= p.mass * 1.2) return 'threat';
+  return 'neutral';
+}
+
+function makeField() {
+  const p = state.player;
+  const Rp = playerRadius(stage);
+  p.radius = Rp; p.mass = Rp * Rp; p.stageIndex = stage; p.alive = true;
+  state.bounds.radius = Rp * 70;
+  state.bodies = [];
+  const A = state.bounds.radius * 0.85;
+  for (let i = 0; i < nBodies; i++) {
+    const ratio = Math.exp(Math.log(0.06) + (Math.log(3.2) - Math.log(0.06)) * Math.pow(Math.random(), 1.35));
+    const r = Rp * ratio;
+    const st = clamp(Math.round(Math.log(r / 12) / Math.log(GROWTH)), 0, 11);
+    const near = i < nBodies * 0.3;
+    const ang = rand(0, TAU), d = near ? Math.sqrt(Math.random()) * Rp * 55 : Math.sqrt(Math.random()) * A;
+    const b = { id: nextId++, x: p.x + Math.cos(ang) * d, y: p.y + Math.sin(ang) * d, vx: 0, vy: 0, radius: r, mass: r * r,
+      kind: 'neutral', stageIndex: st, seed: Math.random() * 1e6, alive: true };
+    const va = rand(0, TAU), vs = Rp * rand(0.1, 0.9);
+    b.vx = Math.cos(va) * vs; b.vy = Math.sin(va) * vs;
+    b.kind = kindFor(b);
+    state.bodies.push(b);
+  }
+}
+
+function makeGallery() {
+  const p = state.player;
+  p.radius = 46; p.mass = 46 * 46; p.stageIndex = stage; p.alive = true;
+  state.bounds.radius = 1e6;
+  state.bodies = [];
+  for (let i = 0; i < 12; i++) {
+    const col = i % 6, row = (i / 6) | 0;
+    const b = { id: nextId++, x: (col - 2.5) * 190, y: (row - 0.5) * 215 - 80, vx: 0, vy: 0, radius: 46, mass: 2116,
+      kind: 'neutral', stageIndex: i, seed: 1000 + i * 7.31, alive: true };
+    state.bodies.push(b);
+  }
+  applyGalleryKinds();
+  p.x = 0; p.y = 235; p.vx = 120; p.vy = 0;
+  camera.y = 70;
+}
+
+function applyGalleryKinds() {
+  const order = ['prey', 'neutral', 'threat'];
+  state.bodies.forEach((b, i) => { b.kind = galleryKind === 'mixed' ? order[i % 3] : galleryKind; });
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('m-gallery').classList.toggle('on', m === 'gallery');
+  document.getElementById('m-field').classList.toggle('on', m === 'field');
+  labelsEl.style.display = m === 'gallery' ? '' : 'none';
+  if (m === 'field') { state.player.x = 0; state.player.y = 0; state.player.vx = state.player.vy = 0; makeField(); camera.x = 0; camera.y = 0; camera.zoom = STAGES[stage].playerPx / playerRadius(stage); }
+  else { makeGallery(); fitGallery(); }
+}
+
+function setStage(s, withFx) {
+  const prev = stage;
+  stage = clamp(s, 0, 11);
+  document.querySelectorAll('#stages button').forEach((b, i) => b.classList.toggle('on', i === stage));
+  if (stage === prev && !withFx) return;
+  if (withFx) spawnEffect(state, 'evolve', state.player.x, state.player.y, { radius: state.player.radius });
+  state.player.stageIndex = stage;
+  if (mode === 'field') {
+    const Rp = playerRadius(stage);
+    state.player.radius = Rp; state.player.mass = Rp * Rp;
+    const px = state.player.x, py = state.player.y;
+    makeField();
+    state.player.x = px; state.player.y = py;
+  }
+}
+
+// the gallery is centred in the area to the right of the control panel
+const galleryZoom = () => Math.min((innerWidth - 290) / 1200, innerHeight / 780);
+const galleryCamX = () => -145 / galleryZoom();
+function fitGallery() {
+  camera.zoom = galleryZoom();
+  camera.x = galleryCamX();
+}
+
+// ---- simulation -------------------------------------------------------------------------------
+
+function step(dt) {
+  state.time += dt;
+  const p = state.player;
+  hitCooldown -= dt;
+  if (!p.alive) {
+    if (state.time > respawnAt) { p.alive = true; p.vx = p.vy = 0; }
+    return;
+  }
+  if (mode === 'gallery') {
+    // the player circles under the gallery so the trail / thruster are visible
+    const a = state.time * 0.7;
+    p.x = Math.cos(a) * 330; p.y = 262 + Math.sin(a) * 40;
+    p.vx = -Math.sin(a) * 330 * 0.7; p.vy = Math.cos(a) * 40 * 0.7;
+    camera.x += (galleryCamX() - camera.x) * Math.min(1, dt * 3); camera.y += (70 - camera.y) * Math.min(1, dt * 3);
+    camera.zoom += (galleryZoom() - camera.zoom) * Math.min(1, dt * 3);
+    return;
+  }
+  const Rp = p.radius;
+  // steer toward the mouse
+  const wx = camera.x + (mouse.x - innerWidth / 2) / camera.zoom;
+  const wy = camera.y + (mouse.y - innerHeight / 2) / camera.zoom;
+  let dx = wx - p.x, dy = wy - p.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const k = Math.min(1, d / (Rp * 3));
+  dx /= d; dy /= d;
+  p.vx += dx * Rp * 16 * k * dt; p.vy += dy * Rp * 16 * k * dt;
+  const f = Math.exp(-1.2 * dt);
+  p.vx *= f; p.vy *= f;
+  const vmax = Rp * 9, sp = Math.hypot(p.vx, p.vy);
+  if (sp > vmax) { p.vx *= vmax / sp; p.vy *= vmax / sp; }
+  p.x += p.vx * dt; p.y += p.vy * dt;
+  const R = state.bounds.radius, pd = Math.hypot(p.x, p.y);
+  if (pd > R * 1.04) { p.x *= (R * 1.04) / pd; p.y *= (R * 1.04) / pd; p.vx *= -0.3; p.vy *= -0.3; }
+
+  // camera: spring follow, zoom keeps the player at a constant on-screen size
+  const zt = STAGES[p.stageIndex].playerPx / Rp;
+  camera.zoom += (zt - camera.zoom) * (1 - Math.exp(-2.2 * dt));
+  const lx = p.x + p.vx * 0.1, ly = p.y + p.vy * 0.1;
+  const ck = 1 - Math.exp(-7 * dt);
+  camera.x += (lx - camera.x) * ck; camera.y += (ly - camera.y) * ck;
+
+  // bodies drift, bounce off the arena edge; touching prey absorbs, touching a threat hits
+  for (const b of state.bodies) {
+    if (!b.alive) continue;
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    const bd = Math.hypot(b.x, b.y);
+    if (bd > R * 0.95) { b.vx = -b.vx; b.vy = -b.vy; b.x *= 0.94; b.y *= 0.94; }
+    b.kind = kindFor(b);
+    const dist = Math.hypot(b.x - p.x, b.y - p.y);
+    if (dist < p.radius + b.radius * 0.7) {
+      if (b.kind === 'prey') { b.alive = false; spawnEffect(state, 'absorb', b.x, b.y, { radius: b.radius }); }
+      else if (b.kind === 'threat' && hitCooldown <= 0) {
+        hitCooldown = 1; spawnEffect(state, 'hit', (b.x + p.x) / 2, (b.y + p.y) / 2, { radius: p.radius * 0.5, strength: 0.7, damage: true });
+        const nx = (p.x - b.x) / (dist || 1), ny = (p.y - b.y) / (dist || 1);
+        p.vx += nx * p.radius * 10; p.vy += ny * p.radius * 10;
+      }
+    }
+  }
+  // keep the field populated
+  for (const b of state.bodies) if (!b.alive && Math.random() < dt * 2) {
+    const a = rand(0, TAU), dd = rand(0.6, 1) * p.radius * 55;
+    b.x = p.x + Math.cos(a) * dd; b.y = p.y + Math.sin(a) * dd; b.alive = true;
+  }
+}
+
+// ---- UI ---------------------------------------------------------------------------------------
+
+const stagesEl = document.getElementById('stages');
+STAGES.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'st'; b.textContent = i + 1; b.title = s.name;
+  b.onclick = () => setStage(i, false);
+  stagesEl.appendChild(b);
+});
+const kindsEl = document.getElementById('kinds');
+for (const k of ['mixed', 'prey', 'neutral', 'threat']) {
+  const b = document.createElement('button');
+  b.textContent = k === 'neutral' ? 'equal' : k; b.dataset.k = k;
+  b.onclick = () => { galleryKind = k; applyGalleryKinds(); kindsEl.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.k === k)); };
+  kindsEl.appendChild(b);
+}
+kindsEl.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.k === galleryKind));
+document.getElementById('m-gallery').onclick = () => setMode('gallery');
+document.getElementById('m-field').onclick = () => setMode('field');
+document.getElementById('evolve').onclick = () => setStage((stage + 1) % 12, true);
+
+function fxAbsorb() {
+  const p = state.player;
+  let best = null, bd = Infinity;
+  for (const b of state.bodies) {
+    if (!b.alive) continue;
+    const d = Math.hypot(b.x - p.x, b.y - p.y);
+    if (d < bd) { bd = d; best = b; }
+  }
+  if (best) { spawnEffect(state, 'absorb', best.x, best.y, { radius: best.radius }); if (mode === 'field') best.alive = false; }
+}
+function fxHit() { const p = state.player; spawnEffect(state, 'hit', p.x, p.y, { radius: p.radius * 0.6, strength: 0.8, damage: true }); }
+function fxDeath() {
+  const p = state.player;
+  spawnEffect(state, 'death', p.x, p.y, { radius: p.radius });
+  p.alive = false; respawnAt = state.time + 2.6;
+}
+document.getElementById('fx-absorb').onclick = fxAbsorb;
+document.getElementById('fx-hit').onclick = fxHit;
+document.getElementById('fx-death').onclick = fxDeath;
+
+const opts = () => renderer.setOptions({
+  highContrast: document.getElementById('o-hc').checked,
+  reducedMotion: document.getElementById('o-rm').checked,
+  applyShake: document.getElementById('o-shake').checked,
+});
+for (const id of ['o-hc', 'o-rm', 'o-shake']) document.getElementById(id).onchange = opts;
+document.getElementById('o-q').onchange = (e) => renderer.setOptions(e.target.value === 'auto' ? { autoQuality: true } : { quality: +e.target.value });
+document.getElementById('o-n').onchange = (e) => { nBodies = +e.target.value; if (mode === 'field') makeField(); };
+document.getElementById('o-n').value = String(nBodies);
+
+addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+addEventListener('resize', () => { renderer.resize(); });
+
+// gallery captions
+function updateLabels() {
+  if (mode !== 'gallery') return;
+  if (!labelsEl.childElementCount) {
+    for (let i = 0; i < 12; i++) { const d = document.createElement('div'); labelsEl.appendChild(d); }
+  }
+  const cx = innerWidth / 2, cy = innerHeight / 2;
+  state.bodies.forEach((b, i) => {
+    const el = labelsEl.children[i];
+    el.style.left = ((b.x - camera.x) * camera.zoom + cx) + 'px';
+    el.style.top = ((b.y - camera.y) * camera.zoom + cy + b.radius * camera.zoom * 1.5) + 'px';
+    el.innerHTML = (i + 1) + '. ' + STAGES[i].name + '<small>' + (b.kind === 'neutral' ? 'equal' : b.kind) + '</small>';
+  });
+}
+
+// ---- main loop --------------------------------------------------------------------------------
+
+setMode(mode);
+setStage(stage, false);
+renderer.resize();
+
+const warm = parseFloat(qs.get('warm') || '0');
+for (let i = 0; i < warm * 60; i++) { step(1 / 60); renderer.drawFrame(state, camera, 1 / 60); }
+if (qs.get('edge') && mode === 'field') { const R = state.bounds.radius; state.player.x = R * 0.93; state.player.y = 0; camera.x = state.player.x; }
+const fx = qs.get('fx');
+if (fx === 'absorb') fxAbsorb(); else if (fx === 'hit') fxHit(); else if (fx === 'death') fxDeath(); else if (fx === 'evolve') setStage((stage + 1) % 12, true);
+
+let last = performance.now(), fps = 60, statT = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (dt > 0) fps = fps * 0.95 + (1 / dt) * 0.05;
+  step(dt);
+  renderer.drawFrame(state, camera, dt);
+  updateLabels();
+  statT += dt;
+  if (statT > 0.4) {
+    statT = 0;
+    const s = renderer.getStats();
+    statsEl.textContent = `fps ${fps.toFixed(0)}   frame ${s.ms.toFixed(1)} ms\ndrawn ${s.drawn}  culled ${s.culled}  quality ${s.quality}\n` +
+      `stage ${stage + 1} ${STAGES[stage].name}   zoom ${camera.zoom.toFixed(3)}`;
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__demo = { renderer, canvas, state, camera, setStage, setMode, fxAbsorb, fxHit, fxDeath, step };
+</script>
+</body>
+</html>
