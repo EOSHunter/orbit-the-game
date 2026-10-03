@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node tools/serve.mjs 8000",
     "test": "node tests/stages.test.mjs && node tests/pace.mjs",
-    "test:smoke": "node tests/smoke.mjs"
+    "test:smoke": "node tests/smoke.mjs",
+    "test:balance": "node tests/sim.balance.mjs --runs 12"
   }
 }
