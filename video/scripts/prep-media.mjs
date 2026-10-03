@@ -99,7 +99,7 @@ for (const beat of edl.beats) {
         '-c:v', 'libx264', '-preset', res > 720 ? 'medium' : 'veryfast', '-crf', res > 720 ? '18' : '26',
         '-g', String(FPS), '-pix_fmt', 'yuv420p',
         '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
-        '-movflags', '+faststart', out,
+        '-movflags', '+faststart', '-f', 'mp4', `${out}.part`, // renamed when complete, so a killed run never leaves a half-written clip
       ],
     });
   }
@@ -136,6 +136,7 @@ console.log(`Proxies @${W}x${res}: ${jobs.length} to cut (${edl.beats.flatMap((b
 await runPool(
   jobs.map((j) => async () => {
     await run(j.args);
+    fs.renameSync(`${j.out}.part`, j.out);
     stamp(j.out, j.params);
   }),
   Math.max(2, Math.min(6, Math.floor(os.cpus().length / 3))),
