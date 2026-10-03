@@ -66,6 +66,7 @@ ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
 ```
 
 - **Additive, optional options (not yet in contract v1):** `onPause(paused)` and `onAction(name)`. They are needed because the contract has no way for the UI to request a pause, and the reference HUD has a **Q / Capture** button. Without `onAction`, Capture shows as locked. `state.flags.captureLocked === true` also locks it. Without `onPause`, the Systems panel still opens, and a sim-driven `status: 'paused'` is mirrored. I suggest a `contract change:` PR to add both.
+- As merged, `main3d.js` passes `onPause: (p) => sim.setPaused(p)` and its own keydown handler returns early on `e.defaultPrevented`. That way Esc and T are handled once, by the UI, and the Resume button really resumes the sim.
 - `showChoice` is not opened automatically on `choice-open`, because the UI cannot call `sim.pickChoice`. ENG wires it as shown above.
 - `warnBoundary(on)` is a no-op in the 3D build (it only shows when the state has no `hud`). It still drives the edge warning in the 2D build, which still has a world edge.
 - `view.project` is assumed to return CSS pixels in a `view.width × view.height` space. The UI rescales to its own root size.

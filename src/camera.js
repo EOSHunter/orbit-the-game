@@ -1,5 +1,5 @@
 // Follow camera. `camera` is a plain object the renderer reads:
-//   x, y     world point at the centre of the viewport (shake already applied)
+//   x, y     world point at the centre of the viewport (screen shake is applied by the renderer)
 //   zoom     CSS pixels per world unit
 //   width, height   viewport size in CSS pixels
 //   scale    viewport scale factor (min(w/1280, h/720)) for sizing UI-ish things
@@ -12,9 +12,6 @@ export function createCamera() {
     // internal
     fx: 0, fy: 0,            // un-shaken follow position
     pull: 0,                 // evolve pull-back pulse (1 -> 0)
-    trauma: 0,
-    time: 0,
-    reduceMotion: typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
     wide: 1,                 // extra zoom-out multiplier (title screen)
   };
 }
@@ -30,15 +27,10 @@ export function snapCamera(cam, player) {
   cam.fy = cam.y = player.y;
   cam.zoom = targetZoom(cam, player);
   cam.pull = 0;
-  cam.trauma = 0;
 }
 
 function targetZoom(cam, p) {
   return (CONFIG.camera.playerScreenRadius * cam.scale * cam.wide) / p.radius;
-}
-
-export function addTrauma(cam, amount) {
-  cam.trauma = clamp(cam.trauma + amount, 0, 1);
 }
 
 export function kickCamera(cam) {
@@ -64,7 +56,6 @@ export function screenToWorld(cam, sx, sy, out = {}) {
 
 export function updateCamera(cam, player, dt) {
   const c = CONFIG.camera;
-  cam.time += dt;
 
   // Zoom: ease in log space so zooming out and in feel symmetric. Evolve adds a pull-back pulse.
   cam.pull = Math.max(0, cam.pull - dt / 1.8);
@@ -79,16 +70,6 @@ export function updateCamera(cam, player, dt) {
   const kf = 1 - Math.exp(-dt / c.followLag);
   cam.fx += (tx - cam.fx) * kf;
   cam.fy += (ty - cam.fy) * kf;
-
-  // Trauma shake (smooth pseudo-noise), constant on-screen size regardless of zoom.
-  let sx = 0, sy = 0;
-  if (cam.trauma > 0 && !cam.reduceMotion) {
-    const s = cam.trauma * cam.trauma * c.maxShake / cam.zoom;
-    const t = cam.time;
-    sx = (Math.sin(t * 47.1) + Math.sin(t * 71.3 + 1.7)) * 0.5 * s;
-    sy = (Math.sin(t * 53.9 + 0.6) + Math.sin(t * 67.7 + 2.9)) * 0.5 * s;
-  }
-  cam.trauma = Math.max(0, cam.trauma - 1.5 * dt);
-  cam.x = cam.fx + sx;
-  cam.y = cam.fy + sy;
+  cam.x = cam.fx;
+  cam.y = cam.fy;
 }

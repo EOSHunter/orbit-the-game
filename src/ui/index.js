@@ -271,7 +271,10 @@ export function createUI(root, opts = {}) {
   root.appendChild(ui);
 
   // Keep UI clicks from also steering the ship (2D input listens on window).
-  ui.addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('.vd-interactive, .vd-overlay.is-on')) e.stopPropagation(); });
+  // Only in-flight HUD controls are swallowed; title/menu clicks still reach the host's first-gesture audio unlock.
+  ui.addEventListener('pointerdown', (e) => {
+    if (last && last.status === 'playing' && e.target.closest && e.target.closest('.vd-hud .vd-interactive')) e.stopPropagation();
+  });
   // Hover/ focus sounds (throttled).
   let hoverT = 0;
   ui.addEventListener('pointerover', (e) => {
@@ -403,6 +406,7 @@ export function createUI(root, opts = {}) {
   // ---------- Screens ----------
   function showTitle(onStart, o) {
     paused = false;
+    hud.clearPending();
     choiceHandler = null;
     closeOverlay(menuOv, true); closeOverlay(endOv, true); closeOverlay(choiceOv, true);
     hud.el.classList.remove('is-on');
@@ -422,6 +426,7 @@ export function createUI(root, opts = {}) {
   function showEnd(ending, onRestart) {
     ending = ending || {};
     paused = false;
+    hud.clearPending();
     choiceHandler = null;
     closeOverlay(menuOv, true); closeOverlay(choiceOv, true);
     const s = last || {};

@@ -151,6 +151,12 @@
   font-stretch: semi-condensed; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-shadow: 0 0 12px rgba(92, 225, 255, 0.35);
 }
+.vd-ui .vd-sc-name { position: relative; }
+.vd-ui .vd-sc-name.is-decoding { color: transparent; text-shadow: none; }
+.vd-ui .vd-sc-name.is-decoding::after {
+  content: attr(data-scramble); position: absolute; left: 0; top: 0; color: var(--text);
+  text-shadow: 0 0 12px rgba(92, 225, 255, 0.35); pointer-events: none;
+}
 .vd-ui .vd-sc-mass { display: flex; align-items: baseline; gap: calc(8px * var(--s)); }
 .vd-ui .vd-sc-massval { font-size: calc(18px * var(--s)); color: var(--holo-hi); font-style: italic; letter-spacing: 0.02em; }
 

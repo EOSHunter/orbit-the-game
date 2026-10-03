@@ -1,5 +1,5 @@
-// Bootstrap: load the shared modules (falling back to src/dev-stubs.js for anything missing),
-// create canvas/camera/input/game, then run a fixed-timestep loop.
+// Bootstrap: load the stages / renderer / UI modules, create canvas/camera/input/game, then run a
+// fixed-timestep loop.
 import { createCamera, resizeCamera } from './camera.js';
 import { createInput } from './input.js';
 import { createGame } from './game.js';
@@ -15,28 +15,34 @@ const EXPECTED = {
   './ui/index.js': ['createUI'],
 };
 
-let stubs = null;
-async function loadStubs() {
-  stubs ||= await import('./dev-stubs.js');
-  return stubs;
-}
-
-// Import the real module if it exists; fill in any missing export from the dev stubs.
+// Import every module and check its exports, so a broken file fails with a readable message.
 async function loadModules() {
   const out = {};
+  const problems = [];
   for (const [path, names] of Object.entries(EXPECTED)) {
-    let real = {};
+    let mod;
     try {
-      real = await import(path);
+      mod = await import(path);
     } catch (err) {
-      console.warn(`[engine] ${path} unavailable, using dev stub (${err && err.message})`);
+      problems.push(`${path} failed to load: ${err && err.message}`);
+      continue;
     }
     for (const name of names) {
-      if (real[name] !== undefined) out[name] = real[name];
-      else out[name] = (await loadStubs())[name];
+      if (mod[name] === undefined) problems.push(`${path} does not export ${name}`);
+      else out[name] = mod[name];
     }
   }
+  if (problems.length) throw new Error(`Vesper Drift could not start:\n  ${problems.join('\n  ')}`);
   return out;
+}
+
+function showFatal(err) {
+  console.error(err);
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'color:#FF5E73;background:#070914;position:fixed;left:8px;top:8px;right:8px;margin:0;'
+    + 'padding:12px;font:13px/1.4 monospace;white-space:pre-wrap;z-index:9999';
+  pre.textContent = String((err && err.message) || err);
+  document.body.appendChild(pre);
 }
 
 async function main() {
@@ -53,6 +59,9 @@ async function main() {
   const input = createInput(canvas);
   const game = createGame({ mod, renderer, ui, camera, input });
 
+  // The UI owns the pause menu (Esc / pause button); the engine just stops stepping.
+  ui.onPause((paused) => game.setPaused(paused));
+
   window.addEventListener('resize', () => {
     renderer.resize();
     syncSize();
@@ -67,6 +76,11 @@ async function main() {
     hidden = document.hidden;
     last = performance.now(); // do not fast-forward after the tab comes back
     acc = 0;
+    // Leaving the tab mid-run opens the pause menu so the player comes back to a paused game.
+    if (hidden && game.state.status === 'playing' && !game.paused) {
+      ui.setPaused(true);
+      game.setPaused(true);
+    }
   });
 
   function frame(now) {
@@ -74,6 +88,11 @@ async function main() {
     if (hidden) return;
     const dt = Math.min(MAX_FRAME, (now - last) / 1000);
     last = now;
+    if (game.paused) {
+      acc = 0;
+      game.render(0); // dt 0 freezes effects and particles
+      return;
+    }
     acc += dt;
     let n = 0;
     while (acc >= STEP && n < MAX_STEPS) {
@@ -87,10 +106,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // Handy for tuning from the console: __orbit.CONFIG.chase.enabled = false
-  window.__orbit = { game, state: game.state, camera, CONFIG, mod };
+  window.__orbit = { game, state: game.state, camera, CONFIG, mod, renderer, ui };
 }
 
-main().catch((err) => {
-  console.error(err);
-  document.body.insertAdjacentHTML('beforeend', `<pre style="color:#FF5E73;position:fixed;left:8px;top:8px">${String(err && err.stack || err)}</pre>`);
-});
+main().catch(showFatal);

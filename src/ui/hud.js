@@ -40,7 +40,7 @@ export function createHud(ctx) {
   const kStage = el('span', 'vd-sc-num');
   const kCode = el('span', 'vd-sc-code');
   kicker.append(el('span', 'vd-dim', 'STG '), kStage, el('span', 'vd-dim', ' // '), kCode);
-  const nameEl = el('h2', 'vd-sc-name');
+  const nameEl = el('h2', 'vd-sc-name vd-stage-name'); // vd-stage-name: stable hook (tests/smoke.mjs)
   const massRow = el('div', 'vd-sc-mass');
   const massEl = el('span', 'vd-sc-massval vd-mono');
   massRow.append(el('span', 'vd-label', 'Mass'), massEl);
@@ -83,6 +83,7 @@ export function createHud(ctx) {
     return b;
   };
   const menuBtn = mkCmd('settings', 'Esc', 'Settings', 'Settings and pause (Esc)');
+  menuBtn.classList.add('vd-icon-btn'); // stable pause-button hook (tests/smoke.mjs)
   const capBtn = mkCmd('capture', 'Q', 'Capture', 'Capture (Q)');
   const capLock = el('span', 'vd-rbtn-lock');
   capLock.innerHTML = icon('lock');
@@ -176,7 +177,7 @@ export function createHud(ctx) {
   capMeter.append(capFill, el('b'), el('b'), el('b'));
   capAlert.a.appendChild(capMeter);
   const voidAlert = mkAlert('vd-alert--void', 'beacon', 'Deep void');
-  const edgeAlert = mkAlert('vd-alert--capture', 'warn', 'Edge of charted space');
+  const edgeAlert = mkAlert('vd-alert--capture vd-warn', 'warn', 'Edge of charted space'); // .vd-warn.is-on: stable hook
   edgeAlert.sub.textContent = 'TURN BACK';
   const hullAlert = mkAlert('vd-alert--hull', 'warn', 'Hull integrity critical');
   const atmoChip = el('div', 'vd-chip vd-mono');
@@ -257,6 +258,7 @@ export function createHud(ctx) {
 
   // ---------- Runtime state ----------
   let prevStage = null;
+  let pendingBanner = null; // stage-up banner held back while the choice cards are open (from main #7)
   let shownMass = 0;
   let decodeStart = -1, decodeName = '';
   let range = 1000;
@@ -313,10 +315,12 @@ export function createHud(ctx) {
 
   function beaconPing() { restart(ping, 'is-ping'); restart(voidAlert.a, 'is-ping'); }
   function captureFlash() { restart(capAlert.a, 'is-flash'); }
-  function warnLegacy(on) { legacyEdge = !!on; }
+  function warnLegacy(on) { legacyEdge = !!on; edgeAlert.a.classList.toggle('is-on', legacyEdge); }
 
   function reset() {
     prevStage = null;
+    pendingBanner = null;
+    nameEl.classList.remove('is-decoding');
     shownMass = 0;
     decodeStart = -1;
     range = 1000;
@@ -337,7 +341,11 @@ export function createHud(ctx) {
 
     // Stage change
     if (prevStage !== idx) {
-      if (prevStage !== null && idx > prevStage && state.status === 'playing') stageUp(idx);
+      const evolved = prevStage !== null && idx > prevStage;
+      if (evolved) {
+        if (state.status === 'choice') pendingBanner = idx;
+        else if (state.status === 'playing') stageUp(idx);
+      }
       prevStage = idx;
       glyph.innerHTML = stageGlyph(idx);
       setText('kStage', kStage, `${String(idx + 1).padStart(2, '0')}/${String(N).padStart(2, '0')}`);
@@ -348,19 +356,22 @@ export function createHud(ctx) {
         pips[i].classList.toggle('is-current', i === idx);
         if (i === idx) pips[i].setAttribute('aria-current', 'step'); else pips[i].removeAttribute('aria-current');
       }
-      if (!reduced && decodeName && decodeName !== name) decodeStart = now;
+      if (!reduced && evolved && decodeName && decodeName !== name) decodeStart = now;
       decodeName = name;
     }
-    // Name with a short "decode" scramble on change
+    setText('name', nameEl, name); // the real name always stays in the DOM text (screen readers, tests)
+    if (state.status === 'choice' && banner.classList.contains('is-on')) banner.classList.remove('is-on');
+    if (pendingBanner !== null && state.status === 'playing') { stageUp(pendingBanner); pendingBanner = null; }
+    // Short visual "decode" scramble after an evolution, drawn by CSS from data-scramble over the real text
     if (decodeStart >= 0 && now - decodeStart < 480) {
       const k = Math.floor(((now - decodeStart) / 480) * name.length);
       let s = name.slice(0, k);
       for (let i = k; i < name.length; i++) s += name[i] === ' ' ? ' ' : SCRAMBLE[(Math.random() * SCRAMBLE.length) | 0];
-      nameEl.textContent = s;
-      cache.name = null;
-    } else {
+      nameEl.setAttribute('data-scramble', s);
+      toggle('decoding', nameEl, 'is-decoding', true);
+    } else if (decodeStart >= 0) {
       decodeStart = -1;
-      setText('name', nameEl, name);
+      toggle('decoding', nameEl, 'is-decoding', false);
     }
 
     // Mass count-up (ease-out)
@@ -615,5 +626,5 @@ export function createHud(ctx) {
   function dispose() { clearTimeout(bannerTimer); clearTimeout(hintTimer); if (lastLog) clearTimeout(lastLog.timer); }
 
   return { el: root, update, reset, stageUp, showHint, pushLog, damage, beaconPing, captureFlash, warnLegacy, dispose,
-    hideHint: () => hint.classList.remove('is-on') };
+    hideHint: () => hint.classList.remove('is-on'), clearPending: () => { pendingBanner = null; } };
 }
