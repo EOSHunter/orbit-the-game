@@ -1,6 +1,7 @@
 // Evolution stages, milestone choices and endings. Dependency-free ES module.
 //
-// state shape: { mass, stageIndex, flags: {}, status, deathCause?: 'collision' | 'boundary' }
+// state shape: { mass, stageIndex, flags: {}, status, deathCause?: 'collision' | 'captured' | 'boundary' }
+// ('captured' = pulled in by a far larger black hole, the 3D build's Event Horizon ending; 'boundary' is legacy 2D.)
 //
 // flags (all created on demand by applyChoice; the engine may read them any time):
 //   speedMult     number, default 1    Multiplier on steering/thrust speed. Stacks multiplicatively.
@@ -198,12 +199,12 @@ const ENDINGS = {
 
 /**
  * Ending for the current state, or null while the run is still going.
- * Death/boundary take priority; otherwise endings only resolve at the Black Hole stage:
+ * Death/boundary/captured take priority; otherwise endings only resolve at the Black Hole stage:
  *   abandon-only picks -> Quantum Cosmos; Terrestrial + Yellow Dwarf -> Cradle of Life;
  *   no abandons at all -> Creator God; any mix -> the normal Black Hole ending.
  */
 export function getEnding(state) {
-  if (state.deathCause === 'boundary') return { ...ENDINGS.event_horizon };
+  if (state.deathCause === 'boundary' || state.deathCause === 'captured') return { ...ENDINGS.event_horizon };
   if (state.deathCause === 'collision' || state.status === 'dead') return { ...ENDINGS.stellar_fragment };
 
   if (state.stageIndex !== STAGES.length - 1) return null;
