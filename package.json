@@ -6,8 +6,12 @@
   "description": "Browser space-evolution game. No build step, no dependencies.",
   "scripts": {
     "start": "node tools/serve.mjs 8000",
-    "test": "node tests/stages.test.mjs && node tests/pace.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "test:pace": "node tests/pace.mjs && node tests/sim.pace.mjs --runs 6 --dt 60",
     "test:smoke": "node tests/smoke.mjs",
     "test:balance": "node tests/sim.balance.mjs --runs 12"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

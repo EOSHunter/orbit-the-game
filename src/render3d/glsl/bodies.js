@@ -38,7 +38,7 @@ ${NOISE}
 ${LIGHT}
 ${BUMP}
 uniform float uSeed;
-uniform vec3 uLand, uOcean, uHigh, uIce;
+uniform vec3 uLand, uOcean, uDeep, uHigh, uIce;
 uniform float uRadius;
 uniform float uCloud;      // 0..1 cloud cover
 uniform float uWater;      // sea level 0..1
@@ -54,12 +54,13 @@ void main(){
   float h = fbm(p * 2.2, 6) + .35 * ridged(p * 4.5, 4) * .5;
   h = (h - .25) / .85;
   float sea = uWater;
-  float land = smoothstep(sea - .01, sea + .015, h);
+  float aa = max(fwidth(h) * 1.2, .006);
+  float land = smoothstep(sea - aa, sea + aa, h);
   float lat = abs(vObj.y);
   float ice = smoothstep(.8, .92, lat + (h - .5) * .25 + (fbm(p * 6., 3) - .5) * .12);
   vec3 low = mix(uLand, uHigh, smoothstep(sea, sea + .35, h));
   low *= .85 + .3 * vnoise(p * 30.);
-  vec3 deep = mix(uOcean * .35, uOcean, smoothstep(sea - .35, sea, h));
+  vec3 deep = mix(uDeep, uOcean, smoothstep(sea - .35, sea, h));
   vec3 alb = mix(deep, low, land);
   alb = mix(alb, uIce, ice);
   float Hb = land * h * .02 * uRadius;
@@ -69,7 +70,7 @@ void main(){
   float cl = smoothstep(.52 - .25 * uCloud, .8, fbm(cp, 5)) * uCloud;
   alb = mix(alb, vec3(.8), cl * .85);
   float shadow = occl(vViewPos, L, uOcc0) * occl(vViewPos, L, uOcc1);
-  float term = smoothstep(-.02, .12, dot(Ng, L));
+  float term = smoothstep(-.015, .07, dot(Ng, L));
   float ndl = max(dot(mix(N, Ng, cl), L), 0.) * term;
   vec3 col = alb * uKeyColor * .55 * ndl * shadow + alb * uAmbient;
   // sun glint on open water
@@ -121,7 +122,7 @@ void main(){
   alb = mix(alb, uStorm, spot * .6 * step(.0, dot(o, sc) - .3));
 
   float mu = max(dot(Ng, V), 0.);
-  float term = smoothstep(-.1, .25, dot(Ng, L));   // soft: gas has no hard surface
+  float term = smoothstep(-.05, .16, dot(Ng, L));  // a little softer than rock (haze), still a clear terminator
   float shadow = occl(vViewPos, L, uOcc0) * occl(vViewPos, L, uOcc1);
   float ndl = max(dot(Ng, L), 0.);
   vec3 col = alb * uKeyColor * .6 * mix(ndl, 1., .08) * term * shadow + alb * uAmbient;
@@ -140,7 +141,7 @@ void main(){
 export const starFrag = /* glsl */ `
 ${NOISE}
 ${BLACKBODY}
-uniform float uTime, uSeed, uTemp, uIntensity, uCells, uSpots, uLimbU;
+uniform float uTime, uSeed, uTemp, uIntensity, uCells, uSpots, uLimbU, uContrast;
 varying vec3 vObj;
 varying vec3 vNView;
 varying vec3 vViewPos;
@@ -153,9 +154,11 @@ void main(){
   float gran = 0.;
   if (uCells > .5) {
     vec2 w = worley(p * uCells + vec3(0., t, 0.));
-    float cell = smoothstep(.0, .6, w.x);                   // bright cell centres, dark lanes
-    float fine = vnoise(p * uCells * 3. + t * 4.);
-    gran = (1. - cell) * .6 + (fine - .5) * .3;
+    vec2 w2 = worley(p * uCells * 2.1 + 3.7 - t);
+    float lane = smoothstep(.0, .12, w.y - w.x);               // dark intergranular lanes
+    float cell = 1. - uContrast * (1. - lane) - .35 * uContrast * (1. - smoothstep(0., .1, w2.y - w2.x));
+    cell *= 1. + .25 * (fbm(p * 3. + t * .2, 3) - .5);
+    gran = cell - 1.;
   }
   float spots = 0.;
   if (uSpots > 0.) spots = smoothstep(.6, .75, fbm(p * 2.2 + 5., 3)) * uSpots;

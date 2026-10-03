@@ -65,11 +65,19 @@ export async function start3d() {
   renderer.attach(bus);
   if (audio) audio.attach(bus);
 
+  let quality = null;
   const applySettings = (s) => {
     if (!s) return;
-    if (audio) { audio.setVolume({ master: s.master, music: s.music, sfx: s.sfx }); }
-    renderer.setQuality(s.quality || 'auto');
+    if (audio) {
+      audio.setVolume({ master: s.master, music: s.music, sfx: s.sfx });
+      // The UI has no separate mute switch: master at 0 is "muted". Always setting it also clears a stale
+      // `muted` flag that audio persisted elsewhere (e.g. its demo page), which the game could never undo.
+      audio.setMuted(s.muted === true || !(s.master > 0));
+    }
+    const q = s.quality || 'auto';
+    if (q !== quality) { quality = q; renderer.setQuality(q); }   // slider drags must not rebuild render targets
     renderer.setOptions({ reducedMotion: !!s.reducedMotion, readability: !!s.readability, topDown: !!s.topDown });
+    if (sim.setOptions) sim.setOptions({ trajectory: !!s.trajectory });
   };
   if (ui) {
     // onPause: the UI's Systems panel (Esc / Resume / close) drives the sim pause.
@@ -85,25 +93,31 @@ export async function start3d() {
   }
 
   // ---- input ----
-  const input = createInput(canvas, () => renderer.getView(), () => sim.getState().player.p);
+  // The view's project/unproject read the live camera; only width/height are captured, so refresh on resize.
+  let view = null;
+  const input = createInput(canvas, () => view, () => sim.getState().player.p);
 
-  const resize = () => renderer.resize(innerWidth, innerHeight, devicePixelRatio || 1);
+  const resize = () => { renderer.resize(innerWidth, innerHeight, devicePixelRatio || 1); view = renderer.getView(); };
   addEventListener('resize', resize); resize();
 
-  // first user gesture unlocks audio (autoplay policy)
-  const unlock = () => { if (audio) audio.unlock(); removeEventListener('pointerdown', unlock); removeEventListener('keydown', unlock); };
-  addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
+  // User gestures unlock audio (autoplay policy). Capture phase, so a UI handler that stops propagation
+  // cannot swallow it, and kept for the whole session: a gesture the browser does not count as activation
+  // (e.g. Esc) must not use up the only chance. unlock() is a no-op once the context runs.
+  if (audio) {
+    const unlock = () => { audio.unlock(); };
+    for (const t of ['pointerdown', 'keydown', 'touchend']) addEventListener(t, unlock, true);
+  }
 
-  let topLocal = false;
-  addEventListener('keydown', (e) => {
-    if (e.defaultPrevented) return;   // the UI already handled it (Esc menu, T/V toggles); avoid a double toggle
-    if (e.code === 'Escape') { const s = sim.getState().status; if (s === 'playing') sim.setPaused(true); else if (s === 'paused') sim.setPaused(false); }
-    if (e.code === 'KeyT') { topLocal = !topLocal; renderer.setOptions({ topDown: topLocal }); }
-  });
-
-  // death slow motion (sim time dilation), purely a loop concern
-  let timeScale = 1, slowUntil = 0;
-  bus.on('death', () => { slowUntil = performance.now() + 2600; });
+  // Fallback keys only when there is no UI: with the UI, Esc (systems menu -> onPause) and T (topDown
+  // setting -> onSettings) belong to it, and handling them here too would desync the menu or the setting.
+  if (!ui) {
+    let topLocal = false;
+    addEventListener('keydown', (e) => {
+      if (e.defaultPrevented || e.repeat) return;
+      if (e.code === 'Escape') { const s = sim.getState().status; if (s === 'playing') sim.setPaused(true); else if (s === 'paused') sim.setPaused(false); }
+      if (e.code === 'KeyT') { topLocal = !topLocal; renderer.setOptions({ topDown: topLocal }); }
+    });
+  }
 
   // ---- loop ----
   let acc = 0, last = performance.now(), hidden = document.hidden;
@@ -112,17 +126,17 @@ export async function start3d() {
   function frame(now) {
     requestAnimationFrame(frame);
     if (hidden) { last = now; return; }                       // paused when the tab is hidden
+    // Death slow motion is the sim's own (CONFIG.death.slowmo); dilating the loop as well would stack it.
     const raw = Math.min(MAX_FRAME, Math.max(0, (now - last) / 1000)); last = now;
-    timeScale += ((performance.now() < slowUntil ? 0.25 : 1) - timeScale) * Math.min(1, raw * 6);
-    acc += raw * timeScale;
+    acc += raw;
     const inp = input.poll();
     sim.setInput(inp);
     let n = 0;
     while (acc >= STEP && n < MAX_STEPS) { sim.step(STEP); acc -= STEP; n++; }
     if (n === MAX_STEPS) acc = 0;                             // never spiral
     const state = sim.getState();
-    renderer.drawFrame(state, raw * timeScale);
-    if (ui) ui.update(state, renderer.getView());
+    renderer.drawFrame(state, raw);
+    if (ui) ui.update(state, view);
     if (audio) audio.update(state, raw);
   }
   requestAnimationFrame(frame);

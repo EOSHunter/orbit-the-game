@@ -1,6 +1,6 @@
 // Demo driver: renders fixture states with no SIM present.  ?stage=<id|gallery>  ?quality=low|med|high
 import { createRenderer } from './index.js';
-import { makeFixtureState, stepFixture, makeFixtureEvents, STAGE_IDS } from './fixtures.js';
+import { makeBody, makeFixtureState, stepFixture, makeFixtureEvents, STAGE_IDS } from './fixtures.js';
 
 function createBus() {
   const m = new Map();
@@ -16,7 +16,20 @@ const canvas = document.getElementById('game');
 const renderer = createRenderer({ canvas });
 const bus = createBus();
 let state = makeFixtureState(q.get('stage') || 'asteroid');
-const solo = (st) => { if (q.get('solo')) { st.bodies.length = 0; st.far.count = 0; } return st; };
+// ?n=<count> adds that many extra rocks/planets around the player (stress test), ?far=<count> resizes the far field
+const stress = (st) => {
+  const n = +q.get('n') || 0; if (!n) return st;
+  const R = st.player.radius; let a = 12345;
+  const rnd = () => { a = (Math.imul(a, 1664525) + 1013904223) >>> 0; return a / 4294967296; };
+  const kinds = ['asteroid', 'asteroid', 'meteorite', 'debris', 'dwarfPlanet', 'rockyPlanet', 'gasGiant'];
+  for (let i = 0; i < n; i++) {
+    const c = kinds[Math.floor(rnd() * kinds.length)], big = c === 'rockyPlanet' || c === 'gasGiant';
+    const ang = rnd() * 6.283, d = R * (3 + rnd() * 40);
+    st.bodies.push(makeBody(c, { r: Math.max(2, R * (big ? 0.5 + rnd() : 0.1 + rnd() * 0.6)), x: Math.cos(ang) * d, z: Math.sin(ang) * d, stageId: 'asteroid', rel: ['prey', 'neutral', 'threat'][i % 3], seed: Math.floor(rnd() * 4e9), variant: c === 'rockyPlanet' ? 'terrestrial' : null, atmosphere: c === 'rockyPlanet' ? { density: 0.8, shellHeight: 0.06 } : null }));
+  }
+  return st;
+};
+const solo = (st) => { stress(st); if (q.get('solo')) { st.bodies.length = 0; st.far.count = 0; } return st; };
 solo(state);
 let events = makeFixtureEvents(state);
 const el = (id) => document.getElementById(id);

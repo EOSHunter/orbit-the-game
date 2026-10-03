@@ -11,7 +11,9 @@ export function createInput(canvas, getView, getPlayerPos) {
   const onKeyDown = (e) => {
     if (e.target && /input|select|textarea/i.test(e.target.tagName)) return;
     keys.add(e.code);
-    if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+    // Only stop page scrolling; a focused UI control keeps Space (press) and arrows (card/segment navigation).
+    const onControl = e.target && e.target.closest && e.target.closest('button, a[href], [role="radio"], [role="switch"]');
+    if (!onControl && (e.code === 'Space' || e.code.startsWith('Arrow'))) e.preventDefault();
   };
   const onKeyUp = (e) => keys.delete(e.code);
   const onDown = (e) => { if (e.button > 0) return; ptr = norm(e); try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ } };
