@@ -3,6 +3,6 @@ node_modules/
 .env.*
 *.log
 dist/
-build/
+/build/
 .DS_Store
 Thumbs.db
