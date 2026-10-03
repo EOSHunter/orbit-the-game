@@ -1,5 +1,7 @@
 # R7 Orbit × Vesper Drift: video brand guide
 
+> Confirmed: video title **Vesper Drift**, creator on-screen name **Hunter**. Final logo masters (SVG + 2048/4096 PNG) are in the kit.
+
 For the casual vlog "I built a game by directing a team of AI agents in R7 Orbit" (under 10 min, Remotion, 1920×1080 @ 30 fps).
 Machine-readable twin of this document: [`theme.ts`](./theme.ts). Every value below is lifted from the game's own code and docs unless marked *(video decision)*.
 
@@ -84,16 +86,17 @@ If rendering on Windows, `fonts.displayExact` puts Bahnschrift first for pixel-e
 
 ## 3. Logo
 
-Files in `assets/logo/`:
+Final masters supplied by the creator, in `assets/logo/`:
 
 | File | Use |
 |---|---|
-| `r7-orbit-logo.png` | Original (512×512 RGBA, rounded tile with transparent corners). **Untouched copy** of the file from the main checkout. Use on any background. |
-| `r7-orbit-mark-gold-transparent.png` | Tile removed: gold mark only. **For dark backgrounds** (default for the video). |
-| `r7-orbit-mark-bronze-for-light-bg.png` | Deep-bronze mark for light backgrounds (thumbnails, docs). |
-| `r7-orbit-mark-white.png` / `r7-orbit-mark-ink.png` | One-colour silhouettes (watermark, burn-in on busy footage / on light). |
-
-The transparent variants were made by keying the dark tile out of the 512 px original (pixel-derived, not vector). They are clean at ≤ 512 px. **For anything bigger than ~600 px on screen, ask for a vector or ≥2048 px master**; there is no SVG of the logo (see the list at the end).
+| `r7-orbit-icon.svg` | **Vector master**: rounded tile + mark. Use for anything large. |
+| `r7-orbit-mark-transparent.svg` | **Vector master**: mark only, no tile, transparent. Default for the video on dark backgrounds. |
+| `r7-orbit-icon-2048.png` / `-4096.png` | Raster tile (use 4096 for scale-up animation / zooms). |
+| `r7-orbit-mark-gold-transparent-2048.png` | Mark only, gold, transparent PNG. |
+| `r7-orbit-mark-bronze-for-light-bg-2048.png` | Deep-bronze recolour for light backgrounds. |
+| `r7-orbit-mark-white-2048.png` / `r7-orbit-mark-ink-2048.png` | One-colour silhouettes (watermark / light backgrounds). Recoloured from the 2048 mark by me. |
+| `legacy-512/` | My earlier keyed-out 512 px stand-ins and the old 512 px original. Superseded; don't use. |
 
 Rules:
 - **Clear space** = half the mark's height on all sides. **Min width 96 px** at 1080p.
@@ -178,7 +181,7 @@ Layout (centre, on dimmed starfield or `bg-stage01`):
 3. 0.7 s: **VESPER** un-blurs and its tracking collapses `0.6em → 0.42em` (weight 300, glow). **DRIFT** follows 200 ms later with the cyan gradient sweep.
 4. 1.6 s: tagline in mist; the R7 Orbit mark (gold) fades in small beneath with "BUILT WITH R7 ORBIT" in mono, mist. This is the only place the gold and the cyan are on screen together.
 5. Hold to 2.6 s, then 400 ms crossfade out.
-Title can read "VESPER DRIFT" or a custom vlog title set the same way (heading 64 / `0.18em` uppercase, kicker above in mono). *(See the missing-info list.)*
+Title can read "VESPER DRIFT" or a custom vlog title set the same way (heading 64 / `0.18em` uppercase, kicker above in mono). **
 
 ### 6.4 Chapter cards
 One per stage-like chapter ("01 // THE IDEA"). Full-screen, 2.4 s.

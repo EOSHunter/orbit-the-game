@@ -113,7 +113,7 @@ export const roles: Record<RoleKey, Role> = {
 };
 export const roleList: Role[] = Object.values(roles);
 
-/** Display name for the creator in subtitles / lower-thirds. CONFIRM with the creator. */
+/** Display name for the creator in subtitles / lower-thirds (confirmed). */
 export const creator = {name: 'Hunter', tag: 'HUNTER', color: '#FFFFFF'} as const;
 
 // ---------------------------------------------------------------- fonts
@@ -315,18 +315,25 @@ export const subtitleSpeaker = (who: 'creator' | RoleKey) =>
 
 // ---------------------------------------------------------------- misc
 export const logo = {
-  tile: 'assets/logo/r7-orbit-logo.png',
-  markGoldOnDark: 'assets/logo/r7-orbit-mark-gold-transparent.png',
-  markBronzeOnLight: 'assets/logo/r7-orbit-mark-bronze-for-light-bg.png',
-  markWhite: 'assets/logo/r7-orbit-mark-white.png',
-  markInk: 'assets/logo/r7-orbit-mark-ink.png',
+  /** Final masters from the creator (vector + 2048/4096 raster). Legacy 512 px keyed files are in assets/logo/legacy-512. */
+  iconSvg: 'assets/logo/r7-orbit-icon.svg', // tile + mark, vector
+  markSvg: 'assets/logo/r7-orbit-mark-transparent.svg', // mark only, vector
+  tile2048: 'assets/logo/r7-orbit-icon-2048.png',
+  tile4096: 'assets/logo/r7-orbit-icon-4096.png',
+  markGoldOnDark: 'assets/logo/r7-orbit-mark-gold-transparent-2048.png',
+  markBronzeOnLight: 'assets/logo/r7-orbit-mark-bronze-for-light-bg-2048.png',
+  markWhite: 'assets/logo/r7-orbit-mark-white-2048.png',
+  markInk: 'assets/logo/r7-orbit-mark-ink-2048.png',
   emblemSvg: 'assets/ui/vesper-drift-emblem.svg',
   /** minimum clear space = half the mark height; min on-screen width 96 px */
   minWidth: 96,
 } as const;
 
+/** Confirmed by the creator */
+export const video = {title: 'Vesper Drift', creator: 'Hunter'} as const;
+
 export const theme = {
   canvas, colors, stageTints, stages, roles, roleList, creator, fonts, type, spacing, safe,
-  effects, ease, timing, lowerThird, subtitle, logo,
+  effects, ease, timing, lowerThird, subtitle, logo, video,
 } as const;
 export default theme;
