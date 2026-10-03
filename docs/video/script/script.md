@@ -13,7 +13,7 @@ Built from `docs/video/analysis/` (footage index, speaker labels, word-level tra
 - **Hunter's line**
   - `"..."` = Hunter's real recorded words, cleaned of filler words (um, uh, like, you know, repeated starts) but not paraphrased. `...` marks a cut inside the beat.
   - `(reading Orbit)` = Hunter reading Orbit's on-screen text aloud. Subtitle it as Hunter (white), because it is Hunter's voice.
-  - `[NARRATION]` = new line, written from Hunter's narration script. **Hunter records it on their own mic** (no AI voice). On these beats the source clip's mic is muted.
+  - `[NARRATION]` = new line, written from Hunter's narration script. **Nothing new is recorded:** the line appears as on-screen text only (typed on, brand style, also in the subtitles), with no voice and no AI voiceover. On these beats the source clip's mic is muted; only the clip's system audio and the game music bed play. The edit lengthens a beat if needed so the text can be read.
   - `[AGENT TTS, Orbit]` = Orbit's built-in text-to-speech, taken from the system-audio stream and kept as-is. Use the agent subtitle style (italic, coloured bar, `◆ ORBIT` label), per brand §7.
   - `(none)` = nothing spoken (game sound or music bed only).
 - **Audio streams** (see `analysis/speaker-labels.md`): `a:0` = mix, `a:1` = system audio (game sound, Orbit dings, TTS), `a:2` = mic only. Real-line beats: use `a:2` for the voice, plus `a:1` on clips 8-11. "Mic muted" = drop `a:2` and keep only `a:1` and/or the bed.
@@ -62,7 +62,7 @@ Built from `docs/video/analysis/` (footage index, speaker labels, word-level tra
 | 23 | 3 | 1:47 | 5.0s | clip 2 1:12.7-1:17.7 | Build canvas: zoom on the Core engine (Cedar) and Renderer & VFX cards. Mic muted. | [NARRATION] "An engine agent built the core, and a renderer agent took it into 3D," | Roster rows: `04/07 ENGINE` (mint), `05/07 RENDERER` (magenta) | 1:52 |
 | 24 | 3 | 1:52 | 4.0s | clip 6 0:54.0-0:58.0 | Zoom on the "Simulation & Infinite Universe" card. Mic muted. | [NARRATION] "while a simulation agent worked on a universe that never ends." | Roster row: `06/07 SIMULATION` (ice blue) | 1:56 |
 | 25 | 3 | 1:56 | 6.1s | clip 6 0:58.9-1:05.0 | Same card, held. | "Yeah, an infinite universe. It's literally right there in front of my face. So everything will be procedurally generated." | (none) | 2:02 |
-| 26 | 3 | 2:02 | 8.0s | clip 9 4:05.4-4:13.4 | Orbit's agent summary in the chat panel. | "So you have Voyager, Kaisar, Polaris, Leica." | Name chips appear one per name: VOYAGER / KAISAR / POLARIS / LEICA (verify spelling, Gaps #9) | 2:10 |
+| 26 | 3 | 2:02 | 8.0s | clip 9 4:05.4-4:13.4 | Orbit's agent summary in the chat panel. | "So you have Voyager, Quasar, Polaris, Laika." | Name chips appear one per name: VOYAGER / QUASAR / POLARIS / LAIKA | 2:10 |
 | 27 | 4 | 2:10 | 2.5s | asset: `brand-kit/assets/backgrounds/bg-stage05-gas-giant-clean.png` | Chapter card (brand §6.4): bg-stage05-gas-giant-clean.png + stageTints.rocky_planet overlay, stage ladder advances one tick. | (none) | Kicker `CHAPTER 04/07 // SYNC`; title **ONE CANVAS** | 2:12 |
 | 28 | 4 | 2:12 | 3.5s | clip 2 1:00.0-1:03.5 | Four build agents all "working" at once. Mic muted. | [NARRATION] "They all worked at the same time, on one canvas." | (none) | 2:16 |
 | 29 | 4 | 2:16 | 3.1s | clip 2 1:32.0-1:35.1 | Same shot, slow push-in. | "They're probably all doing the same thing. They are." | (none) | 2:19 |
@@ -130,7 +130,7 @@ Built from `docs/video/analysis/` (footage index, speaker labels, word-level tra
 | 91 | 7 | 7:26 | 10.1s | clip 11 2:04.1-2:12.6 + clip 11 2:14.7-2:16.3 | Restart as a meteorite, calm gameplay. | "So far I'd say the clone is a big success. This is definitely a game I could see myself just playing when I'm bored." | (none) | 7:36 |
 | 92 | 7 | 7:36 | 13.1s | clip 11 3:20.1-3:31.5 + clip 11 3:32.6-3:34.3 | Rigel card on the canvas (outro). | "I might start another project and have Orbit actually just edit this video for me, and choose all the highlights, and just make it for me. Okay, goodbye." | After "goodbye": mono chip `// THIS VIDEO WAS PLANNED BY AGENTS IN R7 ORBIT_` | 7:49 |
 | 93 | 7 | 7:49 | 1.4s | clip 11 2:50.0-2:51.4 | Hold on canvas. Mic muted (sting). | [AGENT TTS, Orbit] *"Rigel is done."* | Agent subtitle (italic, `◆ ORBIT`) | 7:51 |
-| 94 | 7 | 7:51 | 12.0s | asset: `brand-kit/assets/ui/vesper-drift-emblem.svg + logo/r7-orbit-mark-gold-transparent-2048.png over backgrounds/bg-stage12-black-hole-clean.png` | End card: VESPER / DRIFT wordmark (typeset), gold R7 Orbit mark, space for YouTube end-screen elements. Audio: black-hole ambience bed (see Audio plan). | (none) | `BUILT WITH R7 ORBIT` / `DIRECTED BY HUNTER` / `BUILT BY A TEAM OF AI AGENTS` | 8:03 |
+| 94 | 7 | 7:51 | 12.0s | asset: `brand-kit/assets/ui/vesper-drift-emblem.svg + logo/r7-orbit-mark-gold-transparent-2048.png over backgrounds/bg-stage12-black-hole-clean.png` | End card: Centred: VESPER / DRIFT wordmark (typeset), then the gold R7 Orbit mark and the made-by reveal. No end-screen placeholders. Audio: black-hole ambience bed (see Audio plan). | (none) | The reveal (only here, for the wow factor): `THIS VIDEO WAS MADE ENTIRELY BY R7 ORBIT` / `EDITED, SCRIPTED AND BUILT BY A TEAM OF AI AGENTS IN R7 ORBIT` / `DIRECTED BY HUNTER` | 8:03 |
 
 ## Audio plan (music from the game)
 
@@ -172,11 +172,11 @@ The game ships no audio files. Its music is the live-synthesised stage ambience 
 3. **Hiring is never shown.** No agent-creation dialogs exist for the specialists, only finished cards and Hunter's description (clip 6). The roster panel graphic carries chapter 3. Beat 23's picture is the *first* build team (clip 2: Core engine, Renderer & VFX). Lark (Engine & 3D Renderer) appears only as a card in clip 7.
 4. **"Private copies" (worktrees) is only spoken**, at clip 3 0:41 and as tiny card IDs. Beat 30 depends on a motion graphic (`main` → one branch per agent) that still has to be built.
 5. **Conflict resolution itself (diffs, fixes) is never on screen.** Only Orbit's chat text, Hunter's account and the PR cards are.
-6. **Narration is not recorded yet** (about 1:30 (90.0 s) across 19 lines). If Hunter decides not to record it, these beats become on-screen text cards and need re-timing (reading speed is slower than speaking).
+6. **Narration is on-screen text, not voice** (decided by Hunter: no new recordings, R7 Orbit makes the whole video). The 19 lines (about 1:30) are typed on screen and subtitled. The edit (`video/scripts/build-edl.mjs`) lengthens any beat whose line needs more reading time (about 15 characters/s plus 1 s), so the cut runs a little longer than this table.
 7. **Speaker labels:** speakers were separated by audio stream (mic vs system), so the creator/agent split is reliable. However:
    - (a) In beats 18 and 31, Hunter reads Orbit's text aloud. Those are subtitled as Hunter.
    - (b) At clip 9 10:21, Whisper heard the TTS as "This is done", but it is probably "Polaris is done". Not used.
-   - (c) "Atlus" in the transcript is Atlas.
+   - (c) Whisper wrote "Atlus"; the transcripts now read Atlas.
    - (d) There is **no spoken agent dialogue anywhere**, only the short Orbit TTS lines (beats 39, 40, 75, 93).
 8. **Words to check by ear before subtitling:**
    - Beat 70, "$446, $409": the screen shows $445.97, and the second figure is unclear. The subtitle keeps only "$446...".
@@ -184,7 +184,7 @@ The game ships no audio files. Its music is the live-synthesised stage ambience 
    - Beat 35: transcribed as "It's gonna go ahead". The cut starts at "go ahead" to avoid the issue.
    - Beat 21: "grab" vs "grabbed".
    - Beat 31: "word tree" was corrected to "worktree".
-9. **Agent name spellings:** "Leica" (Hunter's pronunciation; the dog was Laika) and "Kaisar". Use whatever is on the agent cards. Beat 26 ends at 4:13.4, before the Laika joke (4:13.6-4:26), which is deliberately left out.
+9. **Agent name spellings (confirmed by Hunter):** Quasar and Laika (Whisper heard "Kaisar" and "Leica"; transcripts corrected). Beat 26 ends at 4:13.4, before the Laika joke (4:13.6-4:26), which is deliberately left out.
 10. **"Ay yi yi" (clip 1, 13:56.0) falls inside the excluded window**, even though the footage index lists 13:40-13:56 as a best moment. Beat 44 stops at 13:51.9 ("Merge it."). Do not extend it.
 11. **Third-party and personal content on screen:**
     - The Drifter Star: Evolution Steam page (beat 10) and its screenshots in the file dialog (beat 21). Keep them brief, as commentary. Per brand §9, none of that art goes into graphics.

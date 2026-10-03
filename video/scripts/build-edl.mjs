@@ -1,5 +1,5 @@
 // Parses docs/video/script/script.md (the beat table is the edit decision list) plus the word-level
-// transcripts into a single edit list: src/data/edl.json. Also writes NARRATION-TODO.md.
+// transcripts into a single edit list: src/data/edl.json.
 //
 //   node scripts/build-edl.mjs
 //
@@ -132,16 +132,24 @@ const chunkText = (text) => {
 // ------------------------------------------------------------------ build beats
 const beats = [];
 let cumSec = 0;
-const narrationTodo = [];
+const lengthened = [];
+const READ_CPS = 15; // reading speed for on-screen text, characters per second
+const READ_PAD = 1.0; // seconds to notice the text and finish it
 const warnings = [];
 
 for (const line of rows) {
   const [nS, chS, startS, durS, source, onScreen, lineRaw, overlay] = splitRow(line);
   const n = Number(nS);
   const chapter = Number(chS);
-  const dur = Number(durS.replace('s', ''));
+  const scriptDur = Number(durS.replace('s', ''));
+  const line_ = parseLine(lineRaw);
+  // [NARRATION] lines are on-screen text only (nothing is recorded), so give each one time to be read.
+  const chars = line_.items.reduce((a, i) => a + i.text.length, 0);
+  const readable = line_.type === 'narration' ? Math.ceil((chars / READ_CPS + READ_PAD) * 10) / 10 : 0;
+  const dur = Number(Math.max(scriptDur, readable).toFixed(1));
+  if (dur > scriptDur) lengthened.push(`${n} +${(dur - scriptDur).toFixed(1)}s`);
   const beat = {
-    n, chapter, scriptStart: startS, durSec: dur, onScreen, lineRaw, overlayRaw: overlay,
+    n, chapter, scriptStart: startS, scriptDurSec: scriptDur, durSec: dur, onScreen, lineRaw, overlayRaw: overlay,
     startSec: Number(cumSec.toFixed(3)),
     startFrame: f(cumSec),
     durFrames: f(cumSec + dur) - f(cumSec),
@@ -167,9 +175,11 @@ for (const line of rows) {
       if (!m) throw new Error(`Bad source in beat ${n}: ${p}`);
       const clip = Number(m[1]);
       const inS = tc(m[2]);
-      const outS = tc(m[3]);
+      const tableOut = tc(m[3]);
+      segSum += tableOut - inS;
+      // a lengthened beat lets its last source range run on for the extra time
+      const outS = i === parts.length - 1 ? tableOut + (dur - scriptDur) : tableOut;
       const d = Number((outS - inS).toFixed(3));
-      segSum += d;
       if (clip === PROFANITY.clip && inS < PROFANITY.to && outS > PROFANITY.from) {
         throw new Error(`Beat ${n} touches the excluded clip 1 ${fmt(PROFANITY.from)}-${fmt(PROFANITY.to)} window`);
       }
@@ -182,11 +192,10 @@ for (const line of rows) {
       });
       off += d;
     });
-    if (Math.abs(segSum - dur) > 0.051) warnings.push(`Beat ${n}: sources sum ${segSum.toFixed(2)}s, table says ${dur}s`);
+    if (Math.abs(segSum - scriptDur) > 0.051) warnings.push(`Beat ${n}: sources sum ${segSum.toFixed(2)}s, table says ${scriptDur}s`);
   }
 
   // ---- line
-  const line_ = parseLine(lineRaw);
   beat.lineType = line_.type;
   beat.items = line_.items;
   beat.narration = line_.type === 'narration';
@@ -205,8 +214,9 @@ for (const line of rows) {
   beat.nativeGameAudio = beat.segments.some((s) => s.clip >= 8);
 
   // ---- layout
-  beat.layout = ov.fullBleed.has(n) ? 'full' : 'panel';
-  beat.push = ov.push[n] || 0;
+  // Footage is always shown clean and full-frame (no effects, no push-ins). Gameplay crops the
+  // browser chrome; Orbit screen recordings only the title bar and taskbar.
+  beat.layout = ov.fullBleed.has(n) ? 'full' : 'screen';
 
   // ---- overlay column
   const lt = overlay.match(/Lower-third \(([^)]+)\):\s*`([^`]+)`\s*\/\s*\*\*([^*]+)\*\*(?:\s*\(([^)]+)\))?/);
@@ -229,7 +239,6 @@ for (const line of rows) {
   if (beat.kind === 'end') beat.endCard = {lines: [...overlay.matchAll(/`([^`]+)`/g)].map((m) => m[1])};
 
   beat.callout = /bracket/i.test(overlay) || /Target brackets/i.test(onScreen);
-  beat.glitch = /glitch/i.test(overlay);
   beat.extra = ov.extras[n] || null;
   // chips are only taken from free-form overlay notes; notes about the subtitle style
   // ("Agent subtitle (italic, `◆ ORBIT`)", "Two stacked cues") describe the Subtitles component instead
@@ -245,13 +254,9 @@ for (const line of rows) {
   if (beat.extra?.type === 'banner' || beat.extra?.type === 'typeKicker') beat.chips = [];
 
   // ---- bed level
-  beat.bed = beat.nativeGameAudio ? 'off' : line_.items.length ? 'duck' : 'full';
-
-  if (beat.narration) {
-    const take = `narration/b${String(n).padStart(3, '0')}.wav`;
-    beat.narrationTake = fs.existsSync(path.join(videoDir, 'public', take)) ? take : null;
-    narrationTodo.push({n, start: beat.startSec, dur, text: line_.items.map((i) => i.text).join(' '), picture: onScreen});
-  }
+  // full under on-screen-text beats (no voice), ducked under real speech
+  const voiced = line_.items.length > 0 && !beat.narration;
+  beat.bed = beat.nativeGameAudio ? 'off' : voiced ? 'duck' : 'full';
 
   beats.push(beat);
   cumSec += dur;
@@ -400,7 +405,6 @@ const wordFrame = (beat, word) => {
 for (const beat of beats) {
   if (ov.chipAtWord[beat.n]) for (const c of beat.chips) c.atFrame = wordFrame(beat, ov.chipAtWord[beat.n]);
   if (ov.chipFromEnd[beat.n]) for (const c of beat.chips) c.atFrame = beat.durFrames - f(ov.chipFromEnd[beat.n]);
-  beat.glitchAt = beat.glitch && ov.glitchAtWord[beat.n] ? wordFrame(beat, ov.glitchAtWord[beat.n]) : 0;
   if (beat.extra?.atWords) {
     beat.extra.atFrames = beat.extra.atWords.map((w, i) => wordFrame(beat, w) || f(1 + i * 1.2));
   }
@@ -449,29 +453,7 @@ const edl = {
 fs.mkdirSync(path.join(videoDir, 'src', 'data'), {recursive: true});
 fs.writeFileSync(path.join(videoDir, 'src', 'data', 'edl.json'), JSON.stringify(edl, null, 1));
 
-// ------------------------------------------------------------------ NARRATION-TODO.md
-const todo = [
-  '# Narration to record',
-  '',
-  'Generated by `npm run edl` from `docs/video/script/script.md`. Do not edit by hand.',
-  '',
-  `These ${narrationTodo.length} beats are marked \`[NARRATION]\` in the script. The lines are new, so they are not in any recording yet.`,
-  'Hunter records them on their own mic (no AI voice). In the rough cut each one is a **silent gap**: the source clip\'s mic is muted and an amber',
-  '`NARRATION TODO` tag sits top-right. The subtitle is already burned in, so it reads correctly once the audio is dropped in.',
-  '',
-  'Timecodes are positions in the cut. The duration is the slot length; aim to finish about 0.3 s before the slot ends.',
-  '',
-  '| Beat | Cut timecode | Slot | Line | Picture |',
-  '|---|---|---|---|---|',
-  ...narrationTodo.map((t) => `| ${t.n} | ${fmt(t.start)} | ${t.dur.toFixed(1)} s | "${t.text}" | ${t.picture.replace(/\|/g, '/')} |`),
-  '',
-  `**Total:** ${narrationTodo.length} lines, ${narrationTodo.reduce((a, t) => a + t.dur, 0).toFixed(1)} s.`,
-  '',
-  'To drop a take in: save it as `video/public/narration/bNNN.wav` (e.g. `b008.wav`), then run `npm run edl` and re-render. The take plays on that beat and the placeholder tag goes away.',
-  '',
-].join('\n');
-fs.writeFileSync(path.join(videoDir, 'NARRATION-TODO.md'), todo);
-
 console.log(`EDL: ${beats.length} beats, ${cues.length} cues, ${fmt(edl.totalSec)} (${edl.totalSec}s, ${totalFrames} frames)`);
-console.log(`Narration beats: ${narrationTodo.length}; real-line chunks aligned to transcript words: ${alignedChunks}/${totalRealChunks}`);
+console.log(`On-screen-text beats: ${beats.filter((b) => b.narration).length}; lengthened for reading: ${lengthened.join(', ') || 'none'}`);
+console.log(`Real-line chunks aligned to transcript words: ${alignedChunks}/${totalRealChunks}`);
 if (warnings.length) console.log(`Warnings:\n  ${warnings.join('\n  ')}`);

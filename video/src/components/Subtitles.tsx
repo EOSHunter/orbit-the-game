@@ -7,6 +7,23 @@ import type {Cue} from '../edl';
 // style (italic, tinted text, ◆ label) with the instrument cyan as its colour (script beat 39).
 const ORBIT = {label: 'ORBIT', color: colors.holo};
 
+// [NARRATION] lines are never spoken: they're on-screen text in Hunter's words. They use the
+// subtitle box (white bar, upright) but type on character by character with the game's caret,
+// so they read as text the video is "writing", not as a transcript of speech.
+const TYPE_CPS = 32;
+const TypedText: React.FC<{text: string; frame: number}> = ({text, frame}) => {
+  const shown = Math.min(text.length, Math.floor((frame * TYPE_CPS) / 30));
+  const typing = shown < text.length;
+  return (
+    <>
+      {text.slice(0, shown)}
+      <span style={{color: colors.holoHi, opacity: typing || Math.floor(frame / 15) % 2 === 0 ? 1 : 0}}>▍</span>
+      {/* the rest is laid out but invisible, so line breaks don't jump while typing */}
+      <span style={{opacity: 0}}>{text.slice(shown)}</span>
+    </>
+  );
+};
+
 /** Burned-in subtitles (brand §7). Rendered at the composition root so cues can span beat cuts. */
 export const Subtitles: React.FC<{cues: Cue[]}> = ({cues}) => {
   const frame = useCurrentFrame();
@@ -14,6 +31,7 @@ export const Subtitles: React.FC<{cues: Cue[]}> = ({cues}) => {
   if (!cue) return null;
 
   const agent = cue.speaker === 'orbit';
+  const typed = cue.narration;
   const opacity = interpolate(
     frame,
     [cue.startFrame, cue.startFrame + subtitle.fadeInFrames, cue.endFrame - subtitle.fadeOutFrames, cue.endFrame],
@@ -63,7 +81,7 @@ export const Subtitles: React.FC<{cues: Cue[]}> = ({cues}) => {
             textWrap: 'balance',
           }}
         >
-          {cue.text}
+          {typed ? <TypedText text={cue.text} frame={frame - cue.startFrame} /> : cue.text}
         </div>
       </div>
     </div>

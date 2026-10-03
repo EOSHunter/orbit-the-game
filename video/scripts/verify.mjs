@@ -46,6 +46,19 @@ const covered = spoken.filter((b) => edl.cues.some((c) => c.beat === b.n));
 covered.length === spoken.length ? ok(`${edl.cues.length} cues; every one of ${spoken.length} spoken beats is subtitled`) : fail('some spoken beats have no cue');
 if (!problems.some((p) => p.startsWith('cue'))) ok('cues inside their beats, no overlaps, 1-7 s, text verbatim from script');
 
+// spelling of agent names and product names in everything that is shown or exported
+const MISSPELT = /\b(kaisar|kaiser|leica|atlus|quazar|ryegel|vespa|drifting star|drifterstar|r7orbit|orbit7)\b/i;
+const WRONG_CASE = /\b(R7 orbit|r7 Orbit|r7 orbit|Vesper drift|vesper Drift|Drifter star|drifter Star)\b/; // case-sensitive
+const badSpell = edl.cues.filter((c) => MISSPELT.test(c.text) || WRONG_CASE.test(c.text));
+badSpell.length ? fail(`misspelt names in cues: ${badSpell.map((c) => `"${c.text}"`).join(', ')}`) : ok('agent/product names spelt correctly in all cues');
+
+// on-screen-text lines (nothing is recorded for [NARRATION]) must be readable: ≤ 15 characters/s + 1 s
+const rushed = edl.beats.filter((b) => b.narration).filter((b) => {
+  const chars = edl.cues.filter((c) => c.beat === b.n).reduce((a, c) => a + c.text.length, 0);
+  return b.durSec + 0.05 < chars / 15 + 1;
+});
+rushed.length ? fail(`on-screen text too fast in beats ${rushed.map((b) => b.n)}`) : ok(`${edl.beats.filter((b) => b.narration).length} on-screen-text beats have reading time (15 chars/s + 1 s)`);
+
 // srt
 const srtPath = path.join(videoDir, 'out', 'subtitles.srt');
 if (fs.existsSync(srtPath)) {

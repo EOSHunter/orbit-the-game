@@ -57,7 +57,6 @@ export const Glass: React.FC<{style?: React.CSSProperties; children?: React.Reac
   brackets = true,
 }) => (
   <div style={{position: 'absolute', ...effects.panel, ...style}}>
-    <div style={{position: 'absolute', inset: 0, background: effects.scanlines, pointerEvents: 'none'}} />
     {brackets && <Brackets />}
     {children}
   </div>

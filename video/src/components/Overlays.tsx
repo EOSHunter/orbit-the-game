@@ -81,47 +81,6 @@ export const Callout: React.FC = () => {
   );
 };
 
-// ------------------------------------------------------------------ glitch accent (brand §6.6)
-export const Glitch: React.FC<{at: number}> = ({at}) => {
-  const frame = useCurrentFrame();
-  const f = frame - at;
-  if (f < 0 || f > 24) return null;
-  const vignette = interpolate(f, [0, 4, 24], [0.9, 0.9, 0], {extrapolateRight: 'clamp'});
-  return (
-    <AbsoluteFill style={{pointerEvents: 'none'}}>
-      {f < timing.glitchCut &&
-        [0.18, 0.42, 0.63, 0.8].map((y, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute', left: 0, right: 0, top: `${y * 100}%`, height: 26 + i * 6,
-              background: `linear-gradient(90deg, ${colors.threat}55, transparent 30%, transparent 70%, ${colors.holo}55)`,
-              transform: `translateX(${(i % 2 ? 6 : -6) * (f % 2 ? 1 : -1)}px)`, mixBlendMode: 'screen',
-            }}
-          />
-        ))}
-      <AbsoluteFill style={{boxShadow: `inset 0 0 180px ${colors.threat}`, opacity: vignette * 0.55}} />
-    </AbsoluteFill>
-  );
-};
-
-// ------------------------------------------------------------------ narration placeholder
-export const NarrationTag: React.FC<{beat: Beat}> = ({beat}) => {
-  const frame = useCurrentFrame();
-  const blink = Math.floor(frame / 24) % 2 === 0 ? 1 : 0.25; // 1.6 s period, well under 3 Hz
-  const progress = frame / beat.durFrames;
-  return (
-    <div style={{position: 'absolute', left: 0, right: 0, top: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8}}>
-      <div style={{...mono(20, colors.amber, '0.2em'), padding: '8px 14px', border: `1px solid ${colors.amber}`, background: 'rgba(5,8,18,0.85)', boxShadow: effects.amberGlow}}>
-        <span style={{opacity: blink}}>▮</span> NARRATION TODO // B{String(beat.n).padStart(2, '0')} // {beat.durSec.toFixed(1)}S
-      </div>
-      <div style={{width: 300, height: 3, background: 'rgba(0,0,0,0.55)', border: `1px solid ${colors.amberDim}`}}>
-        <div style={{width: `${progress * 100}%`, height: '100%', background: colors.amber}} />
-      </div>
-    </div>
-  );
-};
-
 // ------------------------------------------------------------------ roster panel (chapter 3)
 export const Roster: React.FC<{roster: Edl['roster']}> = ({roster}) => {
   const frame = useCurrentFrame(); // relative to roster.startFrame
