@@ -2,11 +2,8 @@
 // Everything else (timing, sources, lines, lower-thirds, chips, chapter cards) is parsed from
 // docs/video/script/script.md by build-edl.mjs. Keep this file small.
 
-/** Gameplay shots: shown full-bleed (brand §6.7). Every other recording sits in a bracketed panel. */
+/** Gameplay shots: the browser chrome is cropped as well. All footage is full-frame with no effects over it. */
 export const fullBleed = new Set([1, 61, 62, 63, 64, 66, 67, 68, 69, 73, 76, 80, 81, 82, 83, 84, 85, 86, 88, 89, 90, 91]);
-
-/** Slow push-in (fraction of scale gained over the beat). */
-export const push = {3: 0.015, 29: 0.015};
 
 /** Per-beat audio tweaks. micFrom = clip time (s) where the mic comes back in (beat 90: "Mic muted until 1:54.0"). */
 export const audio = {
@@ -17,8 +14,6 @@ export const audio = {
 export const chipAtWord = {11: 'creative'};
 /** Chips that should appear N seconds before the beat ends. */
 export const chipFromEnd = {92: 1.6};
-/** Glitch accent (brand §6.6) on a word; otherwise it fires on the beat's first frame. */
-export const glitchAtWord = {45: 'conflicts'};
 
 /** Roster panel (chapter 3). Rows are added on the beat listed and stay until the panel ends. */
 export const roster = {
@@ -36,7 +31,7 @@ export const roster = {
 /** Special graphics keyed by beat. */
 export const extras = {
   5: {type: 'typeKicker', text: '1 CREATOR // A TEAM OF AGENTS // 1 CANVAS_'},
-  26: {type: 'nameChips', names: ['VOYAGER', 'KAISAR', 'POLARIS', 'LEICA'], atWords: ['voyager', 'kaisar', 'polaris', 'leica']},
+  26: {type: 'nameChips', names: ['VOYAGER', 'QUASAR', 'POLARIS', 'LAIKA'], atWords: ['voyager', 'quasar', 'polaris', 'laika']},
   30: {type: 'branches', label: '1 AGENT = 1 BRANCH + 1 WORKTREE'},
   57: {type: 'harborMeter', status: 'QA // HARBOR // RUNNING ON ITS OWN_'},
   63: {type: 'banner', text: 'ASTEROID', color: 'holo'},

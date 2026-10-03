@@ -38,19 +38,15 @@ export interface Beat {
   onScreen: string;
   lineType: 'real' | 'narration' | 'tts' | 'none';
   narration: boolean;
-  narrationTake?: string | null;
   segments: Segment[];
   bg?: string | null;
-  layout: 'full' | 'panel';
-  push: number;
+  layout: 'full' | 'screen';
   lowerThird?: {color: ColorKey; kicker: string; name: string; sub: string | null};
   chapterCard?: {kicker: string; title: string; tint: string; ladder: number};
   titleCard?: {title: string; status: string};
   endCard?: {lines: string[]};
   chips: Chip[];
   callout: boolean;
-  glitch: boolean;
-  glitchAt?: number;
   extra: Extra | null;
   bed: 'off' | 'duck' | 'full';
 }

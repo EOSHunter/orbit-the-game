@@ -2,23 +2,12 @@ import React from 'react';
 import {AbsoluteFill, Img, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame} from 'remotion';
 import {colors, effects} from '../theme';
 import type {Beat} from '../edl';
-import {Brackets} from './ui';
 
 // Every recording has a ~32 px title bar and a ~40 px Windows taskbar; crop both (script Gaps #13).
 // Gameplay runs inside Orbit's browser pane, so full-bleed shots also lose the app/tab/URL bars (~135 px).
-const CROP = {panel: {top: 32, bottom: 40}, full: {top: 135, bottom: 45}} as const;
+const CROP = {screen: {top: 32, bottom: 40}, full: {top: 135, bottom: 45}} as const;
 
-/** Background behind panelled screen recordings: the chapter's stage frame, dimmed hard. */
-export const chapterBg: Record<number, string> = {
-  1: 'bg-stage01-asteroid-clean.png',
-  2: 'bg-stage01-asteroid-clean.png',
-  3: 'bg-stage04-rocky-lava-clean.png',
-  4: 'bg-stage05-gas-giant-clean.png',
-  5: 'bg-stage08-star-clean.png',
-  6: 'bg-stage11-neutron-clean.png',
-  7: 'bg-stage12-black-hole-clean.png',
-};
-
+/** Dimmed stage frame behind brand-asset cards (title, chapter, stills, end). Never used over footage. */
 export const StageBackdrop: React.FC<{file: string; dim?: number; drift?: boolean; durFrames?: number}> = ({
   file,
   dim = 0.55,
@@ -39,54 +28,32 @@ export const StageBackdrop: React.FC<{file: string; dim?: number; drift?: boolea
   );
 };
 
-const Clip: React.FC<{src: string; width: number; cropTop: number; push: number; durFrames: number}> = ({src, width, cropTop, push, durFrames}) => {
-  const frame = useCurrentFrame();
-  const scale = width / 1920;
-  const p = push ? 1 + interpolate(frame, [0, durFrames], [0, push]) : 1;
-  return (
-    <div style={{position: 'absolute', inset: 0, overflow: 'hidden'}}>
-      <OffthreadVideo
-        src={src}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: -cropTop * scale,
-          width,
-          height: 1080 * scale,
-          transform: `scale(${p})`,
-          transformOrigin: '50% 45%',
-        }}
-      />
-    </div>
-  );
-};
+const Clip: React.FC<{src: string; width: number; cropTop: number}> = ({src, width, cropTop}) => (
+  <div style={{position: 'absolute', inset: 0, overflow: 'hidden'}}>
+    <OffthreadVideo
+      src={src}
+      style={{position: 'absolute', left: 0, top: -cropTop * (width / 1920), width, height: 1080 * (width / 1920)}}
+    />
+  </div>
+);
 
+/**
+ * Footage is shown clean: full frame, nothing drawn over the picture itself (no scanlines, vignette,
+ * glow, tint or push-ins). Only the title bar / taskbar (and, on gameplay, the browser chrome) are cropped.
+ */
 export const FootageBeat: React.FC<{beat: Beat; mediaRes: number}> = ({beat, mediaRes}) => {
-  const full = beat.layout === 'full';
   const crop = CROP[beat.layout];
   const visibleH = 1080 - crop.top - crop.bottom;
-  // full-bleed: scale so the cropped height fills 1080; panel: 1800 px wide inside brackets
-  const width = full ? (1920 * 1080) / visibleH : 1800;
-  const scale = width / 1920;
-  const box: React.CSSProperties = full
-    ? {left: (1920 - width) / 2, top: 0, width, height: 1080}
-    : {left: 60, top: 34, width, height: visibleH * scale};
-
-  const clips = beat.segments.map((s) => (
-    <Sequence key={s.file} from={s.offsetFrame} durationInFrames={s.durFrames} layout="none">
-      <Clip src={staticFile(`media/${mediaRes}/${s.file}`)} width={width} cropTop={crop.top} push={beat.push} durFrames={beat.durFrames} />
-    </Sequence>
-  ));
-
+  const width = (1920 * 1080) / visibleH; // the cropped height fills the frame
   return (
-    <AbsoluteFill>
-      {!full && <StageBackdrop file={chapterBg[beat.chapter]} dim={0.3} durFrames={beat.durFrames} />}
-      <div style={{position: 'absolute', ...box, overflow: 'hidden', background: colors.voidDeep}}>{clips}</div>
-      {!full && (
-        <div style={{position: 'absolute', ...box, border: `1px solid ${colors.holoDim}`, boxShadow: effects.glow}}>
-          <Brackets inset={-6} />
-        </div>
-      )}
+    <AbsoluteFill style={{background: colors.voidDeep}}>
+      <div style={{position: 'absolute', left: (1920 - width) / 2, top: 0, width, height: 1080, overflow: 'hidden'}}>
+        {beat.segments.map((s) => (
+          <Sequence key={s.file} from={s.offsetFrame} durationInFrames={s.durFrames} layout="none">
+            <Clip src={staticFile(`media/${mediaRes}/${s.file}`)} width={width} cropTop={crop.top} />
+          </Sequence>
+        ))}
+      </div>
     </AbsoluteFill>
   );
 };

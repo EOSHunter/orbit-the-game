@@ -4,7 +4,7 @@ import {colors, effects, timing} from './theme';
 import {edl, type Beat} from './edl';
 import {FootageBeat} from './components/Footage';
 import {ChapterCard, EndCard, StillBeat, TitleCard} from './components/Cards';
-import {Callout, Chips, Extra, Glitch, LowerThird, NarrationTag, Roster} from './components/Overlays';
+import {Callout, Chips, Extra, LowerThird, Roster} from './components/Overlays';
 import {Subtitles} from './components/Subtitles';
 import {easeInOut} from './components/ui';
 
@@ -31,11 +31,8 @@ const BeatView: React.FC<{beat: Beat; mediaRes: number}> = ({beat, mediaRes}) =>
     {beat.kind === 'title' && <TitleCard beat={beat} />}
     {beat.kind === 'end' && <EndCard beat={beat} />}
     {beat.callout && <Callout />}
-    {beat.glitch && <Glitch at={beat.glitchAt ?? 0} />}
     <Chips chips={beat.chips} durFrames={beat.durFrames} />
     {beat.extra && <Extra beat={beat} mediaRes={mediaRes} />}
-    {beat.narration && !beat.narrationTake && <NarrationTag beat={beat} />}
-    {beat.narrationTake && <Audio src={staticFile(beat.narrationTake)} />}
   </AbsoluteFill>
 );
 
@@ -43,10 +40,8 @@ const BeatView: React.FC<{beat: Beat; mediaRes: number}> = ({beat, mediaRes}) =>
 const ScanWipe: React.FC = () => {
   const frame = useCurrentFrame();
   const y = interpolate(frame, [0, 15], [0, 1080], {easing: easeInOut, extrapolateRight: 'clamp'});
-  const flash = interpolate(frame, [0, 6, 15], [0, 0.12, 0], {extrapolateRight: 'clamp'});
   return (
     <AbsoluteFill style={{pointerEvents: 'none'}}>
-      <AbsoluteFill style={{background: effects.scanlines, opacity: flash * 6}} />
       <AbsoluteFill style={{clipPath: `inset(${y}px 0 0 0)`, background: colors.voidDeep}} />
       <div style={{position: 'absolute', left: 0, right: 0, top: y, height: 1, background: colors.holoHi, boxShadow: effects.glowStrong}} />
     </AbsoluteFill>
@@ -96,6 +91,5 @@ export const Video: React.FC<VideoProps> = ({mediaRes}) => (
     ))}
 
     <Subtitles cues={edl.cues} />
-    <AbsoluteFill style={{background: effects.scanlines, pointerEvents: 'none'}} />
   </AbsoluteFill>
 );

@@ -3,7 +3,7 @@ import {AbsoluteFill, Img, random, staticFile, useCurrentFrame} from 'remotion';
 import {colors, effects, fonts, logo, stageTints, stages, timing, type} from '../theme';
 import type {Beat} from '../edl';
 import {StageBackdrop} from './Footage';
-import {inP, mono, outP, typed, withCaret} from './ui';
+import {easeInOut, inP, mono, outP, typed, withCaret} from './ui';
 
 const centre: React.CSSProperties = {alignItems: 'center', justifyContent: 'center', flexDirection: 'column'};
 
@@ -144,56 +144,63 @@ export const TitleCard: React.FC<{beat: Beat}> = ({beat}) => {
   );
 };
 
+/**
+ * End card, centred, in two acts. The R7 Orbit reveal is kept for here only (the wow moment):
+ *  1. 0-3.6 s: emblem + VESPER / DRIFT wordmark.
+ *  2. ~3.8 s: the wordmark lifts and shrinks; the gold R7 mark arrives and the made-by lines land
+ *     (headline un-blurs, the agent line types on, then the director credit).
+ */
 export const EndCard: React.FC<{beat: Beat}> = ({beat}) => {
   const frame = useCurrentFrame();
-  const lines = beat.endCard!.lines;
+  const [madeBy, builtBy, director] = beat.endCard!.lines;
+  const ACT2 = 114;
+  const lift = inP(frame, ACT2 - 6, 24, easeInOut);
+  const mark = inP(frame, ACT2 + 8, 20);
   return (
     <AbsoluteFill style={{opacity: inP(frame, 0, timing.crossfade)}}>
-      <StageBackdrop file={beat.bg!} durFrames={beat.durFrames} dim={0.5} />
+      <StageBackdrop file={beat.bg!} durFrames={beat.durFrames} dim={0.45} />
       <Starfield seed="end" />
-      {/* wordmark block on the left; the right half is kept clear for YouTube end-screen elements */}
-      <div style={{position: 'absolute', left: 170, top: 210, display: 'flex', flexDirection: 'column', gap: 26}}>
-        <Emblem size={120} frame={frame} />
-        <div style={{fontFamily: fonts.display, fontWeight: 300, fontSize: 132, color: colors.text, textShadow: effects.textGlow, ...bannerStyle(frame, 10, 0.6, 0.42)}}>
-          VESPER
-        </div>
+      <AbsoluteFill style={{...centre, display: 'flex'}}>
+        {/* act 1: the game */}
         <div
           style={{
-            fontFamily: fonts.display, fontWeight: 600, fontSize: 60, marginTop: -20,
-            background: `linear-gradient(90deg, ${colors.holo}, ${colors.holoHi})`, WebkitBackgroundClip: 'text', color: 'transparent',
-            ...bannerStyle(frame, 16, 1.4, 1.1),
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            transform: `translateY(${-210 * lift}px) scale(${1 - 0.36 * lift})`,
           }}
         >
-          DRIFT
+          <Emblem size={120} frame={frame} />
+          <div style={{fontFamily: fonts.display, fontWeight: 300, fontSize: 150, color: colors.text, textShadow: effects.textGlow, marginTop: 18, paddingLeft: '0.42em', ...bannerStyle(frame, 10, 0.6, 0.42)}}>
+            VESPER
+          </div>
+          <div
+            style={{
+              fontFamily: fonts.display, fontWeight: 600, fontSize: 64, marginTop: -14, paddingLeft: '1.1em',
+              background: `linear-gradient(90deg, ${colors.holo}, ${colors.holoHi})`, WebkitBackgroundClip: 'text', color: 'transparent',
+              ...bannerStyle(frame, 16, 1.4, 1.1),
+            }}
+          >
+            DRIFT
+          </div>
         </div>
-        <div style={{display: 'flex', flexDirection: 'column', gap: 14, marginTop: 30}}>
-          {lines.slice(1).map((l, i) => (
-            <div key={l} style={{...mono(22, colors.mist, '0.3em'), opacity: inP(frame, 40 + i * 8, 14)}}>
-              {l}
-            </div>
-          ))}
+        {/* act 2: who made the video */}
+        <div style={{position: 'absolute', top: 470, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22}}>
+          <Img
+            src={staticFile(`brand-kit/${logo.markGoldOnDark}`)}
+            style={{width: 132, height: 132, objectFit: 'contain', opacity: mark, transform: `scale(${0.94 + 0.06 * mark})`}}
+          />
+          <div
+            style={{
+              fontFamily: fonts.display, fontWeight: 600, fontSize: type.heading.size, color: '#FFFFFF', textShadow: effects.textGlow,
+              textTransform: 'uppercase', textAlign: 'center', whiteSpace: 'nowrap', paddingLeft: '0.14em', ...bannerStyle(frame, ACT2 + 22, 0.4, 0.14),
+            }}
+          >
+            {madeBy}
+          </div>
+          <div style={{width: 760, height: 1, background: colors.r7Gold, opacity: 0.7, transform: `scaleX(${inP(frame, ACT2 + 34, timing.lineDraw)})`}} />
+          <div style={{...mono(24, colors.cardDesc, '0.24em'), minHeight: 32}}>{typed(builtBy, frame, ACT2 + 46, 0.8)}</div>
+          <div style={{...mono(20, colors.mist, '0.3em'), marginTop: 6, opacity: inP(frame, ACT2 + 46 + builtBy.length * 0.8 + 10, 14)}}>{director}</div>
         </div>
-        <div style={{marginTop: 24}}>
-          <GoldSignoff frame={frame} at={70} text={lines[0]} />
-        </div>
-      </div>
-      {/* rough-cut guides only: where YouTube's end-screen elements will sit */}
-      {[
-        {left: 1100, top: 230, w: 640, h: 360},
-        {left: 1100, top: 640, w: 300, h: 300},
-        {left: 1440, top: 640, w: 300, h: 300},
-      ].map((r, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute', left: r.left, top: r.top, width: r.w, height: r.h, border: `1px dashed ${colors.holoFaint}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', ...mono(14, 'rgba(134,163,191,0.5)', '0.2em'),
-          }}
-        >
-          YT END SCREEN
-        </div>
-      ))}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
-
