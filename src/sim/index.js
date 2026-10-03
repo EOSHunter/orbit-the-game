@@ -121,7 +121,8 @@ export function createSim(opts = {}) {
   };
   const stageT = (i) => clamp(i / Math.max(1, lastStage), 0, 1);
 
-  function emit(type, payload) { bus.emit(type, payload); }
+  let quiet = false;     // dev starts replay evolution silently: no events until the run really begins
+  function emit(type, payload) { if (!quiet) bus.emit(type, payload); }
   function setStatus(s) {
     if (state.status === s) return;
     const prev = state.status; state.status = s;
@@ -1394,7 +1395,7 @@ export function createSim(opts = {}) {
   // =================================================================================================
   // Lifecycle
   // =================================================================================================
-  function resetRun(newSeed) {
+  function resetRun(newSeed, dev) {
     if (newSeed != null) { seedStr = String(newSeed); seedH = hashString(seedStr); }
     universe = createUniverse(seedStr, cfg);
     state.seed = seedStr;
@@ -1418,6 +1419,7 @@ export function createSim(opts = {}) {
     player.state = 'alive'; player.absorbT = 0; player.invuln = false; player.rel = 'self'; player._dead = false;
     growPlayer();
     refreshPlayerLook();
+    if (dev) applyDevStart(dev);
     playerAlive = true; hitStop = 0; hitTimer = 0; invuln = 0; deathTimer = 0; deathKind = null; finaleT = 0; healthLowFired = false;
     chainT = -99; chainN = 0;
     orbitHost = null; orbitTimer = 0; orbitLostTimer = 0; assistHost = null; assistW = 0;
@@ -1441,6 +1443,36 @@ export function createSim(opts = {}) {
 
   resetRun(null);
 
+  // Dev start: walk the normal progression (mass at each stage's threshold -> evolve() -> pickChoice()) so the
+  // player's mass, size, look, flags and stage state are exactly what a played run would hold. `forms` are choice
+  // ids (stages.js); a stage with a menu and no matching id is abandoned. Silent: the caller emits run-start.
+  function applyDevStart({ stageIndex, forms }) {
+    const prev = state.status;
+    quiet = true;
+    try {
+      for (let i = 1; i <= stageIndex; i++) {
+        player.mass = Number(stages[i].minMass) || player.mass; growPlayer();
+        state.stats.maxMass = player.mass;
+        evolve(i);
+        if (state.status === 'choice') {
+          const offered = getChoicesFor(i) || [];
+          const pick = (forms || []).find((id) => offered.some((c) => c.id === id));
+          pickChoice(pick || offered[offered.length - 1].id);   // the last offer is always Abandon evolution
+        }
+      }
+    } finally { quiet = false; }
+    updateEmissive(player);   // no step runs before the first frame: drop the previous run's glow now
+    state.status = prev;
+  }
+
+  function resolveDevSpec(spec) {
+    if (!spec) return null;
+    const s = spec.stage;
+    const idx = typeof s === 'number' ? s : stages.findIndex((st) => st.id === s);
+    if (!Number.isInteger(idx) || idx < 0 || idx > lastStage) return null;
+    return { stageIndex: idx, forms: Array.isArray(spec.forms) ? spec.forms : spec.forms ? [spec.forms] : [] };
+  }
+
   function start() {
     if (state.status === 'title') {
       setStatus('playing');
@@ -1448,12 +1480,20 @@ export function createSim(opts = {}) {
     }
   }
 
-  function restart(seed) {
+  function restart(seed, dev) {
     const prev = state.status;
-    resetRun(seed != null ? seed : null);
+    resetRun(seed != null ? seed : null, dev);
     state.status = 'playing';
     if (prev !== 'playing') emit('status', { status: 'playing', prev });
     emit('run-start', { seed: seedStr, genVersion: GEN_VERSION, stageId: state.stageId });
+  }
+
+  /** Developer start: begin a fresh run already at `spec.stage` (stage id or index) with `spec.forms` chosen. False if the stage is unknown. */
+  function startAt(spec) {
+    const dev = resolveDevSpec(spec);
+    if (!dev) return false;
+    restart(spec.seed != null ? spec.seed : null, dev);
+    return true;
   }
 
   function setPaused(p) {
@@ -1571,7 +1611,7 @@ export function createSim(opts = {}) {
     getState: () => state,
     step,
     setInput(i) { input = { x: Number(i.x) || 0, z: Number(i.z) || 0, stabilize: !!i.stabilize }; },
-    start, restart, pickChoice, previewChoice, setPaused,
+    start, restart, startAt, pickChoice, previewChoice, setPaused,
     setOptions(o) { options = { ...options, ...o }; },
     exportSave, importSave,
     debug,

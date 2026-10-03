@@ -339,6 +339,22 @@ await check('render loop keeps running (frames advance) and stays within a sane 
   assert(r.step < 4, `sim step ${r.step} ms`);
 });
 
+await check('dev start: ?stage=&form= boots straight into that stage and form; backtick menu starts another with a visible cursor', async () => {
+  await send('Page.navigate', { url: `${URL_ROOT}?stage=rocky_planet&form=lava` });
+  await waitFor(`window.__vd && ${S}.status === 'playing'`, 10000, 'dev run playing');
+  const r = await js(`const s = ${S}; return { id: s.stageId, pt: s.flags.planetType, title: !!${OV('vd-overlay--title')}, hud: !!document.querySelector('.vd-hud.is-on') };`);
+  assert(r.id === 'rocky_planet' && r.pt === 'lava' && !r.title && r.hud, JSON.stringify(r));
+  await key('`', 'Backquote', 192, '`');
+  await waitFor(`${S}.status === 'paused' && document.querySelector('.vd-overlay.is-on .vd-dev')`, 3000, 'dev menu open (sim paused)');
+  assert(await js(`return document.getElementById('game').style.cursor !== 'none';`), 'cursor hidden while the dev menu is open');
+  await shot('dev-menu');
+  await click('.vd-dev-stages .vd-seg-btn:nth-child(11)');
+  await click('.vd-dev .vd-btn--primary');
+  await waitFor(`${S}.status === 'playing' && ${S}.stageId === 'neutron_star'`, 3000, 'neutron star run');
+  assert((await js('return location.search;')).includes('stage=neutron_star'), 'URL not updated');
+  await shot('dev-neutron');
+});
+
 await check('no console errors, warnings, exceptions or failed requests (3D)', async () => {
   assert(problems.length === 0, problems.join('\n     '));
 });

@@ -162,7 +162,9 @@ export function createUI(root, opts = {}) {
   const startBtn = btn('vd-btn--primary', 'Initiate drift', { 'aria-keyshortcuts': 'Enter' });
   const titleSettingsBtn = btn('vd-btn--ghost', 'Settings');
   const titleMenu = el('div', 'vd-menu');
-  titleMenu.append(startBtn, titleSettingsBtn);
+  const devBtn = btn('vd-btn--dev', 'Dev start', { 'aria-keyshortcuts': 'Backquote', title: 'Developer start (backtick)' });
+  devBtn.hidden = true;   // shown only when the host registers a dev menu (setDevMenu)
+  titleMenu.append(startBtn, titleSettingsBtn, devBtn);
   const titleSeed = el('p', 'vd-title-seed vd-mono');
   const titleKeys = el('p', 'vd-fine vd-mono');
   titleKeys.innerHTML = '<kbd>MOUSE</kbd>/<kbd>WASD</kbd> STEER · <kbd>SPACE</kbd> STABILISE · <kbd>Q</kbd> CAPTURE · <kbd>ESC</kbd> MENU';
@@ -267,7 +269,112 @@ export function createUI(root, opts = {}) {
   endStack.append(endKicker, endTitle, endText, stats, restartBtn);
   endOv.appendChild(endStack);
 
-  ui.append(hud.el, titleOv, choiceOv, menuOv, endOv, grain, live, liveAlert);
+  // ---------- Developer start (debug only; the host opts in with setDevMenu) ----------
+  // Pick a stage and the forms for each milestone menu up to it; the host starts the run there. Not part of normal play.
+  const devOv = overlay('vd-overlay--dim', 'Developer start');
+  const devPanel = el('div', 'vd-panel vd-frame vd-systems vd-dev');
+  const devTop = el('div', 'vd-systems-top');
+  const devTitles = el('div');
+  devTitles.append(el('span', 'vd-kicker vd-kicker--dev vd-mono', 'DEVELOPER // NOT THE NORMAL RUN'), el('h2', 'vd-heading', 'Dev start'));
+  const devClose = el('button', 'vd-iconbtn vd-interactive', null, { type: 'button', 'aria-label': 'Close (Esc)' });
+  devClose.innerHTML = icon('close');
+  devTop.append(devTitles, devClose);
+  const devStageList = el('div', 'vd-dev-stages', null, { role: 'radiogroup', 'aria-label': 'Start stage' });
+  const devFormsBox = el('div', 'vd-settings');
+  const devLink = el('p', 'vd-fine vd-mono vd-dev-link');
+  const devGo = btn('vd-btn--primary', 'Start here');
+  const devBack = btn('vd-btn--ghost', 'Back');
+  const devMenuRow = el('div', 'vd-menu vd-dev-actions');
+  devMenuRow.append(devGo, devBack);
+  devPanel.append(devTop, devStageList, devFormsBox, devLink, devMenuRow);
+  devOv.appendChild(devPanel);
+  let devCfg = null, devReturn = 'title', devStageIdx = 0, devForms = {};
+
+  function devSpec() {
+    const st = devCfg.stages[devStageIdx];
+    const forms = devCfg.stages.filter((x) => x.index <= st.index && devForms[x.index]).map((x) => devForms[x.index]);
+    return { stage: st.id, forms };
+  }
+  function renderDev() {
+    const cur = devCfg.stages[devStageIdx];
+    devStageList.textContent = '';
+    for (const st of devCfg.stages) {
+      const b = el('button', 'vd-seg-btn vd-dev-stage vd-interactive', null, { type: 'button', role: 'radio', 'aria-checked': String(st.index === devStageIdx), tabindex: st.index === devStageIdx ? '0' : '-1' });
+      b.append(el('span', 'vd-dev-stage-n', String(st.index).padStart(2, '0')), el('span', null, st.name));
+      if (st.forms.length) b.append(el('span', 'vd-dev-stage-f', `${st.forms.length} forms`));
+      b.addEventListener('click', () => { devStageIdx = st.index; sound('ui.click'); renderDev(); devStageList.children[devStageIdx].focus(); });
+      b.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault(); e.stopPropagation();
+        devStageIdx = (devStageIdx + d + devCfg.stages.length) % devCfg.stages.length; sound('ui.click'); renderDev();
+        devStageList.children[devStageIdx].focus();
+      });
+      devStageList.appendChild(b);
+    }
+    devFormsBox.textContent = '';
+    const menus = devCfg.stages.filter((x) => x.index <= cur.index && x.forms.length);
+    for (const st of menus) {
+      const g = el('div', 'vd-set-row');
+      g.appendChild(el('span', 'vd-set-name', st.name));
+      const seg = el('div', 'vd-seg', null, { role: 'radiogroup', 'aria-label': `${st.name} form` });
+      for (const f of [{ id: null, label: 'None' }, ...st.forms]) {
+        const on = (devForms[st.index] || null) === f.id;
+        const b = el('button', 'vd-seg-btn vd-interactive', f.label, { type: 'button', role: 'radio', 'aria-checked': String(on), title: f.description || 'Abandon evolution: no form' });
+        b.addEventListener('click', () => { devForms[st.index] = f.id; sound('ui.click'); renderDev(); });
+        seg.appendChild(b);
+      }
+      g.appendChild(seg);
+      devFormsBox.appendChild(g);
+    }
+    devFormsBox.appendChild(el('p', 'vd-fine vd-mono', menus.length ? 'NONE = ABANDON EVOLUTION AT THAT MILESTONE' : 'NO FORM CHOICES AT OR BEFORE THIS STAGE'));
+    devLink.textContent = `?${devCfg.query(devSpec())}`;
+  }
+  function openDev() {
+    if (!devCfg || devOv.classList.contains('is-on') || menuOv.classList.contains('is-on')) return;
+    if (choiceHandler && !choiceHandler.done.v) return;
+    const st = last && last.status;
+    devReturn = titleOv.dataset.open === '1' ? 'title' : endOv.classList.contains('is-on') ? 'end' : st === 'playing' ? 'play' : null;
+    if (!devReturn) return;
+    if (devReturn === 'play' && !paused) { paused = true; if (pauseCb) pauseCb(true); }
+    sound('ui.open');
+    renderDev();
+    openOverlay(devOv, devStageList.children[devStageIdx]);
+  }
+  function closeDev(silentSound) {
+    if (!devOv.classList.contains('is-on')) return;
+    if (!silentSound) sound('ui.close');
+    closeOverlay(devOv, true);
+    if (devReturn === 'title') openOverlay(titleOv, devBtn);
+    else if (devReturn === 'end') openOverlay(endOv, restartBtn);
+    else if (paused) { paused = false; if (pauseCb) pauseCb(false); }
+  }
+  function startDev() {
+    sound('ui.confirm');
+    const spec = devSpec();
+    closeOverlay(devOv, true); closeOverlay(titleOv, true); closeOverlay(endOv, true);
+    titleOv.dataset.open = '0';
+    paused = false;
+    if (devCfg.onStart) devCfg.onStart(spec);
+  }
+  devBtn.addEventListener('click', () => openDev());
+  devClose.addEventListener('click', () => closeDev());
+  devBack.addEventListener('click', () => closeDev());
+  devGo.addEventListener('click', startDev);
+
+  /** Register the developer start menu. cfg: { stages (src/devstart.js devStages), query(spec) -> string, onStart(spec), initial?: spec }. */
+  function setDevMenu(cfg) {
+    devCfg = cfg && cfg.stages && cfg.stages.length ? cfg : null;
+    devBtn.hidden = !devCfg;
+    if (!devCfg) return;
+    const init = cfg.initial;
+    const si = init ? devCfg.stages.findIndex((x) => x.id === init.stage) : -1;
+    devStageIdx = si >= 0 ? si : 0;
+    devForms = {};
+    for (const id of (init && init.forms) || []) { const st = devCfg.stages.find((x) => x.forms.some((f) => f.id === id)); if (st) devForms[st.index] = id; }
+  }
+
+  ui.append(hud.el, titleOv, choiceOv, menuOv, devOv, endOv, grain, live, liveAlert);
   root.appendChild(ui);
 
   // Keep UI clicks from also steering the ship (2D input listens on window).
@@ -387,7 +494,7 @@ export function createUI(root, opts = {}) {
     if (status === 'title' || status === 'ended') hud.hideHint();
 
     // Sim-driven pause (3D): mirror it with the systems panel.
-    if (status === 'paused' && prevStatus !== 'paused' && !menuOv.classList.contains('is-on')) {
+    if (status === 'paused' && prevStatus !== 'paused' && !menuOv.classList.contains('is-on') && !devOv.classList.contains('is-on')) {
       paused = true;
       menuFromTitle = false;
       menuHead.textContent = 'Paused';
@@ -572,7 +679,13 @@ export function createUI(root, opts = {}) {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     const tgt = e.target;
     const typing = tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable);
+    if (e.code === 'Backquote' && devCfg && !typing) {
+      e.preventDefault();
+      if (devOv.classList.contains('is-on')) closeDev(); else openDev();
+      return;
+    }
     if (e.key === 'Escape') {
+      if (devOv.classList.contains('is-on')) { e.preventDefault(); closeDev(); return; }
       if (menuOv.classList.contains('is-on')) { e.preventDefault(); sound('ui.back'); closeMenu(true); }
       else if (last && last.status === 'playing' && !activeOverlay) { e.preventDefault(); openMenu(); }
       return;
@@ -629,7 +742,7 @@ export function createUI(root, opts = {}) {
   else window.addEventListener('resize', rescale);
 
   function hide() {
-    for (const o of [titleOv, choiceOv, menuOv, endOv]) closeOverlay(o, true);
+    for (const o of [titleOv, choiceOv, menuOv, devOv, endOv]) closeOverlay(o, true);
     titleOv.dataset.open = '0';
     choiceHandler = null;
     hud.el.classList.remove('is-on');
@@ -645,7 +758,7 @@ export function createUI(root, opts = {}) {
   }
 
   return {
-    update, showChoice, showTitle, showEnd, warnBoundary, attach, detach, hide, dispose,
+    update, showChoice, showTitle, showEnd, warnBoundary, attach, detach, hide, dispose, setDevMenu,
     getSettings: () => ({ ...settings }),
     onPause(cb) { pauseCb = typeof cb === 'function' ? cb : null; },
     setPaused: (v) => setPaused(v, true), // programmatic; does not fire onPause
@@ -668,6 +781,7 @@ export const showChoice = (choices, onPick, opts) => I().showChoice(choices, onP
 export const showEnd = (ending, onRestart) => I().showEnd(ending, onRestart);
 export const update = (state, view) => I().update(state, view);
 export const attach = (bus) => I().attach(bus);
+export const setDevMenu = (cfg) => I().setDevMenu(cfg);
 export const detach = () => { if (inst) inst.detach(); };
 export const getSettings = () => (inst ? inst.getSettings() : loadSettings());
 export const warnBoundary = (on) => { if (inst) inst.warnBoundary(on); };

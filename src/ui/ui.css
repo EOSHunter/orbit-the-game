@@ -507,6 +507,20 @@
 .vd-ui .vd-switch-text { grid-area: x; font-size: calc(13px * var(--s)); letter-spacing: 0.08em; text-transform: uppercase; }
 .vd-ui .vd-switch-hint { grid-area: h; font-size: calc(11px * var(--s)); color: var(--mist); font-family: system-ui, "Segoe UI", sans-serif; }
 
+/* Developer start (debug-only; amber so it is never mistaken for the normal flow) */
+.vd-ui .vd-btn--dev { background: rgba(5, 12, 24, 0.4); border-color: var(--amber-dim); color: var(--amber); min-width: 0; }
+.vd-ui .vd-btn--dev:hover, .vd-ui .vd-btn--dev:focus-visible { border-color: var(--amber); background: rgba(80, 50, 10, 0.4); box-shadow: 0 0 22px rgba(255, 181, 71, 0.3); }
+.vd-ui .vd-kicker--dev { color: var(--amber); }
+.vd-ui .vd-dev { width: min(calc(640px * var(--s)), 100%); max-height: 100%; overflow: auto; border-color: var(--amber-dim); }
+.vd-ui .vd-dev-stages { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(170px * var(--s)), 1fr)); border: 1px solid var(--holo-faint); gap: 1px; background: var(--holo-faint); }
+.vd-ui .vd-dev-stage { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; border: 0; background: rgba(5, 12, 24, 0.85); text-align: left; }
+.vd-ui .vd-dev-stage-n { color: var(--holo); }
+.vd-ui .vd-dev-stage-f { margin-left: auto; font-size: calc(10px * var(--s)); color: var(--mist); }
+.vd-ui .vd-dev .vd-seg { flex-wrap: wrap; }
+.vd-ui .vd-dev .vd-set-row { grid-template-columns: calc(130px * var(--s)) 1fr; }
+.vd-ui .vd-dev-actions { position: sticky; bottom: calc(-20px * var(--s)); padding: calc(10px * var(--s)) 0; background: var(--panel-bg, rgba(5, 12, 24, 0.92)); }
+.vd-ui .vd-dev-link { word-break: break-all; color: var(--amber); }
+
 /* Ending */
 .vd-ui .vd-ending { display: flex; flex-direction: column; align-items: center; gap: calc(14px * var(--s)); text-align: center; max-width: min(calc(720px * var(--s)), 100%); }
 .vd-ui .vd-overlay--end[data-kind="death"] .vd-kicker { color: var(--threat); }

@@ -4,6 +4,7 @@
 // file runs on ENG's fixture states with silent audio and a bare HUD, so the renderer is always testable.
 import { createRenderer } from './render3d/index.js';
 import { createInput } from './input3d.js';
+import { devStages, parseDevQuery, devQuery } from './devstart.js';
 
 const STEP = 1 / 120, MAX_FRAME = 0.25, MAX_STEPS = 12;
 
@@ -51,6 +52,16 @@ export async function start3d() {
     const f = await createFixtureSim(); sim = f.sim; CLS_LIST = f.CLS_LIST; usingFixtures = true;
   }
 
+  // ---- developer start: ?stage=<id|index>&form=<choice id,...> (see src/devstart.js) ----
+  const devSpec = sim.startAt ? parseDevQuery(location.search) : null;
+  function devStart(spec) {
+    if (!sim.startAt(spec)) return;
+    const u = new URL(location.href);
+    for (const k of ['stage', 'form']) u.searchParams.delete(k);
+    for (const [k, v] of new URLSearchParams(devQuery(spec))) u.searchParams.set(k, v);
+    try { history.replaceState(null, '', u.href.replace(/%2C/g, ',')); } catch (e) { /* non-fatal */ }
+  }
+
   // ---- renderer first: if it cannot init, throw before touching the UI so boot.js can fall back to 2D ----
   const renderer = createRenderer({ canvas, clsList: CLS_LIST });
   if (!(await renderer.init())) throw new Error('render3d init() returned false');
@@ -84,12 +95,14 @@ export async function start3d() {
     ui.init({ root: uiRoot, onUiSound: (n) => audio && audio.playUi(n), onSettings: applySettings, onPause: (p) => sim.setPaused(p) });
     if (ui.attach) ui.attach(bus);
     applySettings(ui.getSettings && ui.getSettings());
-    ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
+    // Developer start (title "Dev start" button or backtick): begin a run at any stage and form.
+    if (sim.startAt) ui.setDevMenu({ stages: devStages(), query: devQuery, initial: devSpec, onStart: devStart });
+    if (devSpec) devStart(devSpec); else ui.showTitle(() => sim.start(), { seed: sim.getState().seed });
     bus.on('choice-open', (e) => ui.showChoice(e.choices, (id) => sim.pickChoice(id), { preview: (c) => renderer.renderPreview && renderer.renderPreview(sim.previewChoice(c.id)) }));
     bus.on('ending', (e) => ui.showEnd(e.ending, () => sim.restart()));
   } else {
     // no UI yet: start straight away so the world is visible
-    sim.start();
+    if (devSpec) devStart(devSpec); else sim.start();
   }
 
   // ---- input ----
