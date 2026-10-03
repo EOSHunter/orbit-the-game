@@ -1,6 +1,7 @@
 // Evolution stages, milestone choices and endings. Dependency-free ES module.
 //
-// state shape: { mass, stageIndex, flags: {}, status, deathCause?: 'collision' | 'boundary' }
+// state shape: { mass, stageIndex, flags: {}, status, deathCause?: 'collision' | 'captured' | 'boundary' }
+// ('captured' = pulled in by a far larger black hole, the 3D build's Event Horizon ending; 'boundary' is legacy 2D.)
 //
 // flags (all created on demand by applyChoice; the engine may read them any time):
 //   speedMult     number, default 1    Multiplier on steering/thrust speed. Stacks multiplicatively.
@@ -22,24 +23,25 @@
 
 export const ABANDON_ID = 'abandon_evolution';
 
-// minMass grows ~3.2x per stage (start mass 1). At ~70-80s per stage this lands a full run
-// at roughly 13-16 minutes. Tune GROWTH timing in the engine, not here.
+// minMass grows ~3.6-3.9x per stage (start mass 1; stage 0 spans 1 -> 3). Prey sizes are relative to the
+// player, so growth is exponential and each stage takes a similar time: ~40-120 s with the engine's
+// CONFIG.absorbEfficiency, for a full run of roughly 13-16 minutes (measured by tests/pace.mjs).
 // radiusScale: visual radius multiplier (neutron star is deliberately compact).
 // worldScale: arena / spawn-field / camera multiplier; strictly increasing.
 // spawnMix: share of spawned bodies that are prey (smaller), threat (bigger), neutral (similar). Sums to 1.
 export const STAGES = [
   { id: 'meteorite',       name: 'Meteorite',       minMass: 0,       radiusScale: 1,    worldScale: 1,    spawnMix: { prey: 0.80, threat: 0.05, neutral: 0.15 } },
-  { id: 'asteroid',        name: 'Asteroid',        minMass: 20,      radiusScale: 2,    worldScale: 2,    spawnMix: { prey: 0.75, threat: 0.10, neutral: 0.15 } },
-  { id: 'dwarf_planet',    name: 'Dwarf Planet',    minMass: 80,      radiusScale: 4,    worldScale: 4,    spawnMix: { prey: 0.70, threat: 0.15, neutral: 0.15 } },
-  { id: 'rocky_planet',    name: 'Rocky Planet',    minMass: 300,     radiusScale: 8,    worldScale: 8,    spawnMix: { prey: 0.65, threat: 0.20, neutral: 0.15 } },
-  { id: 'gas_giant',       name: 'Gas Giant',       minMass: 1000,    radiusScale: 16,   worldScale: 16,   spawnMix: { prey: 0.60, threat: 0.25, neutral: 0.15 } },
-  { id: 'gas_planet',      name: 'Gas Planet',      minMass: 3200,    radiusScale: 32,   worldScale: 32,   spawnMix: { prey: 0.55, threat: 0.30, neutral: 0.15 } },
-  { id: 'dwarf_star',      name: 'Dwarf Star',      minMass: 10000,   radiusScale: 64,   worldScale: 64,   spawnMix: { prey: 0.55, threat: 0.30, neutral: 0.15 } },
-  { id: 'star',            name: 'Star',            minMass: 32000,   radiusScale: 128,  worldScale: 128,  spawnMix: { prey: 0.50, threat: 0.35, neutral: 0.15 } },
-  { id: 'giant_star',      name: 'Giant Star',      minMass: 100000,  radiusScale: 256,  worldScale: 256,  spawnMix: { prey: 0.50, threat: 0.35, neutral: 0.15 } },
-  { id: 'supergiant_star', name: 'Supergiant Star', minMass: 320000,  radiusScale: 512,  worldScale: 512,  spawnMix: { prey: 0.55, threat: 0.35, neutral: 0.10 } },
-  { id: 'neutron_star',    name: 'Neutron Star',    minMass: 1000000, radiusScale: 128,  worldScale: 1024, spawnMix: { prey: 0.60, threat: 0.30, neutral: 0.10 } },
-  { id: 'black_hole',      name: 'Black Hole',      minMass: 3200000, radiusScale: 256,  worldScale: 2048, spawnMix: { prey: 0.75, threat: 0.15, neutral: 0.10 } },
+  { id: 'asteroid',        name: 'Asteroid',        minMass: 3,       radiusScale: 2,    worldScale: 2,    spawnMix: { prey: 0.75, threat: 0.10, neutral: 0.15 } },
+  { id: 'dwarf_planet',    name: 'Dwarf Planet',    minMass: 12,      radiusScale: 4,    worldScale: 4,    spawnMix: { prey: 0.70, threat: 0.15, neutral: 0.15 } },
+  { id: 'rocky_planet',    name: 'Rocky Planet',    minMass: 45,      radiusScale: 8,    worldScale: 8,    spawnMix: { prey: 0.65, threat: 0.20, neutral: 0.15 } },
+  { id: 'gas_giant',       name: 'Gas Giant',       minMass: 170,     radiusScale: 16,   worldScale: 16,   spawnMix: { prey: 0.60, threat: 0.25, neutral: 0.15 } },
+  { id: 'gas_planet',      name: 'Gas Planet',      minMass: 650,     radiusScale: 32,   worldScale: 32,   spawnMix: { prey: 0.55, threat: 0.30, neutral: 0.15 } },
+  { id: 'dwarf_star',      name: 'Dwarf Star',      minMass: 2500,    radiusScale: 64,   worldScale: 64,   spawnMix: { prey: 0.55, threat: 0.30, neutral: 0.15 } },
+  { id: 'star',            name: 'Star',            minMass: 10000,   radiusScale: 128,  worldScale: 128,  spawnMix: { prey: 0.50, threat: 0.35, neutral: 0.15 } },
+  { id: 'giant_star',      name: 'Giant Star',      minMass: 38000,   radiusScale: 256,  worldScale: 256,  spawnMix: { prey: 0.50, threat: 0.35, neutral: 0.15 } },
+  { id: 'supergiant_star', name: 'Supergiant Star', minMass: 140000,  radiusScale: 512,  worldScale: 512,  spawnMix: { prey: 0.55, threat: 0.35, neutral: 0.10 } },
+  { id: 'neutron_star',    name: 'Neutron Star',    minMass: 500000,  radiusScale: 128,  worldScale: 1024, spawnMix: { prey: 0.60, threat: 0.30, neutral: 0.10 } },
+  { id: 'black_hole',      name: 'Black Hole',      minMass: 1800000, radiusScale: 256,  worldScale: 2048, spawnMix: { prey: 0.75, threat: 0.15, neutral: 0.10 } },
 ];
 
 const ABANDON = {
@@ -197,12 +199,12 @@ const ENDINGS = {
 
 /**
  * Ending for the current state, or null while the run is still going.
- * Death/boundary take priority; otherwise endings only resolve at the Black Hole stage:
+ * Death/boundary/captured take priority; otherwise endings only resolve at the Black Hole stage:
  *   abandon-only picks -> Quantum Cosmos; Terrestrial + Yellow Dwarf -> Cradle of Life;
  *   no abandons at all -> Creator God; any mix -> the normal Black Hole ending.
  */
 export function getEnding(state) {
-  if (state.deathCause === 'boundary') return { ...ENDINGS.event_horizon };
+  if (state.deathCause === 'boundary' || state.deathCause === 'captured') return { ...ENDINGS.event_horizon };
   if (state.deathCause === 'collision' || state.status === 'dead') return { ...ENDINGS.stellar_fragment };
 
   if (state.stageIndex !== STAGES.length - 1) return null;
