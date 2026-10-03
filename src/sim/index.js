@@ -865,6 +865,7 @@ export function createSim(opts = {}) {
     const chance = canChase ? chaseChance() : 0;
     const chaseSpeed = lerp(c.speed, c.speedLate, stageT(state.stageIndex)) * S;
     const detect = c.detectionRadius * S;
+    const playerMu = G.surfaceRate * G.surfaceRate * S * S * S;
     const n = bodies.length;
     for (let i = 0; i < n; i++) {
       const b = bodies[i];
@@ -888,6 +889,14 @@ export function createSim(opts = {}) {
         const mag = Math.sqrt(d2) * kk;
         ax += dx * kk; az += dz * kk;
         if (mag > domA) { domA = mag; dom = w; }
+      }
+      // the player is a gravity source too: it drags smaller free bodies toward it (finite reach, softened)
+      if (playerAlive && G.playerPull > 0 && pm >= bm * G.minRatio) {
+        tmp2[0] = 0; tmp2[1] = 0;
+        softenedAccel(G, playerMu * G.playerPull, S, player.p[0], player.p[2], bx, bz, tmp2);
+        ax += tmp2[0]; az += tmp2[1];
+        const back = (bm / pm) * sdt; // Newton's third law: the player feels the (tiny) reaction
+        player.v[0] -= tmp2[0] * back; player.v[2] -= tmp2[1] * back;
       }
       if (b.cls === 'fragment' && dom) { // fragments lose angular momentum to the surrounding material and spiral in
         const dxw = b.p[0] - dom.p[0]; const dzw = b.p[2] - dom.p[2];

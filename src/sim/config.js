@@ -45,6 +45,7 @@ export const CONFIG = {
     minRatio: 1.0,         // a source must be this much heavier than the body it pulls (player: 1.0)
     playerMaxPull: 0.85,   // ordinary wells never pull the player harder than this fraction of its thrust (only capture can)
     maxSources: 8,
+    playerPull: 1,         // multiplier on the player's own pull on smaller free bodies (0 disables)
   },
 
   player: {

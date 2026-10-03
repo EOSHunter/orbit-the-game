@@ -1,7 +1,7 @@
 // World: state creation, body spawning/despawning around the player, drifting and chase AI.
 import {
   CONFIG, clamp, lerp, rand, createBody, classify, stageT, approachVelocity, radiusFromMass,
-  massFromRadius,
+  massFromRadius, gravityPull, capPull, GRAVITY_MIN_RATIO, GRAVITY_ON_PLAYER, GRAVITY_ON_BODIES,
 } from './physics.js';
 import { viewRadius } from './camera.js';
 
@@ -164,10 +164,30 @@ export function updateWorld(state, dt, ctx) {
   for (let i = 0; i < bodies.length; i++) if (bodies[i].chasing) active++;
   if (state.chaseRest > 0) state.chaseRest -= dt;
 
+  // Gravity: heavier bodies (and the player) pull lighter ones; each source has a finite reach.
+  const pull = { x: 0, y: 0 };
+  if (p.alive) {
+    for (let j = 0; j < bodies.length; j++) {
+      const s = bodies[j];
+      if (s.alive && s.mass >= p.mass * GRAVITY_MIN_RATIO) gravityPull(s, p.x, p.y, GRAVITY_ON_PLAYER, pull);
+    }
+    capPull(pull, pr);
+    p.vx += pull.x * dt;
+    p.vy += pull.y * dt;
+  }
+
   for (let i = 0; i < bodies.length; i++) {
     const b = bodies[i];
     if (!b.alive) continue;
     b.kind = classify(p.mass, b.mass, b.kind);
+
+    pull.x = 0; pull.y = 0;
+    if (p.alive && p.mass >= b.mass * GRAVITY_MIN_RATIO) gravityPull(p, b.x, b.y, GRAVITY_ON_BODIES, pull);
+    for (let j = 0; j < bodies.length; j++) {
+      const s = bodies[j];
+      if (j !== i && s.alive && s.mass >= b.mass * GRAVITY_MIN_RATIO) gravityPull(s, b.x, b.y, GRAVITY_ON_BODIES, pull);
+    }
+    capPull(pull, pr);
 
     const dx = p.x - b.x;
     const dy = p.y - b.y;
@@ -199,8 +219,8 @@ export function updateWorld(state, dt, ctx) {
       chasers.push(b);
     } else {
       // Relax back to the body's cruise velocity (so bumps and gravity pulls wear off).
-      b.vx += (b.dvx - b.vx) * relax;
-      b.vy += (b.dvy - b.vy) * relax;
+      b.vx += (b.dvx - b.vx) * relax + pull.x * dt;
+      b.vy += (b.dvy - b.vy) * relax + pull.y * dt;
     }
     b.x += b.vx * dt;
     b.y += b.vy * dt;
