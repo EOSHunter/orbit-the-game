@@ -1650,12 +1650,12 @@
   {
    "start": 137.33,
    "end": 138.75,
-   "text": "Atlus needs you.",
+   "text": "Atlas needs you.",
    "no_speech_prob": 0.026,
    "avg_logprob": -0.547,
    "words": [
     {
-     "w": " Atlus",
+     "w": " Atlas",
      "start": 137.33,
      "end": 137.93,
      "p": 0.53
@@ -2622,7 +2622,7 @@
   {
    "start": 242.72,
    "end": 252.48,
-   "text": "so they're more like space-related. So you have like Voyager, Kaisar, Polaris, Leica,",
+   "text": "so they're more like space-related. So you have like Voyager, Quasar, Polaris, Laika,",
    "no_speech_prob": 0.584,
    "avg_logprob": -0.273,
    "words": [
@@ -2693,7 +2693,7 @@
      "p": 0.95
     },
     {
-     "w": " Kaisar,",
+     "w": " Quasar,",
      "start": 248.08,
      "end": 248.98,
      "p": 0.64
@@ -2705,7 +2705,7 @@
      "p": 0.97
     },
     {
-     "w": " Leica,",
+     "w": " Laika,",
      "start": 252.04,
      "end": 252.48,
      "p": 0.61
@@ -2718,12 +2718,12 @@
   {
    "start": 253.58,
    "end": 258.8,
-   "text": "Leica I think is how it's pronounced, was one of the dogs that I'm pretty sure the Russians",
+   "text": "Laika I think is how it's pronounced, was one of the dogs that I'm pretty sure the Russians",
    "no_speech_prob": 0.584,
    "avg_logprob": -0.273,
    "words": [
     {
-     "w": " Leica",
+     "w": " Laika",
      "start": 253.58,
      "end": 254.02,
      "p": 0.74

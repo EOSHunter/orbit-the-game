@@ -39,7 +39,7 @@ Companion files in this folder: `transcripts/N.json|.srt` (word-level, speaker-l
 
 ## Cast (agents and names seen on screen)
 * **R7 Orbit** = the creator's own agent-orchestration app (dark "canvas" with a hub "orbit-the-game" and agent cards around it; chat panel right; whiteboard; settings). "Orbit" is also the lead/orchestrator agent the creator chats with.
-* Agents named on cards: **Atlas** (Game Design Research), **Briar** (Creative Director, clips 1-2), **Cedar** (Build: Core engine), **Dune** (Build: Stages & choices), **Fern** (Build: HUD & screens), an agent for Renderer & VFX, **Harbor** ("Integrate & playtest", Opus 5.5), Phase-3 team: **Iris** (Creative Director, Opus 5.5), **Juno** (UI Designer), **Kestrel** (Sound Designer, Sonnet 5.5), **Lark** (Engine & 3D Renderer), and a "Simulation & Infinite Universe" agent (clips 6-7). Later renamed space-themed (Voyager, Kaisar, **Polaris** (background/dev-menu agent), **Rigel**, Laika/Leica) per clip 9 3:56-4:25.
+* Agents named on cards: **Atlas** (Game Design Research), **Briar** (Creative Director, clips 1-2), **Cedar** (Build: Core engine), **Dune** (Build: Stages & choices), **Fern** (Build: HUD & screens), an agent for Renderer & VFX, **Harbor** ("Integrate & playtest", Opus 5.5), Phase-3 team: **Iris** (Creative Director, Opus 5.5), **Juno** (UI Designer), **Kestrel** (Sound Designer, Sonnet 5.5), **Lark** (Engine & 3D Renderer), and a "Simulation & Infinite Universe" agent (clips 6-7). Later renamed space-themed (Voyager, Quasar, **Polaris** (background/dev-menu agent), **Rigel**, Laika) per clip 9 3:56-4:25.
 * Game: **Vesper Drift**, a browser clone of the Steam game *Drifter Star: Evolution*. Evolution chain: Meteorite -> Asteroid -> Dwarf Planet -> Rocky/Gas planet -> Star -> Black Hole. Two versions exist: 2D top-down (clip 5) and 3D with radar HUD (clips 8-11).
 
 ---
@@ -158,7 +158,7 @@ Speaker: creator; Orbit TTS at 2:17 ("Atlas needs you") and 10:21 ("Polaris is d
 * 0:58-1:21 "I just played through it. It took 12 minutes. I died to a black hole." Gave new prompts as it played.
 * 1:21-2:50 New sound cues explanation; pause menu (1:30-2:10) and settings -> sounds (2:10-2:50). **Agent TTS "Atlas needs you" at 2:17.** Reminder every 5 minutes if away (2:38-2:50).
 * 2:53-3:17 "everything here is done. Go ahead, push this to GitHub." -> GitHub banner disappears (3:08-3:17) (ch.5 creator pushes).
-* 3:24-4:25 Asks Orbit for the update on what each agent did; agent chat summary 3:34-3:56; **agents renamed space-themed: Voyager, Kaisar, Polaris, Leica** + Laika joke (4:02-4:25).
+* 3:24-4:25 Asks Orbit for the update on what each agent did; agent chat summary 3:34-3:56; **agents renamed space-themed: Voyager, Quasar, Polaris, Laika** + Laika joke (4:02-4:25).
 * 4:20-4:30 Title "VESPER DRIFT" tagline screen.
 * 4:28-7:20 **3D play-through**: HUD METEORITE -> ASTEROID -> DWARF PLANET (stats up top left), asteroids, planets with lava texture (6:00), ringed planet (7:00), gravity test ("I feel like I can kind of feel it pulling me... I guess its gravity isn't strong enough", 5:22-6:13), "this feels very very very much like Drifter Star" (5:55-6:03), asteroid spawning-on-screen complaint (6:13-6:27).
 * 7:20-7:55 **"Evolution branch detected" cards**: Frozen Fortress / Cradle of Life / War Planet / Abandon Evolution (7:40-7:50); creator: "it just looks so good, this is all in the browser, very impressed" (7:20-7:32); "images so you can see what you'll evolve into... a little pixelated" (7:32-7:50).
@@ -172,7 +172,7 @@ Best moments:
 * **0:58-1:10** "12 minutes, I died to a black hole" (creator has *played* his game; ch.7 hook). Pairs with EVENT HORIZON end screen (0:00-1:20).
 * **2:17-2:19** Orbit TTS "Atlas needs you" (agent voice, ch.4).
 * **2:53-3:17** "push this to GitHub" (ch.5).
-* **3:56-4:25** Agents renamed: Voyager, Kaisar, Polaris, Leica / Laika (ch.3/6 charm).
+* **3:56-4:25** Agents renamed: Voyager, Quasar, Polaris, Laika (ch.3/6 charm).
 * **5:50-6:05** "feels very much like Drifter Star" + 3D gameplay (ch.7).
 * **7:20-7:50** Evolution-branch cards + "very impressed, this is all in the browser" (ch.7; best single reaction in clip).
 * **10:18-10:22** "Polaris is done" + TTS.

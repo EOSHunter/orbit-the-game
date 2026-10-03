@@ -96,7 +96,7 @@
 
 25
 00:02:17,330 --> 00:02:18,750
-[agent_tts] Atlus needs you.
+[agent_tts] Atlas needs you.
 
 26
 00:02:26,360 --> 00:02:28,620
@@ -148,11 +148,11 @@
 
 38
 00:04:02,720 --> 00:04:12,480
-[creator] so they're more like space-related. So you have like Voyager, Kaisar, Polaris, Leica,
+[creator] so they're more like space-related. So you have like Voyager, Quasar, Polaris, Laika,
 
 39
 00:04:13,580 --> 00:04:18,800
-[creator] Leica I think is how it's pronounced, was one of the dogs that I'm pretty sure the Russians
+[creator] Laika I think is how it's pronounced, was one of the dogs that I'm pretty sure the Russians
 
 40
 00:04:18,800 --> 00:04:28,420

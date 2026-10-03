@@ -27,13 +27,13 @@ So speaker separation is done by *source*, not by guesswork:
 | Clip | In | Out | Text |
 |---|---|---|---|
 | 8.mp4 | 7:54 | 7:57 | "This is how I will read answers to you." (voice preview in settings; repeated at 8:05-8:08) |
-| 9.mp4 | 2:17 | 2:19 | "Atlas needs you." (Whisper wrote "Atlus") |
+| 9.mp4 | 2:17 | 2:19 | "Atlas needs you." (Whisper wrote "Atlus"; corrected to Atlas in the transcripts) |
 | 10.mp4 | 1:57 | 1:59 | "Polaris is done." |
 
 Other agent_tts lines: 9.mp4 10:21 "(Polaris) is done" (Whisper heard "This is done"), 11.mp4 2:50 "Rigel is done".
 Raw machine-readable samples: `speaker-samples.json`. Every transcript segment in `transcripts/*.json` carries `speaker`, `conf` and `source`.
 
 ## Known transcription caveats
-* Whisper "medium" is used. Misheard terms: "Sonic 5.5" / "Sonnet 55" = Sonnet 5.5; "Atlus" = Atlas; "Lark and Juno" are real agent names; "R7 orbit" is "R7 Orbit".
+* Whisper "medium" is used. Misheard terms: "Sonic 5.5" / "Sonnet 55" = Sonnet 5.5; "Atlus" = Atlas (corrected in the transcripts); "Lark and Juno" are real agent names; "R7 orbit" is "R7 Orbit".
 * Where game sound plays under the voice (clips 8-11), the mic stream is clean but short fragments may still be garbled (e.g. clip 9 1:21-1:50 sound-cue explanation).
 * In `.srt` files each line is prefixed `[creator]` or `[agent_tts]`.
