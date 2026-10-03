@@ -1,1 +1,0 @@
-[{"start": 170.1, "end": 171.2, "text": "Rigel is done", "no_speech_prob": 0.046, "avg_logprob": -0.35, "words": [{"w": " Rigel", "start": 170.1, "end": 170.72, "p": 0.98}, {"w": " is", "start": 170.72, "end": 170.96, "p": 0.98}, {"w": " done", "start": 170.96, "end": 171.2, "p": 0.97}]}]
