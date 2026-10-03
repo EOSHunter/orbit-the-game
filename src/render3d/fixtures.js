@@ -88,7 +88,9 @@ export function makeFixtureState(stageId = 'asteroid', opts = {}) {
   if (ent) {
     const host = makeBody('rockyPlanet', { id: 99, r: pr * 6, x: pr * 2, z: -pr * 14, stageId: 'rocky_planet', variant: 'terrestrial', rel: 'neutral', atmosphere: { density: 0.9, shellHeight: 0.08 } });
     bodies.push(host);
-    player.v = [0, 0, -40]; player.p = [0, 0, -pr * 5]; player.entry = { hostId: 99, intensity: 0.85 };
+    player.v = [0, 0, -40]; player.p = [0, 0, -pr * 7.8];
+    // inside the host's air shell (entry is only ever set there)
+    player.entry = { hostId: 99, intensity: 0.85 };
     player.emissive = { cause: 'ablation', intensity: 0.8 };
     bodies.push(makeBody('fragment', { r: 6, x: pr * 3, z: -pr * 6, stageId: 'meteorite', emissive: { cause: 'hot-debris', intensity: 0.6 } }));
   } else if (gal) {

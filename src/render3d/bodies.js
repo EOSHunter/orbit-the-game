@@ -92,8 +92,12 @@ export class BodyLayer {
 
     this.pools = { planet: [], gas: [], star: [], bh: [] };
     this.active = new Map();
-    this.sphereGeo = new THREE.SphereGeometry(1, 96, 64);
-    this.shellGeo = new THREE.SphereGeometry(1, 64, 40);
+    this._meshed = new Set(); this._meshedNext = new Set();
+    // tessellation LOD for the pooled spheres: shading is per-pixel from the object-space direction, so only the silhouette cares
+    this.sphereLod = [new THREE.SphereGeometry(1, 96, 64), new THREE.SphereGeometry(1, 48, 32), new THREE.SphereGeometry(1, 24, 16)];
+    this.sphereGeo = this.sphereLod[0];
+    this.shellLod = [new THREE.SphereGeometry(1, 64, 40), new THREE.SphereGeometry(1, 32, 20)];
+    this.shellGeo = this.shellLod[0];
     this.beamGeo = new THREE.CylinderGeometry(1, 0, 1, 20, 6, true).translate(0, 0.5, 0);
     this.quadGeo = new THREE.PlaneGeometry(2, 2);
 
@@ -153,7 +157,7 @@ export class BodyLayer {
       colA, colB,
       P: [look.craters ? look.craters.density : 0, look.craters ? look.craters.sizeExp : 1, look.roughness == null ? 0.8 : look.roughness, ex.elongation == null ? 0.3 : ex.elongation],
       M: [look.metalness || 0, 1, kind, ex.lump == null ? 0.2 : ex.lump],
-      terrestrial: !!ex.terrestrial,
+      terrestrial: !!ex.terrestrial || (b.cls === 'rockyPlanet' && ex.variant === 'terrestrial'),
     };
   }
 
@@ -198,6 +202,7 @@ export class BodyLayer {
     for (const k in this.pools) for (const it of this.pools[k]) it.used = false;
     this.counts.bodies = 0; this.counts.lo = this.counts.mid = this.counts.big = 0;
     this._nextActive = new Map();
+    const t = this._meshed; this._meshed = this._meshedNext; this._meshedNext = t; this._meshedNext.clear();
   }
 
   end(dotsOverlayCtx) {
@@ -278,7 +283,11 @@ export class BodyLayer {
     }
 
     const emitting = cls === 'star' || cls === 'neutronStar' || cls === 'blackHole';
-    if (px < 1.25 && !emitting) { ctx.dots.addNear(b, R, ctx); return; }
+    // hysteresis: a body already drawn as a mesh stays a mesh down to 0.9 px, so it cannot flicker dot <-> mesh at the threshold
+    if (!emitting) {
+      if (px < 0.9 || (px < 1.25 && !this._meshed.has(b.id))) { ctx.dots.addNear(b, R, ctx); return; }
+      if (px < 2) this._meshedNext.add(b.id);
+    }
 
     // cull (generous margin for glow/atmosphere)
     _v.set(b.p[0], b.p[1], b.p[2]);
@@ -348,7 +357,7 @@ export class BodyLayer {
   _planet(b, ent, R, px, ctx) {
     const it = this._item('planet', b, () => {
       const mat = new THREE.ShaderMaterial({
-        uniforms: { ...this.shared, uSeed: { value: 0 }, uLand: { value: new THREE.Color() }, uOcean: { value: new THREE.Color() }, uHigh: { value: new THREE.Color() },
+        uniforms: { ...this.shared, uSeed: { value: 0 }, uLand: { value: new THREE.Color() }, uOcean: { value: new THREE.Color() }, uDeep: { value: new THREE.Color() }, uHigh: { value: new THREE.Color() },
           uIce: { value: new THREE.Color() }, uRadius: { value: 1 }, uCloud: { value: .5 }, uWater: { value: .5 }, uOcc0: { value: new THREE.Vector4() }, uOcc1: { value: new THREE.Vector4() }, uStretch: { value: new THREE.Vector4() } },
         vertexShader: sphereVert, fragmentShader: planetFrag,
       });
@@ -360,8 +369,15 @@ export class BodyLayer {
     if (it.cfgKey !== b.id + ':' + b.seed) {
       it.cfgKey = b.id + ':' + b.seed;
       u.uSeed.value = seedFloat(b.seed) * 0.013;
-      u.uLand.value.set(pal.base); u.uOcean.value.set(pal.accent); u.uHigh.value.set(pal.shadow || pal.base); u.uIce.value.set((pal.extra && pal.extra[0]) || '#eef3f6');
-      u.uCloud.value = ex.cloud == null ? 0.5 : ex.cloud; u.uWater.value = ex.water == null ? 0.5 : ex.water;
+      if (ex.land && ex.ocean) {        // data/looks.js shape
+        u.uLand.value.set(ex.land.low); u.uHigh.value.set(ex.land.high); u.uOcean.value.set(ex.ocean.shallow);
+        u.uDeep.value.set(ex.ocean.deep); u.uIce.value.set(ex.iceCaps ? ex.iceCaps.color : '#eef3f6');
+        u.uCloud.value = ex.clouds ? Math.min(1, ex.clouds.coverage * 1.15) : 0.4; u.uWater.value = ex.seaLevel == null ? 0.5 : ex.seaLevel;
+      } else {
+        u.uLand.value.set(pal.base); u.uOcean.value.set(pal.accent); u.uHigh.value.set(pal.shadow || pal.base); u.uDeep.value.set(pal.accent).multiplyScalar(0.35);
+        u.uIce.value.set((pal.extra && pal.extra[0]) || '#eef3f6');
+        u.uCloud.value = ex.cloud == null ? 0.5 : ex.cloud; u.uWater.value = ex.water == null ? 0.5 : ex.water;
+      }
     }
     u.uRadius.value = R;
     this._place(it, b, R, ctx);
@@ -408,7 +424,7 @@ export class BodyLayer {
   _star(b, ent, em, R, dist, px, ctx) {
     const it = this._item('star', b, () => {
       const mat = new THREE.ShaderMaterial({
-        uniforms: { uTime: this.shared.uTime, uSeed: { value: 0 }, uTemp: { value: 5800 }, uIntensity: { value: 3 }, uCells: { value: 7 }, uSpots: { value: .5 }, uLimbU: { value: .6 }, uStretch: { value: new THREE.Vector4() } },
+        uniforms: { uTime: this.shared.uTime, uSeed: { value: 0 }, uTemp: { value: 5800 }, uIntensity: { value: 3 }, uCells: { value: 7 }, uSpots: { value: .5 }, uLimbU: { value: .6 }, uContrast: { value: .28 }, uStretch: { value: new THREE.Vector4() } },
         vertexShader: sphereVert, fragmentShader: starFrag,
       });
       const mesh = new THREE.Mesh(this.sphereGeo, mat); mesh.frustumCulled = false; this.scene.add(mesh);
@@ -420,25 +436,35 @@ export class BodyLayer {
     const li = L.emission || { temperatureK: isNS ? 28000 : 5800, intensity: isNS ? 6 : 3 };
     // emission strictly from the whitelisted cause on the body (star / stellar-remnant / pulsar-beam)
     const k = em ? Math.max(0.2, Math.min(2, em.intensity == null ? 1 : em.intensity)) : 0;
-    const T = b.temperatureK || li.temperatureK;
+    const T = Math.min(40000, b.temperatureK || li.temperatureK);
+    // Looks carry HDR radiance (star 10, neutron core 40). The disc itself is held just under the bloom threshold so
+    // granulation survives tone mapping; only the corona / halo and neutron cores bloom hard.
+    const surfI = isNS ? Math.min(li.intensity, 12) : 1.25 * Math.pow(Math.max(li.intensity, 0.01) / 10, 0.35);
+    const gr = ex.granulation;
     u.uSeed.value = seedFloat(b.seed) * 0.01;
-    u.uTemp.value = T; u.uIntensity.value = li.intensity * k;
-    u.uCells.value = isNS ? 0 : (ex.cells != null && b.starClass == null ? ex.cells : (STAR_CELLS[b.starClass] || ex.cells || 7));
-    u.uSpots.value = isNS ? 0 : (ex.spots == null ? 0.5 : ex.spots); u.uLimbU.value = ex.limbU == null ? 0.6 : ex.limbU;
+    u.uTemp.value = T; u.uIntensity.value = surfI * k;
+    u.uCells.value = isNS ? 0 : (gr ? Math.max(3, Math.min(gr.cellsPerRadius, px / 5)) : (ex.cells != null && b.starClass == null ? ex.cells : (STAR_CELLS[b.starClass] || ex.cells || 7)));
+    u.uContrast.value = gr ? gr.contrast : 0.28;
+    const sp = ex.spots;
+    u.uSpots.value = isNS ? 0 : (sp && typeof sp === 'object' ? Math.min(1, sp.coverage * 10) : (sp == null ? 0.5 : sp));
+    u.uLimbU.value = ex.limbU == null ? 0.6 : ex.limbU;
     this._place(it, b, R, ctx, true);
     this._stretch(it, b);
     if (k <= 0) return;
 
     // corona / halo billboard (soft scatter sprite, scales with temperature colour)
     blackbodyRGB(T, _rgb); const mx = Math.max(_rgb[0], _rgb[1], _rgb[2], 1e-3);
+    const corona = isNS ? ex.halo : ex.corona;
+    const cSize = corona && typeof corona === 'object' && corona.size ? corona.size : (isNS ? 7 : 1.8);
+    const cInt = corona && typeof corona === 'object' && corona.intensity != null ? corona.intensity : (isNS ? 1.6 : 0.55);
     const minWorld = dist * 16 * (isNS ? 1 : 0.5) / (ctx.proj11 * ctx.H * 0.5);
-    const size = Math.max(R * (isNS ? 6 : 2.6), minWorld);
+    const size = Math.max(R * (isNS ? Math.min(cSize, 7) * 0.85 : cSize * 1.45), minWorld);
     const gi = this.glow.next();
     if (gi >= 0) {
       this.glow.setXYZS(gi, b.p[0], b.p[1], b.p[2], size);
       const g = this.glow.a.aGlow.array, g2 = this.glow.a.aGlow2.array;
       g[gi * 4] = _rgb[0] / mx; g[gi * 4 + 1] = _rgb[1] / mx; g[gi * 4 + 2] = _rgb[2] / mx; g[gi * 4 + 3] = isNS ? 2.4 : 4.5;
-      g2[gi * 3] = (isNS ? 0.9 : 0.3) * Math.min(1.5, k * 0.8 + 0.2) * (ex.corona == null ? 1 : ex.corona);
+      g2[gi * 3] = (isNS ? 0.55 : 0.6) * cInt * Math.min(1.5, k * 0.8 + 0.2);
       g2[gi * 3 + 1] = Math.min(0.6, (R / size) * 0.92);
       g2[gi * 3 + 2] = frac01(b.seed, 1) * 30;
     }
@@ -499,7 +525,10 @@ export class BodyLayer {
     u.uDiscI.value = discOn ? li.intensity * (0.55 + 0.45 * Math.min(1.5, em.intensity == null ? 1 : em.intensity)) * (1 + feeding * 0.8) : 0;
     u.uDiscT.value = li.temperatureK * (1 + feeding * 0.15);
     u.uLens.value = lens;
-    u.uSteps.value = this.quality === 'low' ? 40 : this.quality === 'med' ? 72 : 110;
+    // ray-march cost scales with covered pixels: fewer steps when the quad fills much of the screen
+    const quadPx = 2 * half * ctx.proj11 * ctx.H * 0.5 / dist;
+    const stepScale = Math.max(0.5, Math.min(1, 1100 / Math.max(1, quadPx)));
+    u.uSteps.value = Math.round((this.quality === 'low' ? 40 : this.quality === 'med' ? 72 : 110) * stepScale);
     // jets: only while feeding, only if the whitelist allows the cause
     if (feeding > 0.02 && em && (em.cause === 'jet' || em.cause === 'accretion') && causeAllowed('blackHole', 'jet')) {
       this.emitters.push({ id: b.id, cls: 'blackHole', cause: 'jet', intensity: feeding });
@@ -527,10 +556,24 @@ export class BodyLayer {
 
   _place(it, b, R, ctx, noSpinLights) {
     const m = it.mesh; m.visible = true;
+    const px = R * ctx.proj11 * ctx.H * 0.5 / Math.max(1e-3, ctx.camDistTo(b.p));
+    const hi = this.quality === 'low' ? 1 : 0;
+    m.geometry = this.sphereLod[px > 180 ? hi : px > 50 ? 1 : 2];
     m.position.set(b.p[0], b.p[1], b.p[2]);
     m.scale.setScalar(R);
-    this._spinQuat(b, ctx.time, _q1);
-    m.quaternion.set(_q1[0], _q1[1], _q1[2], _q1[3]);
+    this._poleQuat(b, m.quaternion);
+  }
+  /** Sphere bodies: object +y is the pole, tipped into the play plane (the camera looks down the sim's +y). Spin is about the pole. */
+  _visAxis(b, out) {
+    const a = b.spin && b.spin.axis ? b.spin.axis : [0, 1, 0];
+    return out.set(a[0] * 0.9, a[1] * 0.3, -(1 - 0.3 * Math.abs(a[2]))).normalize();
+  }
+  _poleQuat(b, q) {
+    this._visAxis(b, _v);
+    q.setFromUnitVectors(_v2.set(0, 1, 0), _v);
+    _qq.setFromAxisAngle(_v2.set(0, 1, 0), (b.spin && b.spin.phase) || 0);
+    q.multiply(_qq);
+    return q;
   }
   _stretch(it, b) {
     const s = it.mat.uniforms.uStretch.value;
@@ -553,6 +596,7 @@ export class BodyLayer {
       const frac = Math.min(0.5, Math.max(0.02, sh <= 0.6 ? sh : sh / R));
       const Rs = R * (1 + frac);
       const m = ex.shell; m.visible = true;
+      m.geometry = this.shellLod[px > 120 ? 0 : 1];
       m.position.set(b.p[0], b.p[1], b.p[2]); m.scale.setScalar(Rs);
       const u = m.material.uniforms;
       _v.set(b.p[0], b.p[1], b.p[2]).applyMatrix4(ctx.viewMatrix4);
@@ -567,9 +611,8 @@ export class BodyLayer {
       const rg = b.ring;
       if (ex.ringKey !== rg.inner + ':' + rg.outer) { ex.ringKey = rg.inner + ':' + rg.outer; this._buildRing(ex, rg); }
       m.position.set(b.p[0], b.p[1], b.p[2]); m.scale.setScalar(R);
-      const ax = b.spin && b.spin.axis ? b.spin.axis : [0, 1, 0];
-      _v.set(ax[0], ax[1], ax[2]).normalize();
-      _qq.setFromAxisAngle(_v2.set(1, 0, 0), rg.tilt || 0); _v.applyQuaternion(_qq);
+      this._visAxis(b, _v);
+      _qq.setFromAxisAngle(_v2.set(1, 0, 0), (rg.tilt || 0) * 0.5); _v.applyQuaternion(_qq);
       m.quaternion.setFromUnitVectors(_v2.set(0, 0, 1), _v);
       const u = m.material.uniforms;
       u.uSeed.value = seedFloat(b.seed) * 0.1;
