@@ -11,10 +11,17 @@
     #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
     #ui { position: fixed; inset: 0; }
   </style>
+  <!-- Pinned, vendored Three.js (see vendor/three/VERSION). No CDN, no build step. -->
+  <script type="importmap">
+  { "imports": {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+  } }
+  </script>
 </head>
 <body>
   <canvas id="game"></canvas>
   <div id="ui"></div>
-  <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/boot.js"></script>
 </body>
 </html>
