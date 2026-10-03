@@ -1,10 +1,12 @@
 // Procedural skybox: nebula + dust baked once to a cubemap (cross-faded between stages via two cubes),
 // plus a crisp Points layer of bright stars. Baking is the only expensive step and runs on change only.
 import * as THREE from 'three';
-import { skyBakeVert, skyBakeFrag, skyVert, skyFrag, starsVert, starsFrag } from './glsl/misc.js';
+import { skyBakeVert, skyBakeFrag, skyVert, skyFrag, starsVert, starsFrag, speckVert, speckFrag } from './glsl/misc.js';
 import { blackbodyRGB } from './util.js';
 
 const STARS = 700;
+const SPECKS = 6000;
+const PLANE = [0.3, 0.9, 0.35];
 
 function mulberry(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -35,6 +37,35 @@ export class Sky {
     this.stars = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms: this.starUniforms, vertexShader: starsVert, fragmentShader: starsFrag, transparent: true, depthTest: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.stars.frustumCulled = false; this.stars.renderOrder = -99;
     scene.add(this.stars);
+
+    const sg = new THREE.BufferGeometry();
+    sg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SPECKS * 3), 3));
+    sg.setAttribute('aStar', new THREE.BufferAttribute(new Float32Array(SPECKS * 4), 4));
+    this.speckUniforms = { uSkyGain: this.uniforms.uSkyGain, uPixelRatio: { value: 1 } };
+    this.specks = new THREE.Points(sg, new THREE.ShaderMaterial({ uniforms: this.speckUniforms, vertexShader: speckVert, fragmentShader: speckFrag, transparent: true, depthTest: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.specks.frustumCulled = false; this.specks.renderOrder = -101;
+    scene.add(this.specks);
+  }
+
+  // thousands of dim flat dots, denser toward a galactic plane
+  _fillSpecks(seed) {
+    const r = mulberry((seed * 104729 + 17) | 0);
+    const pos = this.specks.geometry.attributes.position.array, col = this.specks.geometry.attributes.aStar.array;
+    const pl = Math.hypot(...PLANE), nx = PLANE[0] / pl, ny = PLANE[1] / pl, nz = PLANE[2] / pl;
+    for (let i = 0; i < SPECKS; i++) {
+      let x, y, z;
+      for (;;) {
+        z = r() * 2 - 1; const a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z);
+        x = s * Math.cos(a); y = z; z = s * Math.sin(a);
+        const h = x * nx + y * ny + z * nz;
+        if (r() < 0.22 + 0.78 * Math.exp(-(h * 2.8) * (h * 2.8))) break;
+      }
+      pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+      const t = r(), m = r();
+      col[i * 4] = 0.8 + 0.2 * t; col[i * 4 + 1] = 0.9; col[i * 4 + 2] = 1.0 - 0.2 * t;
+      col[i * 4 + 3] = 0.22 + 0.55 * m * m;
+    }
+    for (const k of ['position', 'aStar']) this.specks.geometry.attributes[k].needsUpdate = true;
   }
 
   get texA() { return this.rts[this.cur].texture; }
@@ -80,6 +111,7 @@ export class Sky {
       this.fading = true; this.fade = 0;
     }
     this._fillStars(p.seed, p.density);
+    this._fillSpecks(p.seed);
     this.uniforms.uCubeA.value = this.texA; this.uniforms.uCubeB.value = this.texB;
   }
 
@@ -90,8 +122,8 @@ export class Sky {
       else this.mix = this.fade * this.fade * (3 - 2 * this.fade);
     }
     this.uniforms.uCubeA.value = this.texA; this.uniforms.uCubeB.value = this.texB; this.uniforms.uSkyMix.value = this.mix;
-    this.starUniforms.uViewH.value = viewH; this.starUniforms.uPixelRatio.value = pixelRatio;
+    this.starUniforms.uViewH.value = viewH; this.starUniforms.uPixelRatio.value = pixelRatio; this.speckUniforms.uPixelRatio.value = pixelRatio;
   }
 
-  dispose() { this.rts.forEach((r) => r.dispose()); this.mesh.geometry.dispose(); this.stars.geometry.dispose(); }
+  dispose() { this.rts.forEach((r) => r.dispose()); this.mesh.geometry.dispose(); this.stars.geometry.dispose(); this.specks.geometry.dispose(); }
 }

@@ -156,6 +156,24 @@ void main(){
 }
 `;
 
+// flat 1px speckles: no falloff, no glow
+export const speckVert = /* glsl */ `
+attribute vec4 aStar;
+uniform float uPixelRatio;
+varying vec3 vC;
+void main(){
+  vC = aStar.rgb * aStar.w;
+  vec4 p = projectionMatrix * mat4(mat3(viewMatrix)) * vec4(position, 1.);
+  gl_Position = p.xyww;
+  gl_PointSize = max(1., floor(uPixelRatio + .5));
+}
+`;
+export const speckFrag = /* glsl */ `
+uniform float uSkyGain;
+varying vec3 vC;
+void main(){ gl_FragColor = vec4(vC * uSkyGain, 1.); }
+`;
+
 // ---------------- far-field / sub-pixel dots (impostors) ----------------
 export const dotsVert = /* glsl */ `
 attribute float aSize;     // world radius

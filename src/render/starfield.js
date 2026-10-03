@@ -15,6 +15,7 @@ const MARGIN = 40; // extra coverage so screen shake never reveals tile edges
 // par: scroll speed relative to world motion on screen. zp: zoom exponent.
 const LAYERS = {
   nebula: { T: 640, par: 0.05, zp: 0.04 },
+  speck:  { T: 768, par: 0.06, zp: 0.05 },
   dust:   { T: 448, par: 0.10, zp: 0.08 },
   far:    { T: 512, par: 0.20, zp: 0.12 },
   mid:    { T: 576, par: 0.40, zp: 0.18 },
@@ -45,6 +46,7 @@ const STAR_COLORS = ['#EAF0FF', '#EAF0FF', '#CFE0FF', '#BFD2FF', '#FFE6C7', '#FF
 export function createStarfield() {
   const L = {
     nebula: newLayerState(LAYERS.nebula),
+    speck: newLayerState(LAYERS.speck),
     dust: newLayerState(LAYERS.dust),
     far: newLayerState(LAYERS.far),
     mid: newLayerState(LAYERS.mid),
@@ -93,6 +95,25 @@ export function createStarfield() {
       else drawStar(sg, x, y, size, color, alpha, glow);
     }
     return { c: staticC, twinkle: twin.map((t) => t[0]) };
+  }
+
+  // thousands of dim flat 1px dots, denser along a diagonal band (galactic-plane look); no glow
+  function bakeSpecks(T, seed) {
+    const c = makeCanvas(Math.ceil(T * res), Math.ceil(T * res));
+    const g = c.getContext('2d');
+    g.scale(res, res);
+    const rng = mulberry32(seed);
+    const cols = ['#EAF0FF', '#CFE0FF', '#FFE6C7', '#DDE6FF'];
+    const n = 3200, px = 1 / res > 1 ? 1 / res : 1;
+    for (let i = 0; i < n; i++) {
+      const x = rng() * T, y = rng() * T;
+      const d = ((x - y) / T) * 2 - Math.round(((x - y) / T) * 2); // wraps seamlessly across the tile
+      if (rng() > 0.3 + 0.7 * Math.exp(-d * d * 18)) continue;
+      g.globalAlpha = 0.12 + 0.35 * rng() * rng();
+      g.fillStyle = cols[(rng() * cols.length) | 0];
+      g.fillRect(Math.floor(x), Math.floor(y), px, px);
+    }
+    return c;
   }
 
   function bakeDust(T, seed) {
@@ -155,6 +176,7 @@ export function createStarfield() {
   function ensureTiles() {
     if (tiles) return;
     tiles = {
+      speck: bakeSpecks(LAYERS.speck.T, 51),
       dust: bakeDust(LAYERS.dust.T, 11),
       far: bakeStarTile(LAYERS.far.T, 260, [0.5, 1.1], 0, 21, 0),
       mid: bakeStarTile(LAYERS.mid.T, 120, [0.8, 2.1], 0, 31, 6),
@@ -227,6 +249,9 @@ export function createStarfield() {
         ctx.globalAlpha = 0.22 * fade.t;
         drawTiles(ctx, nebulaFor(fade.to), L.nebula, w, h);
       }
+
+      ctx.globalAlpha = 1;
+      drawTiles(ctx, tiles.speck, L.speck, w, h);
 
       // two crisp star layers with subtle parallax
       const sd = clamp(dens('stars'), 0.6, 1);
