@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vesper Drift — UI demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #050812; overflow: hidden; }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #ui { position: fixed; inset: 0; }
+  /* Demo-only control drawer (not part of the UI layer) */
+  #demo { position: fixed; right: 8px; bottom: 8px; z-index: 100; font: 12px/1.3 system-ui, sans-serif; color: #e6f6ff; max-width: min(560px, calc(100vw - 16px)); }
+  #demo summary { cursor: pointer; list-style: none; text-align: right; }
+  #demo summary span { display: inline-block; padding: 5px 10px; background: #0a1424; border: 1px solid #2a5a74; letter-spacing: .12em; }
+  #demo[open] summary span { border-color: #5ce1ff; }
+  #demo .grid { margin-top: 6px; padding: 8px; background: rgba(5, 10, 20, .94); border: 1px solid #2a5a74; display: flex; flex-wrap: wrap; gap: 4px; max-height: 60vh; overflow: auto; }
+  #demo h3 { flex-basis: 100%; margin: 6px 0 0; font: 600 10px system-ui; letter-spacing: .16em; color: #86a3bf; text-transform: uppercase; }
+  #demo button { background: #0d1c30; color: #e6f6ff; border: 1px solid #24435a; padding: 4px 8px; cursor: pointer; font: inherit; }
+  #demo button:hover { border-color: #5ce1ff; }
+  #demo pre { flex-basis: 100%; margin: 6px 0 0; max-height: 90px; overflow: auto; font: 10.5px ui-monospace, Consolas, monospace; color: #86a3bf; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<canvas id="game" aria-hidden="true"></canvas>
+<div id="ui"></div>
+<details id="demo">
+  <summary><span>DEMO CONTROLS</span></summary>
+  <div class="grid" role="group" aria-label="Demo controls">
+    <h3>Flow</h3>
+    <button data-a="title">Title</button>
+    <button data-a="play">Play</button>
+    <button data-a="pause">Sim pause</button>
+    <button data-a="down">Stage −1</button>
+    <button data-a="up">Stage +1 (evolve)</button>
+    <button data-a="mass">+Mass</button>
+    <button data-a="choice">Choice (3 + hold)</button>
+    <h3>Events</h3>
+    <button data-a="absorb">Absorb</button>
+    <button data-a="hit">Hit</button>
+    <button data-a="near">Near miss</button>
+    <button data-a="orbit">Orbit on/off</button>
+    <button data-a="sling">Slingshot</button>
+    <button data-a="roche">Roche (player)</button>
+    <button data-a="atmo">Atmosphere on/off</button>
+    <button data-a="all">Fire every event</button>
+    <h3>Boundary replacement</h3>
+    <button data-a="void">Void on/off</button>
+    <button data-a="ping">Beacon ping</button>
+    <button data-a="capture">Capture ramp</button>
+    <button data-a="clear">Capture clear</button>
+    <button data-a="lowhp">Hull low</button>
+    <h3>Endings</h3>
+    <button data-a="end-death">Death</button>
+    <button data-a="end-eh">Event Horizon</button>
+    <button data-a="end-finale">Finale</button>
+    <h3>Compat</h3>
+    <button data-a="legacy">Toggle legacy 2D state</button>
+    <button data-a="noview">Toggle view.project</button>
+    <button data-a="nocap">Toggle capture handler</button>
+    <pre id="log" aria-live="off"></pre>
+  </div>
+</details>
+
+<script type="module">
+import * as UI from './index.js';
+import { createMockBus, makeMockState, makeMockEvents, createMockWorld, toLegacy, minMassOf, stageIdOf } from './demo-fixtures.js';
+
+const logEl = document.getElementById('log');
+const log = (...a) => { logEl.textContent = (a.join(' ') + '\n' + logEl.textContent).slice(0, 1600); };
+
+const bus = createMockBus();
+const world = createMockWorld();
+let state = makeMockState(0);
+let legacy = false, useView = true, captureHandler = true;
+let ripples = [];
+
+function initUI() {
+  UI.init({
+    root: document.getElementById('ui'),
+    onUiSound: (n) => log('sound', n),
+    onSettings: (s) => log('settings', JSON.stringify(s)),
+    onPause: (p) => { state.status = p ? 'paused' : 'playing'; log('onPause', p); },
+    onAction: captureHandler ? (a) => { log('action', a); bus.emit('orbit-acquired', { hostId: 109, hostCls: 'gasGiant', period: 18.2, p: [0, 0, 0] }); state.hud.orbit = { hostId: 109, hostCls: 'gasGiant', period: 18.2, altitude: 420 }; } : undefined,
+  });
+  UI.attach(bus);
+}
+initUI();
+
+const STAGE_N = 12;
+function setStage(i, evolve) {
+  i = Math.max(0, Math.min(STAGE_N - 1, i));
+  const from = state.stageIndex;
+  state.stageIndex = i;
+  state.stageId = stageIdOf(i);
+  state.mass = minMassOf(i) + 1;
+  state.progress = 0;
+  if (evolve) bus.emit('evolve', { fromId: stageIdOf(from), toId: state.stageId, fromIndex: from, toIndex: i, mass: state.mass });
+}
+function showTitle() {
+  state = makeMockState(state.stageIndex);
+  state.status = 'title';
+  UI.showTitle(start, { seed: state.seed });
+}
+function start() {
+  state.status = 'playing';
+  bus.emit('run-start', { seed: state.seed, genVersion: 1, stageId: state.stageId });
+  bus.emit('status', { status: 'playing', prev: 'title' });
+}
+function ending(kind) {
+  const E = {
+    death: { id: 'stellar_fragment', title: 'Stellar Fragment', text: 'A greater body swallowed you whole. You scatter into endless stellar fragments, drifting until something else gathers them.' },
+    eventHorizon: { id: 'event_horizon', title: 'Event Horizon', text: 'A larger black hole held you past the point of return. Beyond the horizon, time stops, and you become eternal.' },
+    finale: { id: 'creator_god', title: 'Creator God', text: 'You committed to every transformation and ended in a blaze of creation.' },
+  };
+  if (kind === 'death') { state.deathCause = 'collision'; bus.emit('death', { cause: 'collision', killerId: 102, killerCls: 'gasGiant', p: [0, 0, 0] }); }
+  if (kind === 'eventHorizon') { state.deathCause = 'captured'; bus.emit('death', { cause: 'captured', killerId: 111, killerCls: 'blackHole', p: [0, 0, 0] }); }
+  state.status = 'ended';
+  state.stats = { absorbed: 214, hits: 6, elapsed: state.time, maxMass: state.mass * 1.3, nearMisses: 31, disruptions: 4 };
+  bus.emit('ending', { kind, ending: E[kind] });
+  UI.showEnd({ ...E[kind], kind }, () => { delete state.deathCause; showTitle(); });
+}
+
+let capTimer = 0;
+const actions = {
+  title: showTitle,
+  play: () => { UI.hide(); start(); },
+  pause: () => { if (state.status === 'playing') { state.status = 'paused'; bus.emit('status', { status: 'paused', prev: 'playing' }); } },
+  up: () => setStage(state.stageIndex + 1, true),
+  down: () => setStage(state.stageIndex - 1, false),
+  mass: () => { state.mass *= 1.15; state.progress = Math.min(1, state.progress + 0.12); bus.emit('absorb', { bodyId: 1, cls: 'asteroid', mass: 4, gained: state.mass * 0.13, ratio: 0.3, relSpeed: 20, p: [0, 0, 0], dir: [0, 0, 1], chain: 1, tde: false }); },
+  choice: () => {
+    state.status = 'choice';
+    const choices = [
+      { id: 'frozen_fortress', label: 'Frozen Fortress', description: 'Harden into an icy bulwark. Much tougher, a little slower.' },
+      { id: 'cradle_of_life_seed', label: 'Cradle of Life', description: 'Gentle, fertile orbits draw matter in. Absorb more from everything you eat.' },
+      { id: 'war_planet', label: 'War Planet', description: 'A scarred, aggressive world. Faster and bolder.' },
+      { id: 'abandon_evolution', label: 'Abandon Evolution', description: 'Refuse the change and stay as you are.' },
+    ];
+    bus.emit('choice-open', { stageIndex: state.stageIndex, choices });
+    UI.showChoice(choices, (id) => { log('picked', id); bus.emit('choice-picked', { stageIndex: state.stageIndex, choiceId: id }); state.status = 'playing'; setStage(state.stageIndex + 1, true); });
+  },
+  absorb: () => bus.emit('absorb', { bodyId: 101, cls: 'comet', mass: 3, gained: 2.7, ratio: 0.2, relSpeed: 30, p: [0, 0, 0], dir: [0, 0, 1], chain: 1 + ((Math.random() * 4) | 0), tde: false }),
+  hit: () => { state.health = Math.max(0.05, state.health - 0.2); bus.emit('hit', { bodyId: 102, cls: 'rockyPlanet', damage: 0.2, strength: 0.7, relSpeed: 90, p: [0, 0, 0], normal: [1, 0, 0], health: state.health, lethal: false }); },
+  near: () => bus.emit('near-miss', { bodyId: 107, cls: 'gasGiant', rel: 'threat', gap: 34, relSpeed: 200, p: [0, 0, 0] }),
+  orbit: () => {
+    if (state.hud.orbit) { state.hud.orbit = null; bus.emit('orbit-lost', { hostId: 109 }); }
+    else { state.hud.orbit = { hostId: 109, hostCls: 'star', period: 42.5, altitude: 1260 }; bus.emit('orbit-acquired', { hostId: 109, hostCls: 'star', period: 42.5, p: [0, 0, 0] }); }
+  },
+  sling: () => bus.emit('slingshot', { hostId: 110, speedGain: 64, p: [0, 0, 0] }),
+  roche: () => bus.emit('roche-disruption', { phase: 'start', bodyId: 1, cls: 'blackHole', mass: 1e6, victim: 'player', p: [0, 0, 0], fragments: 0 }),
+  atmo: () => { state.hud.inAtmosphere = !state.hud.inAtmosphere; state.hud.atmosphereDensity = 0.42; },
+  all: () => { for (const e of makeMockEvents(state)) bus.emit(e.type, e.payload); },
+  void: () => {
+    const r = state.hud.region;
+    r.inVoid = !r.inVoid;
+    r.density = r.inVoid ? 0.04 : 0.6;
+    r.nearestMatter = r.inVoid ? { dist: 4200, bearing: 0.9 } : null;
+    bus.emit('region-change', { inVoid: r.inVoid, density: r.density });
+  },
+  ping: () => { const nm = state.hud.region.nearestMatter || { dist: 4200, bearing: 0.9 }; bus.emit('beacon-ping', { dist: nm.dist, bearing: nm.bearing }); },
+  capture: () => {
+    clearInterval(capTimer);
+    let lvl = 0, nextMark = 0.25;
+    state.hud.capture = { level: 0, hostId: 111 };
+    capTimer = setInterval(() => {
+      lvl = Math.min(0.95, lvl + 0.01);
+      state.hud.capture.level = lvl;
+      if (lvl >= nextMark) { bus.emit('capture-warning', { bodyId: 111, level: nextMark, p: [800, 0, -300] }); nextMark += 0.25; }
+      if (lvl >= 0.95) clearInterval(capTimer);
+    }, 60);
+  },
+  clear: () => { clearInterval(capTimer); state.hud.capture = null; bus.emit('capture-clear', { bodyId: 111 }); },
+  lowhp: () => { state.health = 0.22; bus.emit('health-low', { health: 0.22 }); },
+  'end-death': () => ending('death'),
+  'end-eh': () => ending('eventHorizon'),
+  'end-finale': () => ending('finale'),
+  legacy: () => { legacy = !legacy; UI.warnBoundary(legacy); log('legacy 2D state', legacy, '(edge warning on)'); },
+  noview: () => { useView = !useView; log('view.project', useView); },
+  nocap: () => { captureHandler = !captureHandler; UI.dispose(); initUI(); log('capture handler', captureHandler); if (state.status === 'title') UI.showTitle(start, { seed: state.seed }); },
+};
+document.getElementById('demo').addEventListener('click', (e) => {
+  const a = e.target.closest('button')?.dataset.a;
+  if (a && actions[a]) actions[a]();
+});
+
+// Fake "renderer": starfield + bodies on the x-z plane. Clicks on the canvas draw a ripple, which proves
+// the UI layer lets pointer events through everywhere except its interactive elements.
+const cv = document.getElementById('game');
+const g = cv.getContext('2d');
+cv.addEventListener('pointerdown', (e) => { ripples.push({ x: e.clientX, y: e.clientY, t: 0 }); log('canvas pointerdown', e.clientX, e.clientY); });
+const stars = Array.from({ length: 220 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + 0.2, p: Math.random() * 6 }));
+const REL = { prey: '#5ff0c0', neutral: '#7fd6ff', threat: '#ff5e73' };
+const SCALE = 0.32;
+
+let last = performance.now();
+function frame(t) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (t - last) / 1000);
+  last = t;
+  const w = innerWidth, h = innerHeight;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const grad = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.75);
+  grad.addColorStop(0, '#0d2036'); grad.addColorStop(1, '#03060d');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  for (const s of stars) {
+    g.globalAlpha = 0.35 + 0.35 * Math.sin(t / 1100 + s.p);
+    g.fillStyle = '#dff4ff';
+    g.beginPath(); g.arc(s.x * w, s.y * h, s.r, 0, 6.283); g.fill();
+  }
+  g.globalAlpha = 1;
+
+  if (state.status === 'playing') {
+    state.time += dt;
+    state.stats.elapsed = state.time;
+  }
+  const bodies = world.step(state.status === 'paused' || state.status === 'ended' ? 0 : dt * (state.status === 'choice' ? 0.15 : 1), state);
+  const view = world.makeView(w, h, SCALE);
+  for (const b of bodies) {
+    const pr = view.project(b.p);
+    const rel = b.ratio >= 1.2 ? 'threat' : b.ratio <= 1 / 1.2 ? 'prey' : 'neutral';
+    const r = Math.max(3, 9 * Math.sqrt(b.ratio));
+    g.fillStyle = '#6a7a8c';
+    g.beginPath(); g.arc(pr.x, pr.y, r, 0, 6.283); g.fill();
+    g.strokeStyle = REL[rel]; g.lineWidth = rel === 'threat' ? 2 : 1;
+    g.beginPath(); g.arc(pr.x, pr.y, r + 2, 0, 6.283); g.stroke();
+  }
+  // player
+  g.fillStyle = '#9fb2c6';
+  g.beginPath(); g.arc(w / 2, h / 2, 14, 0, 6.283); g.fill();
+  g.strokeStyle = '#e6f6ff'; g.lineWidth = 1.5; g.stroke();
+  // ripples
+  ripples = ripples.filter((r) => (r.t += dt) < 0.6);
+  for (const r of ripples) { g.strokeStyle = `rgba(92,225,255,${1 - r.t / 0.6})`; g.beginPath(); g.arc(r.x, r.y, 6 + r.t * 60, 0, 6.283); g.stroke(); }
+
+  UI.update(legacy ? toLegacy(state) : state, useView ? view : undefined);
+}
+showTitle();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

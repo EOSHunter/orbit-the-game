@@ -22,6 +22,7 @@ export function createState() {
     progress: 0,        // 0..1 toward the next stage
     edge: 0,            // 0..1 how deep into the boundary warning zone the player is
     stats: { absorbed: 0, hits: 0, elapsed: 0, maxMass: CONFIG.startMass },
+    chaseRest: 0,       // seconds before a new chase may start (breather after a chaser gives up)
   };
 }
 
@@ -30,9 +31,11 @@ export function createPlayer(mass, stageIndex) {
   return p;
 }
 
-export function targetBoundsRadius(stages, stageIndex) {
-  const minMass = Math.max(CONFIG.startMass, Number(stages[stageIndex]?.minMass) || 0);
-  return CONFIG.boundary.radiiAtStage * radiusFromMass(minMass);
+// Arena radius: radiiAtStage player radii, measured at the larger of the stage's minMass and the player's
+// current mass, so the arena keeps pace with growth inside a stage (stage 0 alone spans several x in mass).
+export function targetBoundsRadius(stages, stageIndex, mass = 0) {
+  const m = Math.max(CONFIG.startMass, Number(stages[stageIndex]?.minMass) || 0, mass);
+  return CONFIG.boundary.radiiAtStage * radiusFromMass(m);
 }
 
 // ---- spawn mix ------------------------------------------------------------------------------
@@ -157,6 +160,9 @@ export function updateWorld(state, dt, ctx) {
   const despawnD = viewRadius(ctx.camera) * CONFIG.world.despawn;
   const canChase = ctx.chase !== false && c.enabled && p.alive;
   const chasers = [];
+  let active = 0;
+  for (let i = 0; i < bodies.length; i++) if (bodies[i].chasing) active++;
+  if (state.chaseRest > 0) state.chaseRest -= dt;
 
   for (let i = 0; i < bodies.length; i++) {
     const b = bodies[i];
@@ -167,11 +173,20 @@ export function updateWorld(state, dt, ctx) {
     const dy = p.y - b.y;
     const d = Math.hypot(dx, dy);
 
+    const wasChasing = b.chasing;
     if (b.chaser && canChase && b.kind === 'threat' && state.stageIndex >= c.minStage && b.mass >= p.mass * c.massRatioCutoff) {
-      if (d < detect) { b.chasing = true; b.giveUp = 0; }
-      else if (b.chasing && (b.giveUp += dt) > c.giveUpDelay) b.chasing = false;
+      if (d < detect) {
+        if (b.chasing || (active < c.maxChasers && !(state.chaseRest > 0))) { b.chasing = true; b.giveUp = 0; }
+      } else if (b.chasing && (b.giveUp += dt) > c.giveUpDelay) b.chasing = false;
+      // Stamina: a body that has hunted long enough gives up for good.
+      if (b.chasing && (b.chaseT = (b.chaseT || 0) + dt) > c.maxChaseTime) { b.chasing = false; b.chaser = false; }
     } else {
       b.chasing = false;
+    }
+    if (b.chasing !== wasChasing) {
+      active += b.chasing ? 1 : -1;
+      // A chaser that tired or was outrun buys the player a breather before the next one starts.
+      if (!b.chasing && canChase && b.alive) state.chaseRest = c.respite;
     }
 
     if (b.chasing) {
