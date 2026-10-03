@@ -26,6 +26,8 @@ export function createInput(canvas, getView, getPlayerPos) {
   canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onUp);
 
   return {
+    /** Forget held keys and the pointer (run teardown). */
+    reset() { keys.clear(); ptr = null; },
     poll() {
       let x = 0, z = 0;
       if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1;

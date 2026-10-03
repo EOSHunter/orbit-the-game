@@ -94,6 +94,7 @@ export class Vfx {
     const on = (t, f) => bus.on(t, f);
     this.offs = [
       on('run-start', () => this.reset()),
+      on('status', (e) => { if (e.status === 'title') this.reset(); }),
       on('rebase', (e) => this.rebase(e.shift)),
       on('absorb', (e) => this.absorb(e)),
       on('hit', (e) => this.hit(e)),

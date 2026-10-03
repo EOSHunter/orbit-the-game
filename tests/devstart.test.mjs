@@ -77,4 +77,28 @@ test('normal restart is unchanged by a prior dev start', () => {
   assert.equal(s.stageId, 'meteorite'); assert.equal(s.flags.choiceCount, 0);
 });
 
+test('quitToTitle fully resets a run; start and dev start work again afterwards', () => {
+  const sim = fresh(); sim.startAt({ stage: 'dwarf_star', forms: ['lava', 'red_dwarf'] });
+  run(sim, 0.5);
+  sim.setPaused(true);
+  const log = recorder(sim);
+  sim.quitToTitle();
+  const s = sim.getState();
+  assert.equal(s.status, 'title'); assert.equal(s.stageId, 'meteorite'); assert.equal(s.mass, 1);
+  assert.equal(s.flags.choiceCount, 0); assert.equal(s.flags.planetType, null); assert.equal(s.stats.elapsed, 0); assert.equal(s.time, 0);
+  assert.equal(s.health, 1); assert.equal(s.player.variant, 'stony'); assert.equal(s.player.thrust[0], 0);
+  assert.deepEqual(log.filter((e) => e.type === 'status').map((e) => e.payload.status), ['title']);
+  run(sim, 0.5);                               // the title world idles without errors
+  sim.start();
+  assert.equal(sim.getState().status, 'playing');
+  run(sim, 0.5);
+  sim.quitToTitle(); sim.quitToTitle();        // idempotent
+  assert.equal(sim.startAt({ stage: 'rocky_planet', forms: ['metallic'] }), true);
+  assert.equal(sim.getState().flags.planetType, 'metallic'); assert.equal(sim.getState().status, 'playing');
+  // identical to a never-quit sim with the same seed
+  const ref = fresh(); ref.startAt({ stage: 'rocky_planet', forms: ['metallic'] });
+  assert.equal(sim.getState().player.mass, ref.getState().player.mass);
+  assert.equal(sim.getState().bodies.length > 0, true);
+});
+
 done('devstart');

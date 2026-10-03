@@ -355,6 +355,36 @@ await check('dev start: ?stage=&form= boots straight into that stage and form; b
   await shot('dev-neutron');
 });
 
+await check('quit to menu: pause screen (confirm) and game-over screen return to a clean title; new run and dev start work after', async () => {
+  const titleClean = `${S}.status === 'title' && ${OV('vd-overlay--title')} && !document.querySelector('.vd-hud.is-on') && !document.querySelector('.vd-overlay.is-on:not(.vd-overlay--title)')`;
+  // pause screen: first press arms, second confirms; no URL dev params remain
+  await key('Escape', 'Escape', 27);
+  await waitFor(`${S}.status === 'paused' && ${OV('vd-overlay--dim')}`, 3000, 'paused');
+  await click('.vd-systems .vd-btn--ghost');
+  assert((await js(`return ${S}.status;`)) === 'paused', 'quit must ask for confirmation');
+  await click('.vd-systems .vd-btn--ghost');
+  await waitFor(titleClean, 3000, 'clean title after quit from pause');
+  const r = await js(`const s = ${S}; return { stage: s.stageId, mass: s.mass, cursor: document.getElementById('game').style.cursor, q: location.search, flags: s.flags.choiceCount };`);
+  assert(r.stage === 'meteorite' && r.mass === 1 && r.cursor !== 'none' && !/stage=|form=/.test(r.q) && r.flags === 0, JSON.stringify(r));
+  // normal start works again
+  await click('.vd-overlay--title .vd-btn--primary');
+  await waitFor(`${S}.status === 'playing' && document.querySelector('.vd-hud.is-on')`, 3000, 'playing again');
+  assert((await js(`return document.getElementById('game').style.cursor;`)) === 'none', 'cursor should hide again in play');
+  // game over screen -> Main menu (key M)
+  await js(`const s = ${S}, p = s.player, rb = p.radius * Math.sqrt(8);
+    ${SPAWN("{ cls: 'rockyPlanet', mass: p.mass * 8, p: [p.p[0] + (p.radius + rb) * 0.75, 0, p.p[2]], v: [p.v[0], 0, p.v[2]] }")}`);
+  try { await waitFor(`${S}.status === 'ended' && ${OV('vd-overlay--end')}`, 8000, 'end screen'); } finally { await js(CLEANUP); }
+  await sleep(300);
+  await key('m', 'KeyM', 77, 'm');
+  await waitFor(titleClean, 3000, 'clean title after quit from game over');
+  // dev start from the title after quitting
+  await key('`', 'Backquote', 192, '`');
+  await waitFor(`document.querySelector('.vd-overlay.is-on .vd-dev')`, 3000, 'dev menu from title');
+  await click('.vd-dev-stages .vd-seg-btn:nth-child(5)');
+  await click('.vd-dev .vd-btn--primary');
+  await waitFor(`${S}.status === 'playing' && ${S}.stageId === 'gas_giant'`, 3000, 'dev start after quit');
+});
+
 await check('no console errors, warnings, exceptions or failed requests (3D)', async () => {
   assert(problems.length === 0, problems.join('\n     '));
 });

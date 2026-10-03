@@ -98,6 +98,7 @@ export function createUI(root, opts = {}) {
   let prevStatus = null;
   let lastTick = performance.now();
   let pauseCb = typeof opts.onPause === 'function' ? opts.onPause : null;
+  const quitCb = typeof opts.onQuit === 'function' ? opts.onQuit : null;   // host resets the run and re-shows the title
   let paused = false;          // UI-side pause (systems panel opened in play)
   let activeOverlay = null;
   let returnFocus = null;
@@ -195,6 +196,8 @@ export function createUI(root, opts = {}) {
   menuTitles.append(menuKicker, menuHead);
   menuTop.append(menuTitles, menuClose);
   const resumeBtn = btn('vd-btn--primary', 'Resume');
+  const quitBtn = btn('vd-btn--ghost', 'Main menu', { 'aria-keyshortcuts': 'M' });
+  const quitLabel = quitBtn.querySelector('.vd-btn-label');
   const form = el('div', 'vd-settings');
   const ctrls = {};
   const group = (title) => { const g = el('fieldset', 'vd-set-group'); g.appendChild(el('legend', 'vd-label', title)); form.appendChild(g); return g; };
@@ -244,10 +247,24 @@ export function createUI(root, opts = {}) {
     ctrls[k] = b;
   }
   const menuBtns = el('div', 'vd-menu');
-  menuBtns.append(resumeBtn);
+  menuBtns.append(resumeBtn, quitBtn);
   menuPanel.append(menuTop, menuBtns, form);
   menuOv.appendChild(menuPanel);
   resumeBtn.addEventListener('click', () => closeMenu());
+  // Quitting a live run asks twice (second press, or M again, confirms). From the title's Settings the button is hidden.
+  let quitArmed = false;
+  function syncQuit(visible) {
+    quitArmed = false;
+    quitBtn.hidden = !visible || !quitCb;
+    quitLabel.textContent = 'Main menu';
+  }
+  syncQuit(false);
+  function pressQuit() {
+    if (quitBtn.hidden) return;
+    if (!quitArmed) { quitArmed = true; quitLabel.textContent = 'Confirm: abandon run'; sound('ui.click'); return; }
+    quitToMenu();
+  }
+  quitBtn.addEventListener('click', pressQuit);
   menuClose.addEventListener('click', () => closeMenu());
 
   // ---------- Ending ----------
@@ -266,7 +283,10 @@ export function createUI(root, opts = {}) {
     stats.appendChild(s);
   }
   const restartBtn = btn('vd-btn--primary', 'Drift again');
-  endStack.append(endKicker, endTitle, endText, stats, restartBtn);
+  const endMenuBtn = btn('vd-btn--ghost', 'Main menu', { 'aria-keyshortcuts': 'M' });
+  const endBtns = el('div', 'vd-menu');
+  endBtns.append(restartBtn, endMenuBtn);
+  endStack.append(endKicker, endTitle, endText, stats, endBtns);
   endOv.appendChild(endStack);
 
   // ---------- Developer start (debug only; the host opts in with setDevMenu) ----------
@@ -423,6 +443,7 @@ export function createUI(root, opts = {}) {
     menuHead.textContent = menuFromTitle ? 'Settings' : 'Paused';
     menuKicker.textContent = menuFromTitle ? 'SYSTEMS // CONFIG' : 'SYSTEMS // DRIFT SUSPENDED';
     resumeBtn.querySelector('.vd-btn-label').textContent = menuFromTitle ? 'Back' : 'Resume';
+    syncQuit(!menuFromTitle);
     if (!menuFromTitle && !paused) {
       paused = true;
       if (pauseCb) pauseCb(true);
@@ -456,6 +477,7 @@ export function createUI(root, opts = {}) {
       menuHead.textContent = 'Paused';
       menuKicker.textContent = 'SYSTEMS // DRIFT SUSPENDED';
       resumeBtn.querySelector('.vd-btn-label').textContent = 'Resume';
+      syncQuit(true);
       openOverlay(menuOv, resumeBtn);
       announce('Paused.');
       if (!fromCaller && pauseCb) pauseCb(true);
@@ -500,6 +522,7 @@ export function createUI(root, opts = {}) {
       menuHead.textContent = 'Paused';
       menuKicker.textContent = 'SYSTEMS // DRIFT SUSPENDED';
       resumeBtn.querySelector('.vd-btn-label').textContent = 'Resume';
+      syncQuit(true);
       openOverlay(menuOv, resumeBtn);
     } else if (prevStatus === 'paused' && status === 'playing' && paused) {
       paused = false;
@@ -510,12 +533,22 @@ export function createUI(root, opts = {}) {
     if (hudOn) hud.update(state, view, dt, now);
   }
 
+  // Back to the title from a pause or end screen: drop every overlay and HUD residue, then let the host reset the run.
+  function quitToMenu() {
+    sound('ui.back');
+    paused = false; choiceHandler = null; quitArmed = false;
+    for (const o of [menuOv, endOv, choiceOv, devOv]) closeOverlay(o, true);
+    hud.reset();
+    if (quitCb) quitCb();
+  }
+
   // ---------- Screens ----------
   function showTitle(onStart, o) {
     paused = false;
     hud.clearPending();
     choiceHandler = null;
-    closeOverlay(menuOv, true); closeOverlay(endOv, true); closeOverlay(choiceOv, true);
+    closeOverlay(menuOv, true); closeOverlay(endOv, true); closeOverlay(choiceOv, true); closeOverlay(devOv, true);
+    hud.reset();
     hud.el.classList.remove('is-on');
     const seed = (o && o.seed) || (last && last.seed);
     titleSeed.textContent = seed ? `SEED ${seed}` : '';
@@ -559,6 +592,8 @@ export function createUI(root, opts = {}) {
       if (typeof onRestart === 'function') onRestart();
     };
   }
+
+  endMenuBtn.addEventListener('click', quitToMenu);
 
   function showChoice(choices, onPick, opts = {}) {
     choices = (choices || []).slice(0, 4);
@@ -683,6 +718,10 @@ export function createUI(root, opts = {}) {
       e.preventDefault();
       if (devOv.classList.contains('is-on')) closeDev(); else openDev();
       return;
+    }
+    if (e.code === 'KeyM' && !e.repeat) {
+      if (menuOv.classList.contains('is-on') && !quitBtn.hidden) { e.preventDefault(); pressQuit(); return; }
+      if (endOv.classList.contains('is-on')) { e.preventDefault(); quitToMenu(); return; }
     }
     if (e.key === 'Escape') {
       if (devOv.classList.contains('is-on')) { e.preventDefault(); closeDev(); return; }
