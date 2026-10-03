@@ -1,0 +1,73 @@
+{
+ "creator_sims": {
+  "mean": 0.8877209303361042,
+  "min": 0.6437416076660156
+ },
+ "tts_vs_creator_sims": [
+  0.5775702595710754,
+  0.5366348624229431,
+  0.5139805674552917,
+  0.5309799313545227,
+  0.5231825113296509
+ ],
+ "samples": {
+  "creator": [
+   [
+    1,
+    4.24,
+    10.98,
+    "okay welcome to r7 orbit I'm not gonna explain what this is in short I wanted"
+   ],
+   [
+    1,
+    830.92,
+    836.87,
+    "Merge it. Ay yi yi."
+   ],
+   [
+    9,
+    729.14,
+    732.2,
+    "uh... there's no need for me to record this entire"
+   ]
+  ],
+  "agent_tts": [
+   [
+    8,
+    474.54,
+    477.44,
+    "This is how I will read answers to you."
+   ],
+   [
+    8,
+    485.64,
+    487.54,
+    "This is how I will read answers to you."
+   ],
+   [
+    9,
+    137.33,
+    138.75,
+    "Atlus needs you."
+   ],
+   [
+    9,
+    621.46,
+    621.94,
+    "This is done."
+   ],
+   [
+    10,
+    117.81,
+    118.71,
+    "Polaris is done."
+   ],
+   [
+    11,
+    170.1,
+    171.2,
+    "Rigel is done"
+   ]
+  ]
+ }
+}

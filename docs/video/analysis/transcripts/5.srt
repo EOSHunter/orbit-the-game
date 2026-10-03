@@ -1,0 +1,100 @@
+1
+00:00:00,690 --> 00:00:08,150
+[creator] Okay, so update the integrate and play test agent finished
+
+2
+00:00:10,170 --> 00:00:14,690
+[creator] It had issues actually merging though, so I had to get those fixed
+
+3
+00:00:17,150 --> 00:00:21,530
+[creator] So just had to run something in terminal so now I'm just waiting on it to
+
+4
+00:00:22,610 --> 00:00:32,990
+[creator] There we go. I'm just gonna say I'm waiting on it to be able to merge so we got that merge now perfect
+
+5
+00:00:36,830 --> 00:00:55,480
+[creator] and everything. Is the game ready to be played? And if so, can you open it in the browser?
+
+6
+00:01:00,130 --> 00:01:10,020
+[creator] Right here, I typed this in the wrong chat. All right, so this is Vesper Drift.
+
+7
+00:01:14,610 --> 00:01:31,410
+[creator] From a glowing pebble into a black hole, absorb what is smaller, avoid what is larger. Okay,
+
+8
+00:01:31,410 --> 00:01:38,120
+[creator] so it doesn't seem like it's a, I don't know, I was hoping for better. I'm also not hearing
+
+9
+00:01:38,120 --> 00:01:48,640
+[creator] any sound effects so definitely gonna need to add those so it's not perfectly
+
+10
+00:01:48,640 --> 00:01:57,600
+[creator] like drifter star just fine you also like full eye so fast but it does look
+
+11
+00:01:57,600 --> 00:02:06,940
+[creator] nice at least it's very similar I would like it to look better though definitely
+
+12
+00:02:07,720 --> 00:02:13,080
+[creator] need sound effects that's for sure like I should be able to chip away at the
+
+13
+00:02:13,080 --> 00:02:26,180
+[creator] that are larger and break them apart leaving the okay so it's not infinite
+
+14
+00:02:31,260 --> 00:02:48,460
+[creator] i've evolved into an asteroid nice okay it's pretty cool still a dwarf planet so got some
+
+15
+00:02:49,400 --> 00:03:02,290
+[creator] got some growing to do it's also there's a little bit of gravity i feel like there should be more
+
+16
+00:03:02,290 --> 00:03:09,970
+[creator] though like when i'm a lot larger than these other pieces they should be getting pulled in
+
+17
+00:03:09,990 --> 00:03:16,490
+[creator] but doesn't seem like that's really the case overall it's not
+
+18
+00:03:16,490 --> 00:03:22,740
+[creator] awful I mean I don't know what's up with the fire
+
+19
+00:03:23,640 --> 00:03:26,140
+[creator] like that's there should not be fire
+
+20
+00:03:27,680 --> 00:03:29,600
+[creator] I don't know why I'm just now like
+
+21
+00:03:29,600 --> 00:03:35,970
+[creator] noticing that it's not bad I can work with it
+
+22
+00:03:40,150 --> 00:03:43,870
+[creator] so yeah I'm gonna get some
+
+23
+00:03:43,870 --> 00:03:49,480
+[creator] sound effects added and fix some other stuff
+
+24
+00:03:50,080 --> 00:03:53,460
+[creator] I don't know if I'm gonna do that tonight because I kind of just want to chill
+
+25
+00:03:55,560 --> 00:03:56,960
+[creator] But yeah, that's the update
+

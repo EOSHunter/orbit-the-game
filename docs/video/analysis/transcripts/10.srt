@@ -1,0 +1,84 @@
+1
+00:00:01,420 --> 00:00:15,370
+[creator] okay so I have Polaris working on the background more like it added some stars
+
+2
+00:00:15,370 --> 00:00:22,690
+[creator] but I still don't like everything else I don't know so I asked it to add like
+
+3
+00:00:22,690 --> 00:00:28,470
+[creator] galaxies like nebula that type of stuff that are closer to the drifter star game
+
+4
+00:00:28,470 --> 00:00:33,270
+[creator] so we'll see what we get the annoying part is every time it finishes something
+
+5
+00:00:33,270 --> 00:00:38,630
+[creator] I can't actually progress in the game so I think I'm gonna have it add like a
+
+6
+00:00:38,630 --> 00:00:45,950
+[creator] menu of things that I can like actually start from or like start as like maybe I
+
+7
+00:00:45,950 --> 00:00:55,440
+[creator] want to start as a ringed planet or whatever. I also remember seeing
+
+8
+00:00:55,440 --> 00:01:02,350
+[creator] something where like running into bigger objects yeah like it's not actually
+
+9
+00:01:02,350 --> 00:01:10,060
+[creator] damaging me. Oh no it's definitely damaging me. I was looking at the wrong
+
+10
+00:01:10,060 --> 00:01:28,880
+[creator] yeah so for testing for testing I'm gonna make it to where I can start as any
+
+11
+00:01:28,880 --> 00:01:35,560
+[creator] planet and object so while I'm playing every time we make an update after we
+
+12
+00:01:35,560 --> 00:01:41,460
+[creator] start my progress can we add like a menu like a developer menu or something where
+
+13
+00:01:41,460 --> 00:01:46,680
+[creator] I can choose what planet or evolution stage to start as so I can test them
+
+14
+00:01:56,180 --> 00:02:09,610
+[creator] We're currently making an update after whatever let's go ahead and merge that or push that whatever commit it
+
+15
+00:01:57,810 --> 00:01:58,710
+[agent_tts] Polaris is done.
+
+16
+00:02:14,820 --> 00:02:27,720
+[creator] Okay, see if this is what I was talking about. This looks a lot better. I like this a lot actually
+
+17
+00:02:31,940 --> 00:02:33,680
+[creator] So I have to end up adding
+
+18
+00:02:33,680 --> 00:02:37,940
+[creator] Like capture settings. I don't know if I'll do that or not to be honest
+
+19
+00:02:37,940 --> 00:02:43,460
+[creator] I might leave that out of this the way it's not like copying every single thing from drifter star
+
+20
+00:02:45,080 --> 00:02:47,260
+[creator] Even though it's copied everything else
+
+21
+00:02:48,980 --> 00:03:09,880
+[creator] So yeah, we're going to let it add this developer start menu and then I'll come back.
+

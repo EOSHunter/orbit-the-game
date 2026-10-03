@@ -1,0 +1,16 @@
+1
+00:00:01,140 --> 00:00:02,940
+[creator] Okay, so quick update
+
+2
+00:00:03,460 --> 00:00:09,840
+[creator] It was integrating I stopped it because I wanted to use opus 5 5 instead so I told orbit
+
+3
+00:00:09,840 --> 00:00:15,880
+[creator] But I stopped it, and I just want to use the opus 5 5 set to medium effort level instead, so
+
+4
+00:00:17,020 --> 00:00:20,300
+[creator] Just gonna let this build now since opus is a lot better
+

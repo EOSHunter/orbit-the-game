@@ -1,0 +1,763 @@
+{
+ "clip": "7.mp4",
+ "duration": 52.8426875,
+ "model": "faster-whisper medium; creator=mic track, agent_tts=system-audio residual",
+ "segments": [
+  {
+   "start": 0.85,
+   "end": 2.85,
+   "text": "So it's a new day",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " So",
+     "start": 0.85,
+     "end": 1.59,
+     "p": 0.92
+    },
+    {
+     "w": " it's",
+     "start": 1.59,
+     "end": 1.87,
+     "p": 0.96
+    },
+    {
+     "w": " a",
+     "start": 1.87,
+     "end": 1.97,
+     "p": 1.0
+    },
+    {
+     "w": " new",
+     "start": 1.97,
+     "end": 2.15,
+     "p": 1.0
+    },
+    {
+     "w": " day",
+     "start": 2.15,
+     "end": 2.85,
+     "p": 0.99
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 4.25,
+   "end": 6.37,
+   "text": "There were some merge conflicts",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " There",
+     "start": 4.25,
+     "end": 4.81,
+     "p": 0.9
+    },
+    {
+     "w": " were",
+     "start": 4.81,
+     "end": 4.91,
+     "p": 0.89
+    },
+    {
+     "w": " some",
+     "start": 4.91,
+     "end": 5.09,
+     "p": 1.0
+    },
+    {
+     "w": " merge",
+     "start": 5.09,
+     "end": 5.37,
+     "p": 0.95
+    },
+    {
+     "w": " conflicts",
+     "start": 5.37,
+     "end": 6.37,
+     "p": 1.0
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 7.91,
+   "end": 13.73,
+   "text": "Between Lark and Juno here the engine and 3d renderer and the UI designer, so we're getting those fix now",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " Between",
+     "start": 7.91,
+     "end": 8.47,
+     "p": 0.92
+    },
+    {
+     "w": " Lark",
+     "start": 8.47,
+     "end": 9.03,
+     "p": 0.78
+    },
+    {
+     "w": " and",
+     "start": 9.03,
+     "end": 9.29,
+     "p": 0.93
+    },
+    {
+     "w": " Juno",
+     "start": 9.29,
+     "end": 9.55,
+     "p": 0.83
+    },
+    {
+     "w": " here",
+     "start": 9.55,
+     "end": 9.85,
+     "p": 0.97
+    },
+    {
+     "w": " the",
+     "start": 9.85,
+     "end": 10.05,
+     "p": 0.96
+    },
+    {
+     "w": " engine",
+     "start": 10.05,
+     "end": 10.23,
+     "p": 0.94
+    },
+    {
+     "w": " and",
+     "start": 10.23,
+     "end": 10.45,
+     "p": 0.72
+    },
+    {
+     "w": " 3d",
+     "start": 10.45,
+     "end": 10.73,
+     "p": 0.96
+    },
+    {
+     "w": " renderer",
+     "start": 10.73,
+     "end": 11.49,
+     "p": 0.78
+    },
+    {
+     "w": " and",
+     "start": 11.49,
+     "end": 11.57,
+     "p": 0.91
+    },
+    {
+     "w": " the",
+     "start": 11.57,
+     "end": 11.69,
+     "p": 0.91
+    },
+    {
+     "w": " UI",
+     "start": 11.69,
+     "end": 11.89,
+     "p": 0.94
+    },
+    {
+     "w": " designer,",
+     "start": 11.89,
+     "end": 12.29,
+     "p": 0.64
+    },
+    {
+     "w": " so",
+     "start": 12.29,
+     "end": 12.45,
+     "p": 1.0
+    },
+    {
+     "w": " we're",
+     "start": 12.45,
+     "end": 12.65,
+     "p": 1.0
+    },
+    {
+     "w": " getting",
+     "start": 12.65,
+     "end": 12.77,
+     "p": 1.0
+    },
+    {
+     "w": " those",
+     "start": 12.77,
+     "end": 13.13,
+     "p": 0.99
+    },
+    {
+     "w": " fix",
+     "start": 13.13,
+     "end": 13.45,
+     "p": 0.43
+    },
+    {
+     "w": " now",
+     "start": 13.45,
+     "end": 13.73,
+     "p": 0.99
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 17.59,
+   "end": 18.71,
+   "text": "so basically",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " so",
+     "start": 17.59,
+     "end": 18.15,
+     "p": 0.45
+    },
+    {
+     "w": " basically",
+     "start": 18.15,
+     "end": 18.71,
+     "p": 0.96
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 18.71,
+   "end": 20.35,
+   "text": "told orbit",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " told",
+     "start": 18.71,
+     "end": 19.21,
+     "p": 0.86
+    },
+    {
+     "w": " orbit",
+     "start": 19.21,
+     "end": 20.35,
+     "p": 0.85
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 21.53,
+   "end": 26.73,
+   "text": "One I just started my computer so orbit needed I guess to still catch up",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " One",
+     "start": 21.53,
+     "end": 22.09,
+     "p": 0.15
+    },
+    {
+     "w": " I",
+     "start": 22.09,
+     "end": 22.31,
+     "p": 0.96
+    },
+    {
+     "w": " just",
+     "start": 22.31,
+     "end": 22.51,
+     "p": 0.99
+    },
+    {
+     "w": " started",
+     "start": 22.51,
+     "end": 22.63,
+     "p": 0.99
+    },
+    {
+     "w": " my",
+     "start": 22.63,
+     "end": 22.83,
+     "p": 0.97
+    },
+    {
+     "w": " computer",
+     "start": 22.83,
+     "end": 23.41,
+     "p": 1.0
+    },
+    {
+     "w": " so",
+     "start": 23.41,
+     "end": 23.91,
+     "p": 0.67
+    },
+    {
+     "w": " orbit",
+     "start": 23.91,
+     "end": 24.15,
+     "p": 0.82
+    },
+    {
+     "w": " needed",
+     "start": 24.15,
+     "end": 24.57,
+     "p": 0.99
+    },
+    {
+     "w": " I",
+     "start": 24.57,
+     "end": 24.89,
+     "p": 0.86
+    },
+    {
+     "w": " guess",
+     "start": 24.89,
+     "end": 25.19,
+     "p": 1.0
+    },
+    {
+     "w": " to",
+     "start": 25.19,
+     "end": 25.53,
+     "p": 0.92
+    },
+    {
+     "w": " still",
+     "start": 25.53,
+     "end": 26.13,
+     "p": 1.0
+    },
+    {
+     "w": " catch",
+     "start": 26.13,
+     "end": 26.45,
+     "p": 0.99
+    },
+    {
+     "w": " up",
+     "start": 26.45,
+     "end": 26.73,
+     "p": 1.0
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 28.07,
+   "end": 32.81,
+   "text": "But ended up showing so Juno and Lark had merge conflicts like I said",
+   "no_speech_prob": 0.129,
+   "avg_logprob": -0.277,
+   "words": [
+    {
+     "w": " But",
+     "start": 28.07,
+     "end": 28.63,
+     "p": 0.38
+    },
+    {
+     "w": " ended",
+     "start": 28.63,
+     "end": 28.77,
+     "p": 0.91
+    },
+    {
+     "w": " up",
+     "start": 28.77,
+     "end": 29.03,
+     "p": 1.0
+    },
+    {
+     "w": " showing",
+     "start": 29.03,
+     "end": 29.27,
+     "p": 1.0
+    },
+    {
+     "w": " so",
+     "start": 29.27,
+     "end": 30.43,
+     "p": 0.99
+    },
+    {
+     "w": " Juno",
+     "start": 30.43,
+     "end": 30.93,
+     "p": 0.83
+    },
+    {
+     "w": " and",
+     "start": 30.93,
+     "end": 31.09,
+     "p": 0.88
+    },
+    {
+     "w": " Lark",
+     "start": 31.09,
+     "end": 31.27,
+     "p": 0.89
+    },
+    {
+     "w": " had",
+     "start": 31.27,
+     "end": 31.53,
+     "p": 0.93
+    },
+    {
+     "w": " merge",
+     "start": 31.53,
+     "end": 31.83,
+     "p": 0.85
+    },
+    {
+     "w": " conflicts",
+     "start": 31.83,
+     "end": 32.19,
+     "p": 0.99
+    },
+    {
+     "w": " like",
+     "start": 32.19,
+     "end": 32.41,
+     "p": 0.58
+    },
+    {
+     "w": " I",
+     "start": 32.41,
+     "end": 32.61,
+     "p": 1.0
+    },
+    {
+     "w": " said",
+     "start": 32.61,
+     "end": 32.81,
+     "p": 1.0
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 32.81,
+   "end": 42.65,
+   "text": "So I let Orbit know, and then it went ahead and just sent follow-ups to each of them on its own.",
+   "no_speech_prob": 0.08,
+   "avg_logprob": -0.236,
+   "words": [
+    {
+     "w": " So",
+     "start": 32.81,
+     "end": 33.39,
+     "p": 0.45
+    },
+    {
+     "w": " I",
+     "start": 33.39,
+     "end": 33.45,
+     "p": 0.67
+    },
+    {
+     "w": " let",
+     "start": 33.45,
+     "end": 34.17,
+     "p": 0.9
+    },
+    {
+     "w": " Orbit",
+     "start": 34.17,
+     "end": 34.57,
+     "p": 0.78
+    },
+    {
+     "w": " know,",
+     "start": 34.57,
+     "end": 35.61,
+     "p": 0.99
+    },
+    {
+     "w": " and",
+     "start": 36.17,
+     "end": 36.31,
+     "p": 0.77
+    },
+    {
+     "w": " then",
+     "start": 36.31,
+     "end": 36.45,
+     "p": 0.95
+    },
+    {
+     "w": " it",
+     "start": 36.45,
+     "end": 36.75,
+     "p": 0.99
+    },
+    {
+     "w": " went",
+     "start": 36.75,
+     "end": 36.93,
+     "p": 0.96
+    },
+    {
+     "w": " ahead",
+     "start": 36.93,
+     "end": 37.21,
+     "p": 1.0
+    },
+    {
+     "w": " and",
+     "start": 37.21,
+     "end": 37.41,
+     "p": 0.97
+    },
+    {
+     "w": " just",
+     "start": 37.41,
+     "end": 37.67,
+     "p": 0.97
+    },
+    {
+     "w": " sent",
+     "start": 37.67,
+     "end": 38.61,
+     "p": 0.99
+    },
+    {
+     "w": " follow",
+     "start": 38.61,
+     "end": 39.77,
+     "p": 0.82
+    },
+    {
+     "w": "-ups",
+     "start": 39.77,
+     "end": 39.97,
+     "p": 0.81
+    },
+    {
+     "w": " to",
+     "start": 39.97,
+     "end": 40.17,
+     "p": 0.99
+    },
+    {
+     "w": " each",
+     "start": 40.17,
+     "end": 40.37,
+     "p": 1.0
+    },
+    {
+     "w": " of",
+     "start": 40.37,
+     "end": 40.49,
+     "p": 0.99
+    },
+    {
+     "w": " them",
+     "start": 40.49,
+     "end": 41.67,
+     "p": 0.91
+    },
+    {
+     "w": " on",
+     "start": 41.67,
+     "end": 42.09,
+     "p": 0.43
+    },
+    {
+     "w": " its",
+     "start": 42.09,
+     "end": 42.31,
+     "p": 0.92
+    },
+    {
+     "w": " own.",
+     "start": 42.31,
+     "end": 42.65,
+     "p": 1.0
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  },
+  {
+   "start": 44.59,
+   "end": 50.09,
+   "text": "So Lark is merged, no conflicts, now we're just waiting on Juno, and we should be able to test the game from there.",
+   "no_speech_prob": 0.08,
+   "avg_logprob": -0.236,
+   "words": [
+    {
+     "w": " So",
+     "start": 44.59,
+     "end": 44.75,
+     "p": 0.98
+    },
+    {
+     "w": " Lark",
+     "start": 44.75,
+     "end": 44.91,
+     "p": 0.52
+    },
+    {
+     "w": " is",
+     "start": 44.91,
+     "end": 45.09,
+     "p": 0.65
+    },
+    {
+     "w": " merged,",
+     "start": 45.09,
+     "end": 45.59,
+     "p": 1.0
+    },
+    {
+     "w": " no",
+     "start": 45.95,
+     "end": 46.17,
+     "p": 0.99
+    },
+    {
+     "w": " conflicts,",
+     "start": 46.17,
+     "end": 46.71,
+     "p": 1.0
+    },
+    {
+     "w": " now",
+     "start": 46.85,
+     "end": 46.99,
+     "p": 0.84
+    },
+    {
+     "w": " we're",
+     "start": 46.99,
+     "end": 47.09,
+     "p": 0.98
+    },
+    {
+     "w": " just",
+     "start": 47.09,
+     "end": 47.25,
+     "p": 0.99
+    },
+    {
+     "w": " waiting",
+     "start": 47.25,
+     "end": 47.37,
+     "p": 1.0
+    },
+    {
+     "w": " on",
+     "start": 47.37,
+     "end": 47.65,
+     "p": 0.99
+    },
+    {
+     "w": " Juno,",
+     "start": 47.65,
+     "end": 48.15,
+     "p": 0.94
+    },
+    {
+     "w": " and",
+     "start": 48.27,
+     "end": 48.37,
+     "p": 0.98
+    },
+    {
+     "w": " we",
+     "start": 48.37,
+     "end": 48.55,
+     "p": 0.84
+    },
+    {
+     "w": " should",
+     "start": 48.55,
+     "end": 48.73,
+     "p": 1.0
+    },
+    {
+     "w": " be",
+     "start": 48.73,
+     "end": 48.89,
+     "p": 0.99
+    },
+    {
+     "w": " able",
+     "start": 48.89,
+     "end": 48.95,
+     "p": 1.0
+    },
+    {
+     "w": " to",
+     "start": 48.95,
+     "end": 49.13,
+     "p": 1.0
+    },
+    {
+     "w": " test",
+     "start": 49.13,
+     "end": 49.31,
+     "p": 1.0
+    },
+    {
+     "w": " the",
+     "start": 49.31,
+     "end": 49.47,
+     "p": 1.0
+    },
+    {
+     "w": " game",
+     "start": 49.47,
+     "end": 49.63,
+     "p": 1.0
+    },
+    {
+     "w": " from",
+     "start": 49.63,
+     "end": 49.81,
+     "p": 1.0
+    },
+    {
+     "w": " there.",
+     "start": 49.81,
+     "end": 50.09,
+     "p": 1.0
+    }
+   ],
+   "speaker": "creator",
+   "conf": 0.97,
+   "source": "mic track (audio stream 3)"
+  }
+ ]
+}

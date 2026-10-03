@@ -1,0 +1,568 @@
+1
+00:00:04,240 --> 00:00:10,980
+[creator] okay welcome to r7 orbit I'm not gonna explain what this is in short I wanted
+
+2
+00:00:10,980 --> 00:00:16,960
+[creator] to build my own software and app that would allow me to build apps and
+
+3
+00:00:16,960 --> 00:00:27,200
+[creator] software and stuff basically vibe coding on steroids so anyway we're gonna go
+
+4
+00:00:27,200 --> 00:00:31,740
+[creator] ahead and get started here we're going to create a new repo we're gonna call
+
+5
+00:00:31,740 --> 00:00:42,240
+[creator] orbit the game and this is for demo to test how orbit works and of course we're
+
+6
+00:00:42,240 --> 00:00:52,080
+[creator] gonna build a game and we're gonna create it on github all right so let's
+
+7
+00:00:52,600 --> 00:00:58,980
+[creator] figure out what the game should be thinking it should be some type of some
+
+8
+00:00:58,980 --> 00:01:11,470
+[creator] type of space related game so see what what ideas do I have I literally have no
+
+9
+00:01:11,470 --> 00:01:16,940
+[creator] ideas I didn't take any of this through before starting this let's just ask it
+
+10
+00:01:20,020 --> 00:01:30,100
+[creator] create an agent and use sonnet five five set to high and help me come up with some
+
+11
+00:01:57,540 --> 00:02:02,120
+[creator] it was already set to low here i used the wrong shortcut silly me
+
+12
+00:02:02,120 --> 00:02:03,220
+[creator] uh...
+
+13
+00:02:06,210 --> 00:02:10,790
+[creator] so he got some ideas here gravity slingshot fleeing a probe through
+
+14
+00:02:10,790 --> 00:02:12,450
+[creator] planetary gravity
+
+15
+00:02:12,450 --> 00:02:16,210
+[creator] uh... or gravity wells to hit targets using as little fuel as possible that
+
+16
+00:02:16,210 --> 00:02:20,730
+[creator] sounds boring run a small orbital station and balance air power
+
+17
+00:02:45,380 --> 00:02:46,020
+[creator] uh...
+
+18
+00:02:46,020 --> 00:02:47,900
+[creator] Dyson drift, what was that one?
+
+19
+00:02:48,020 --> 00:02:52,000
+[creator] Start one solar panel and end up wrapping a whole star,
+
+20
+00:02:52,000 --> 00:02:53,560
+[creator] the star dims on it.
+
+21
+00:02:53,640 --> 00:02:54,860
+[creator] Actually, I have an idea.
+
+22
+00:02:55,480 --> 00:03:00,840
+[creator] There's this one game that I like on Steam called something.
+
+23
+00:03:05,770 --> 00:03:07,370
+[creator] There it is, Drifter Star.
+
+24
+00:03:11,180 --> 00:03:13,420
+[creator] So if I go here,
+
+25
+00:03:15,200 --> 00:03:18,160
+[creator] I wonder if I can build my own version of this game.
+
+26
+00:03:19,890 --> 00:03:30,890
+[creator] I want you to look up Drifter Star on Steam. I want to build my own clone
+
+27
+00:03:30,890 --> 00:03:39,750
+[creator] version of this because I'm really creative and have so many ideas. Actually
+
+28
+00:03:39,750 --> 00:03:48,670
+[creator] we're going to deny this because I don't want to use sonnet 5.5 set to low so
+
+29
+00:03:48,670 --> 00:03:50,450
+[creator] We're actually going to delete that entirely.
+
+30
+00:03:55,700 --> 00:03:57,920
+[creator] Let's just use Orbit to orchestrate it all.
+
+31
+00:03:58,000 --> 00:04:00,240
+[creator] It's going to coordinate it into some stuff.
+
+32
+00:04:01,440 --> 00:04:06,260
+[creator] So I want to build a browser game that's based on Drifter Star, so you're going to have to
+
+33
+00:04:06,260 --> 00:04:07,280
+[creator] find that on Steam.
+
+34
+00:04:08,100 --> 00:04:10,360
+[creator] It's a really cool game, outer space stuff.
+
+35
+00:04:10,680 --> 00:04:16,240
+[creator] But come up with a plan to create a clone of it and have another agent help us figure
+
+36
+00:04:16,240 --> 00:04:19,860
+[creator] out what the functionality, what's actually going to be in the game, objects, what we
+
+37
+00:04:19,860 --> 00:04:25,700
+[creator] turn into and then we'll go from there with a creative director agent to
+
+38
+00:04:26,180 --> 00:04:32,830
+[creator] figure out the look and feel before we actually start building that's good
+
+39
+00:04:32,830 --> 00:04:40,260
+[creator] enough with me and we're gonna build this in the browser because why not so
+
+40
+00:04:40,260 --> 00:04:51,020
+[creator] we're gonna let orbit do its thing okay so I got some agents here now we got
+
+41
+00:04:52,930 --> 00:04:59,990
+[creator] game design we're gonna allow allow allow allow and we'll see what we're
+
+42
+00:05:28,610 --> 00:05:34,630
+[creator] I might actually just stick to Sonic 5.5 Medium for this. I think it should be able to do a pretty good job.
+
+43
+00:05:35,350 --> 00:05:41,010
+[creator] And then in the end we're going to switch over to Opus 5.5 set to High.
+
+44
+00:05:41,290 --> 00:05:44,690
+[creator] And we're going to let it pretty up the game.
+
+45
+00:05:45,250 --> 00:05:49,490
+[creator] Because I'm sure what we're going to get is going to be like very decent at best.
+
+46
+00:05:49,990 --> 00:05:53,030
+[creator] Maybe. But Opus crushes it.
+
+47
+00:05:53,030 --> 00:05:58,170
+[creator] So, we're gonna see if it can do what I want
+
+48
+00:05:58,170 --> 00:05:59,430
+[creator] and actually clone this game.
+
+49
+00:06:02,270 --> 00:06:08,530
+[creator] Also, I'm noticing now that I've already given
+
+50
+00:06:09,610 --> 00:06:12,210
+[creator] permission to the agents to do things.
+
+51
+00:06:12,510 --> 00:06:20,360
+[creator] I really wish allow these.
+
+52
+00:06:21,560 --> 00:06:23,540
+[creator] I really wish it would stop asking me
+
+53
+00:06:23,540 --> 00:06:25,120
+[creator] for permission to do things.
+
+54
+00:06:25,860 --> 00:06:28,540
+[creator] There was like an allow all button.
+
+55
+00:06:28,540 --> 00:06:35,880
+[creator] I don't know what happened to that. I guess with the new update I lost that, which is
+
+56
+00:06:35,880 --> 00:06:41,600
+[creator] not very cool. There was like a button to allow all. But now I just have to click every
+
+57
+00:06:41,600 --> 00:06:46,360
+[creator] single one of them, which is annoying. So that'll be something I'll have to get back
+
+58
+00:06:46,360 --> 00:06:58,520
+[creator] around to fixing after this, I guess. So the closest match, Drifter Star, I think I said
+
+59
+00:06:58,520 --> 00:07:00,300
+[creator] uh... the page of edge had those
+
+60
+00:07:00,300 --> 00:07:02,280
+[creator] your trailer description
+
+61
+00:07:07,880 --> 00:07:10,420
+[creator] uh... wonder maybe if i just like
+
+62
+00:07:10,420 --> 00:07:13,680
+[creator] drop in this link here
+
+63
+00:07:13,680 --> 00:07:15,620
+[creator] here is the link
+
+64
+00:07:15,620 --> 00:07:16,820
+[creator] to the game
+
+65
+00:07:19,840 --> 00:07:23,540
+[creator] so we'll give that to the creative director so i can get an idea of what it
+
+66
+00:07:23,540 --> 00:07:25,120
+[creator] should look like
+
+67
+00:07:25,940 --> 00:07:26,540
+[creator] uh...
+
+68
+00:07:28,240 --> 00:07:31,060
+[creator] that that that to steam guide to okay
+
+69
+00:07:31,060 --> 00:07:43,770
+[creator] I'm just going to do the same thing over here, and be like, this is it, let that go.
+
+70
+00:07:51,300 --> 00:07:54,860
+[creator] So it used that page, but it couldn't, okay, so it just couldn't view anything, whatever,
+
+71
+00:07:54,940 --> 00:07:55,540
+[creator] that's fine.
+
+72
+00:08:02,240 --> 00:08:06,220
+[creator] So I don't know why I'm using two chats, these are basically doing the same thing.
+
+73
+00:08:09,420 --> 00:08:16,270
+[creator] I mean, they're both researching, all right, whatever, let's just have an orbit.
+
+74
+00:08:20,640 --> 00:08:22,680
+[creator] They've completed, so we can move on.
+
+75
+00:08:22,900 --> 00:08:23,920
+[creator] What should we do next?
+
+76
+00:08:23,920 --> 00:08:31,180
+[creator] I'm just going to let it drive, I'm just going to be the one allowing it to drive.
+
+77
+00:08:31,220 --> 00:08:36,100
+[creator] I'm going to sit the passenger seat for this one, provide a little direction here and there,
+
+78
+00:08:36,140 --> 00:08:37,080
+[creator] a little bit of help.
+
+79
+00:08:38,300 --> 00:08:46,540
+[creator] I literally started building R7 Orbit yesterday, so I'm not at all expecting this to work perfectly
+
+80
+00:08:47,200 --> 00:08:48,120
+[creator] at all.
+
+81
+00:08:48,120 --> 00:08:54,280
+[creator] Um, a lot of the features still aren't even built. So, all right, let's see.
+
+82
+00:08:56,220 --> 00:09:00,860
+[creator] Next step, first file. So I can, it's going to ask Ryre to confirm the file exists.
+
+83
+00:09:00,860 --> 00:09:07,940
+[creator] And we save if it's missing. Tell me if you want that. Um, I want to let you loose and I want you
+
+84
+00:09:07,940 --> 00:09:15,260
+[creator] to just control everything from here on out. I want you to be the orchestrator, the, the overseer
+
+85
+00:09:15,260 --> 00:09:24,330
+[creator] And I want you to run the show. We'll see what it says to that.
+
+86
+00:09:27,740 --> 00:09:33,200
+[creator] Alright, so it is chatting with Briar, the creative director. I don't really know if we need Atlas anymore.
+
+87
+00:09:34,380 --> 00:09:37,380
+[creator] Oh, apparently I have to answer some things.
+
+88
+00:09:37,900 --> 00:09:39,500
+[creator] Oh, okay, I see.
+
+89
+00:09:40,260 --> 00:09:42,980
+[creator] Which is 2D top-down or 3D like the original?
+
+90
+00:09:44,540 --> 00:09:46,720
+[creator] 3D like the original.
+
+91
+00:09:50,330 --> 00:10:03,560
+[creator] 12 stages mouse only a faithful clone answered that out of order but it's fine
+
+92
+00:10:07,720 --> 00:10:12,460
+[creator] yeah see I wish I could just like make it just have access to everything already
+
+93
+00:10:13,100 --> 00:10:16,280
+[creator] like I had that before but I messed it up
+
+94
+00:10:19,260 --> 00:10:30,440
+[creator] Hey R7, oop, okay, I should probably unmute R7's mic, hey R7, create another note in
+
+95
+00:10:30,440 --> 00:10:42,010
+[creator] a new thought and thread that I need to, I already forgot what I was gonna do, so, what
+
+96
+00:10:42,010 --> 00:10:42,790
+[creator] was I about to say?
+
+97
+00:10:43,030 --> 00:10:55,840
+[creator] I instantly forgot, unfinished note, yeah thanks, nice, nice unfinished note, I instantly
+
+98
+00:10:55,840 --> 00:11:05,670
+[creator] oh I remember now I remember what I meant to do create a new thought for me to
+
+99
+00:11:05,970 --> 00:11:15,810
+[creator] allow all my guys not listening to me it's fine it's fine I'll be back no I
+
+100
+00:11:15,810 --> 00:11:22,210
+[creator] won't I'm still here shut up r7 you didn't let me talk long enough I'm upset
+
+101
+00:11:22,210 --> 00:11:39,180
+[creator] with you okay go with whatever you recommend so definitely to I mean I
+
+102
+00:11:39,180 --> 00:11:42,740
+[creator] probably could have prompted it differently from the beginning to make
+
+103
+00:11:42,740 --> 00:11:48,360
+[creator] it more autonomous because I'm still having to provide a little too much
+
+104
+00:11:48,360 --> 00:11:52,960
+[creator] feedback I was hoping to just be like hey do this and to do it
+
+105
+00:11:52,960 --> 00:11:56,680
+[creator] Um, I haven't pushed anything if you want to push.
+
+106
+00:11:58,040 --> 00:11:59,200
+[creator] Yeah, go ahead and push it.
+
+107
+00:11:59,620 --> 00:12:00,420
+[creator] I like all of that.
+
+108
+00:12:00,460 --> 00:12:02,380
+[creator] Sounds great, beautiful, love it.
+
+109
+00:12:03,680 --> 00:12:04,800
+[creator] I'm not reading that.
+
+110
+00:12:08,460 --> 00:12:10,540
+[creator] I just want to see what Claude will do.
+
+111
+00:12:10,840 --> 00:12:11,600
+[creator] That's all.
+
+112
+00:12:12,900 --> 00:12:14,840
+[creator] Is there any questions over here I was supposed to read?
+
+113
+00:12:17,590 --> 00:12:19,130
+[creator] Are these like fighting against each other?
+
+114
+00:12:19,290 --> 00:12:19,630
+[creator] No.
+
+115
+00:12:22,670 --> 00:12:24,910
+[creator] Yeah, all of that sounds great, I love it.
+
+116
+00:12:25,770 --> 00:12:27,050
+[creator] It's perfect, beautiful.
+
+117
+00:12:32,740 --> 00:12:38,480
+[creator] God, if robots ever become real workers, it's going to be so easy to manage them until they
+
+118
+00:12:38,480 --> 00:12:39,280
+[creator] get upset.
+
+119
+00:12:39,300 --> 00:12:43,180
+[creator] Like you fire one of their friends and then they like try to kill you.
+
+120
+00:12:43,240 --> 00:12:44,420
+[creator] That wouldn't be fun.
+
+121
+00:12:46,040 --> 00:12:47,000
+[creator] Um, okay.
+
+122
+00:12:48,060 --> 00:12:48,880
+[creator] Is all this done?
+
+123
+00:12:54,050 --> 00:12:54,470
+[creator] Yeah, sure.
+
+124
+00:12:54,470 --> 00:12:57,610
+[creator] Go ahead and open a pull request and then we'll merge right after.
+
+125
+00:12:57,990 --> 00:12:58,530
+[creator] I think.
+
+126
+00:12:59,710 --> 00:13:00,250
+[creator] I don't know.
+
+127
+00:13:00,790 --> 00:13:01,650
+[creator] I don't know.
+
+128
+00:13:02,270 --> 00:13:03,590
+[creator] I don't know nothing.
+
+129
+00:13:05,110 --> 00:13:07,810
+[creator] So, we're gonna let this go.
+
+130
+00:13:12,170 --> 00:13:14,730
+[creator] Bum bum bum bum, bump this on the test branch.
+
+131
+00:13:16,790 --> 00:13:24,680
+[creator] Yeah, yeah, do that. I take such good care of my
+
+132
+00:13:24,680 --> 00:13:31,810
+[creator] my workers, you know. Alright, so
+
+133
+00:13:33,730 --> 00:13:34,890
+[creator] I think.
+
+134
+00:13:40,280 --> 00:13:44,060
+[creator] Merge it. Regular merge.
+
+135
+00:13:50,920 --> 00:13:56,870
+[creator] Merge it. Ay yi yi.
+
+136
+00:13:56,870 --> 00:14:00,230
+[creator] I'm probably fucking shit up by doing all this, if I'm being honest.
+
+137
+00:14:07,460 --> 00:14:09,160
+[creator] Alright, let me know what's next, Orbit.
+
+138
+00:14:14,280 --> 00:14:17,360
+[creator] It doesn't know its name yet, I don't know why I said that.
+
+139
+00:14:23,740 --> 00:14:25,200
+[creator] Yeah, I think I'm just gonna stop recording,
+
+140
+00:14:25,400 --> 00:14:27,920
+[creator] because I've been recording for however long now.
+
+141
+00:14:28,560 --> 00:14:31,180
+[creator] I'll come back whenever I have something worth showing,
+
+142
+00:14:31,360 --> 00:14:33,000
+[creator] because right now it's just me yapping constantly.
+
