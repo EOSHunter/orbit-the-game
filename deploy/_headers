@@ -1,0 +1,24 @@
+# Cloudflare Pages headers (copied into dist/ by tools/build.mjs). Docs: docs/DEPLOY.md
+#
+# Rules that match a URL are merged, so the framing policy below applies to every file and the
+# cache rules only add Cache-Control. No X-Frame-Options is sent anywhere: it cannot express an
+# allow-list and would fight frame-ancestors.
+
+/*
+  Content-Security-Policy: frame-ancestors 'self' https://r7orbit.io https://www.r7orbit.io
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# The page is the only unhashed entry point: always revalidate so a deploy shows up immediately.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# assets/<content-hash>/ holds every script and the Three.js vendor files; the folder name changes
+# whenever any file in it does, so these can be cached for a year.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/og-image.png
+  Cache-Control: public, max-age=86400
