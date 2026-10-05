@@ -53,7 +53,10 @@ export async function start3d() {
   }
 
   // ---- developer start: ?stage=<id|index>&form=<choice id,...> (see src/devstart.js) ----
-  const devSpec = sim.startAt ? parseDevQuery(location.search) : null;
+  // Public builds hide all of it (Dev start button, backtick menu, ?stage= / ?form= jumps) unless the URL has ?dev=1;
+  // localhost keeps it on for `npm start` and the smoke tests.
+  const devOn = !!sim.startAt && (params.get('dev') === '1' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname));
+  const devSpec = devOn ? parseDevQuery(location.search) : null;
   function devStart(spec) {
     if (!sim.startAt(spec)) return;
     const u = new URL(location.href);
@@ -110,7 +113,7 @@ export async function start3d() {
     if (ui.attach) ui.attach(bus);
     applySettings(ui.getSettings && ui.getSettings());
     // Developer start (title "Dev start" button or backtick): begin a run at any stage and form.
-    if (sim.startAt) ui.setDevMenu({ stages: devStages(), query: devQuery, initial: devSpec, onStart: devStart });
+    if (devOn) ui.setDevMenu({ stages: devStages(), query: devQuery, initial: devSpec, onStart: devStart });
     if (devSpec) devStart(devSpec); else showTitle();
     bus.on('choice-open', (e) => ui.showChoice(e.choices, (id) => sim.pickChoice(id), { preview: (c) => renderer.renderPreview && renderer.renderPreview(sim.previewChoice(c.id)) }));
     bus.on('ending', (e) => ui.showEnd(e.ending, () => sim.restart()));
